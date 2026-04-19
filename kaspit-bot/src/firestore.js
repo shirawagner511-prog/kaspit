@@ -59,8 +59,10 @@ export async function getHouseholdByPhone(phone) {
     body: JSON.stringify(body),
   });
   const data = await res.json();
+  console.log('query result:', JSON.stringify(data[0]));
   if (!data[0]?.document) return null;
   const fields = fromFirestoreDoc(data[0].document);
+  console.log('parsed fields:', JSON.stringify(fields));
   return fields.householdId || null;
 }
 
