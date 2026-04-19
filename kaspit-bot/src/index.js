@@ -5,6 +5,7 @@ import { parseMessage, parseReceiptImage } from './claude.js';
 import { sendReply } from './whatsapp.js';
 
 const app = express();
+app.use((req, res, next) => { res.setHeader('ngrok-skip-browser-warning', '1'); next(); });
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
@@ -22,6 +23,7 @@ app.post('/webhook', async (req, res) => {
 
   // Normalize phone: strip "whatsapp:" prefix
   const phone = from.replace('whatsapp:', '');
+  console.log('from:', from, 'phone:', phone);
 
   try {
     const householdId = await getHouseholdByPhone(phone);
