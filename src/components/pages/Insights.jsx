@@ -1,4 +1,4 @@
-import { CAT_ICONS, CAT_NAMES, MONTHS_HE } from '../../utils/constants';
+import { MONTHS_HE } from '../../utils/constants';
 import { formatAmount, getMonthEntries } from '../../utils/format';
 
 function computeTrends(entries, currentMonth, currentYear) {
@@ -17,7 +17,10 @@ function computeTrends(entries, currentMonth, currentYear) {
     .sort((a, b) => b.curr - a.curr);
 }
 
-export default function Insights({ entries, currentMonth, currentYear }) {
+export default function Insights({ entries, currentMonth, currentYear, allCategories = [] }) {
+  const catMap = Object.fromEntries(allCategories.map((c) => [c.value, c]));
+  const getIcon = (cat) => catMap[cat]?.icon || '📦';
+  const getName = (cat) => catMap[cat]?.label || cat;
   const trends = computeTrends(entries, currentMonth, currentYear);
   const prevLabel = currentMonth === 0 ? MONTHS_HE[11] : MONTHS_HE[currentMonth - 1];
 
@@ -50,9 +53,9 @@ export default function Insights({ entries, currentMonth, currentYear }) {
             const pct = t.prev > 0 ? Math.round(Math.abs(t.diff / t.prev) * 100) : null;
             return (
               <div key={t.cat} className="expense-item">
-                <div className={`expense-icon cat-${t.cat}`}>{CAT_ICONS[t.cat] || '📦'}</div>
+                <div className={`expense-icon cat-${t.cat}`}>{getIcon(t.cat)}</div>
                 <div className="expense-info">
-                  <div className="expense-name">{CAT_NAMES[t.cat] || t.cat}</div>
+                  <div className="expense-name">{getName(t.cat)}</div>
                   <div className="expense-meta">
                     <span style={{ color: 'var(--text2)' }}>{prevLabel}: {formatAmount(t.prev)}</span>
                     {pct !== null && <span className="chip">{arrow} {pct}%</span>}

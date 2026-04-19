@@ -33,6 +33,10 @@ export async function setUserHousehold(uid, householdId) {
   await setDoc(doc(db, 'users', uid), { householdId }, { merge: true });
 }
 
+export async function saveUserPhone(uid, phoneNumber) {
+  await setDoc(doc(db, 'users', uid), { phoneNumber }, { merge: true });
+}
+
 // ── Households ─────────────────────────────────────────
 
 function generateInviteCode() {
@@ -76,6 +80,18 @@ export async function getHousehold(householdId) {
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
 
+export async function saveCustomCategories(householdId, customCategories) {
+  await setDoc(doc(db, 'households', householdId), { customCategories }, { merge: true });
+}
+
+export async function saveBudgets(householdId, budgets) {
+  await setDoc(doc(db, 'households', householdId), { budgets }, { merge: true });
+}
+
+export async function saveSavingsGoal(householdId, savingsGoal) {
+  await setDoc(doc(db, 'households', householdId), { savingsGoal }, { merge: true });
+}
+
 // ── Entries ────────────────────────────────────────────
 
 export async function addEntry(householdId, entry, user) {
@@ -85,6 +101,10 @@ export async function addEntry(householdId, entry, user) {
     addedByUid: user.uid,
     createdAt: new Date().toISOString(),
   });
+}
+
+export async function updateEntry(householdId, entryId, data) {
+  await updateDoc(doc(db, 'households', householdId, 'entries', entryId), data);
 }
 
 export async function deleteEntry(householdId, entryId) {

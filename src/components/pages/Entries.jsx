@@ -1,19 +1,9 @@
 import EntryItem from '../shared/EntryItem';
-import { deleteEntry } from '../../firebase/db';
 import { MONTHS_HE } from '../../utils/constants';
 import { getMonthEntries } from '../../utils/format';
 
-export default function Entries({ entries, currentMonth, currentYear, householdId, user }) {
+export default function Entries({ entries, currentMonth, currentYear, householdId, user, onEdit, onDelete }) {
   const me = getMonthEntries(entries, currentMonth, currentYear);
-
-  async function handleDelete(id) {
-    if (!confirm('למחוק?')) return;
-    try {
-      await deleteEntry(householdId, id);
-    } catch (e) {
-      alert('שגיאה במחיקה: ' + e.message);
-    }
-  }
 
   return (
     <div className="page">
@@ -28,7 +18,7 @@ export default function Entries({ entries, currentMonth, currentYear, householdI
       ) : (
         <div className="expense-list">
           {me.map((e) => (
-            <EntryItem key={e.id} entry={e} showDelete={true} onDelete={handleDelete} />
+            <EntryItem key={e.id} entry={e} showDelete={true} onEdit={onEdit} onDelete={onDelete} />
           ))}
         </div>
       )}
