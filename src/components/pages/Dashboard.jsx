@@ -46,11 +46,13 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
   const bc = pct < 70 ? 'safe' : pct < 90 ? 'warn' : 'danger';
 
   async function quickAddFixed(name, amount, category) {
-    await addEntry(householdId, {
-      name, amount, category,
-      date: new Date().toISOString().split('T')[0],
-      fixed: 'fixed', type: 'expense', note: 'הוזן אוטומטית',
-    }, user);
+    const d = new Date();
+    const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    try {
+      await addEntry(householdId, { name, amount, category, date, fixed: 'fixed', type: 'expense', note: 'הוזן אוטומטית' }, user);
+    } catch (e) {
+      alert('שגיאה בהוספה: ' + e.message);
+    }
   }
 
   return (

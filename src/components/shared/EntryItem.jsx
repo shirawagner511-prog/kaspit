@@ -9,8 +9,8 @@ const TAG_MAP = {
 
 export default function EntryItem({ entry, showDelete, onDelete }) {
   const isIn = entry.type === 'income';
-  const d = new Date(entry.date);
-  const dateStr = `${d.getDate()}/${d.getMonth() + 1}`;
+  const [year, month, day] = (entry.date || '').split('-');
+  const dateStr = day ? `${parseInt(day)}/${parseInt(month)}` : '';
 
   return (
     <div className="expense-item">

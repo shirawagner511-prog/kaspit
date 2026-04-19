@@ -8,7 +8,11 @@ export default function Entries({ entries, currentMonth, currentYear, householdI
 
   async function handleDelete(id) {
     if (!confirm('למחוק?')) return;
-    await deleteEntry(householdId, id);
+    try {
+      await deleteEntry(householdId, id);
+    } catch (e) {
+      alert('שגיאה במחיקה: ' + e.message);
+    }
   }
 
   return (

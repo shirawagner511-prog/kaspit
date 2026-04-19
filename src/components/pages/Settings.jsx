@@ -5,7 +5,7 @@ export default function Settings({ entries, householdId, user }) {
   const [household, setHousehold] = useState(null);
 
   useEffect(() => {
-    if (householdId) getHousehold(householdId).then(setHousehold);
+    if (householdId) getHousehold(householdId).then(setHousehold).catch(console.error);
   }, [householdId]);
 
   function exportCSV() {

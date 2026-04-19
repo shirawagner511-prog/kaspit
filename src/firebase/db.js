@@ -30,7 +30,7 @@ export async function getOrCreateUser(firebaseUser) {
 }
 
 export async function setUserHousehold(uid, householdId) {
-  await updateDoc(doc(db, 'users', uid), { householdId });
+  await setDoc(doc(db, 'users', uid), { householdId }, { merge: true });
 }
 
 // ── Households ─────────────────────────────────────────

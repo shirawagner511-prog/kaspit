@@ -14,9 +14,10 @@ export function useEntries(householdId) {
       collection(db, 'households', householdId, 'entries'),
       orderBy('date', 'desc')
     );
-    const unsubscribe = onSnapshot(q, (snap) => {
-      setEntries(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-    });
+    const unsubscribe = onSnapshot(q,
+      (snap) => setEntries(snap.docs.map((d) => ({ id: d.id, ...d.data() }))),
+      (err) => console.error('entries listener error:', err)
+    );
     return unsubscribe;
   }, [householdId]);
 

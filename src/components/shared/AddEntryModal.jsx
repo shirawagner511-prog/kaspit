@@ -18,7 +18,10 @@ const FIXED_OPTIONS = [
   { value: 'sep',      label: '⚠️ ספטמבר+' },
 ];
 
-const today = () => new Date().toISOString().split('T')[0];
+const today = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
 
 export default function AddEntryModal({ open, onClose, householdId, user }) {
   const [type, setType] = useState('expense');
@@ -35,6 +38,10 @@ export default function AddEntryModal({ open, onClose, householdId, user }) {
       alert('יש למלא שם, סכום ותאריך');
       return;
     }
+    if (parseFloat(amount) <= 0) {
+      alert('סכום חייב להיות גדול מאפס');
+      return;
+    }
     setLoading(true);
     try {
       await addEntry(householdId, {
@@ -47,6 +54,8 @@ export default function AddEntryModal({ open, onClose, householdId, user }) {
         note: note.trim(),
       }, user);
       handleClose();
+    } catch (e) {
+      alert('שגיאה בשמירת הפעולה: ' + e.message);
     } finally {
       setLoading(false);
     }
@@ -55,6 +64,7 @@ export default function AddEntryModal({ open, onClose, householdId, user }) {
   function handleClose() {
     setName(''); setAmount(''); setNote('');
     setType('expense'); setDate(today());
+    setCategory('housing'); setFixed('fixed');
     onClose();
   }
 

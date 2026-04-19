@@ -9,16 +9,20 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUser);
-        const userData = await getOrCreateUser(firebaseUser);
-        setHouseholdId(userData.householdId || null);
+        setLoading(false);
+        getOrCreateUser(firebaseUser)
+          .then((userData) => {
+            if (userData.householdId) setHouseholdId(userData.householdId);
+          })
+          .catch(() => {});
       } else {
         setUser(null);
         setHouseholdId(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
     return unsubscribe;
   }, []);
