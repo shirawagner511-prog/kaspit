@@ -39,6 +39,7 @@ function fromFields(fields = {}) {
 
 export async function getHouseholdByPhone(phone) {
   const token = await getAccessToken();
+  console.log('token ok:', !!token, 'first20:', token?.substring(0, 20));
   const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents:runQuery`;
   const res = await fetch(url, {
     method: 'POST',
@@ -58,6 +59,7 @@ export async function getHouseholdByPhone(phone) {
     }),
   });
   const data = await res.json();
+  console.log('full response:', JSON.stringify(data?.[0]));
   console.log('raw query:', JSON.stringify(data?.[0]?.document?.fields?.householdId));
   if (!data[0]?.document) return null;
   return fromFields(data[0].document.fields).householdId || null;
