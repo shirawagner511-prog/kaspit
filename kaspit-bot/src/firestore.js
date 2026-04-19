@@ -28,7 +28,11 @@ function fromFirestoreDoc(doc) {
   const fields = doc.fields || {};
   const result = {};
   for (const [k, v] of Object.entries(fields)) {
-    result[k] = v.stringValue ?? v.doubleValue ?? v.integerValue ?? v.booleanValue ?? null;
+    if ('stringValue' in v) result[k] = v.stringValue;
+    else if ('doubleValue' in v) result[k] = v.doubleValue;
+    else if ('integerValue' in v) result[k] = v.integerValue;
+    else if ('booleanValue' in v) result[k] = v.booleanValue;
+    else result[k] = null;
   }
   return result;
 }
