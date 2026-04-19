@@ -58,7 +58,8 @@ app.post('/webhook', async (req, res) => {
 
     await sendReply(from, reply || `✦ נרשם! ${entries.length > 1 ? `${entries.length} פעולות` : entries[0].name}`);
   } catch (err) {
-    console.error('Webhook error:', err);
+    console.error('Webhook error message:', err.message);
+    console.error('Webhook error stack:', err.stack);
     try {
       await sendReply(from, 'אוי, משהו השתבש 😅 נסי שוב עוד רגע.');
     } catch {}
