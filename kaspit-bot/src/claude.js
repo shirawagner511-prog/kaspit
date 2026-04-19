@@ -80,7 +80,7 @@ export async function parseMessage(text, customCategories = [], today = null) {
     ],
   });
 
-  const raw = response.content[0].text.trim();
+  const raw = response.content[0].text.trim().replace(/^```json\s*/,'').replace(/```$/,'');
   return JSON.parse(raw);
 }
 
@@ -115,6 +115,6 @@ export async function parseReceiptImage(imageUrl, mediaType, customCategories = 
     ],
   });
 
-  const raw = response.content[0].text.trim();
+  const raw = response.content[0].text.trim().replace(/^```json\s*/,'').replace(/```$/,'');
   return JSON.parse(raw);
 }
