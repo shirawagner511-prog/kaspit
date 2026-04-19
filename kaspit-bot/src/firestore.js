@@ -1,6 +1,7 @@
 import { GoogleAuth } from 'google-auth-library';
+import serviceAccount from './serviceAccount.js';
 
-const PROJECT_ID = process.env.FIREBASE_PROJECT_ID;
+const PROJECT_ID = serviceAccount.project_id;
 const BASE = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents`;
 
 let _token = null;
@@ -8,18 +9,8 @@ let _tokenExpiry = 0;
 
 async function getAccessToken() {
   if (_token && Date.now() < _tokenExpiry) return _token;
-
-  const privateKey = (process.env.FIREBASE_PRIVATE_KEY || '')
-    .replace(/\\n/g, '\n')
-    .replace(/^"|"$/g, '');
-
-  console.log('private key starts with:', privateKey.substring(0, 30));
-
   const auth = new GoogleAuth({
-    credentials: {
-      client_email: process.env.FIREBASE_CLIENT_EMAIL,
-      private_key: privateKey,
-    },
+    credentials: serviceAccount,
     scopes: ['https://www.googleapis.com/auth/datastore'],
   });
   const client = await auth.getClient();
