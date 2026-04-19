@@ -26,7 +26,9 @@ app.post('/webhook', async (req, res) => {
   console.log('from:', from, 'phone:', phone);
 
   try {
+    console.log('looking up household for phone:', phone);
     const householdId = await getHouseholdByPhone(phone);
+    console.log('householdId:', householdId);
     if (!householdId) {
       await sendReply(from, 'היי! לא מצאתי חשבון מקושר למספר הזה 🤔\nפתחי את כספית ← הגדרות ← בית, ורשמי את מספר הטלפון שלך.');
       return;
@@ -39,7 +41,9 @@ app.post('/webhook', async (req, res) => {
     if (numMedia > 0 && mediaUrl && mediaType?.startsWith('image/')) {
       parsed = await parseReceiptImage(mediaUrl, mediaType, customCategories, today);
     } else if (body) {
+      console.log('parsing message:', body);
       parsed = await parseMessage(body, customCategories, today);
+      console.log('parsed:', JSON.stringify(parsed));
     } else {
       await sendReply(from, 'שלחי לי הודעת טקסט או תמונה של קבלה 📸');
       return;
