@@ -64,26 +64,53 @@ export default function App() {
     onDelete: setDeleteId,
   };
 
+  const navItems = [
+    { key: 'dashboard', icon: '🏠', label: 'בית' },
+    { key: 'entries',   icon: '📋', label: 'פעולות' },
+    { key: 'breakeven', icon: '⚖️', label: 'נקודת איזון' },
+    { key: 'insights',  icon: '📈', label: 'תובנות' },
+    { key: 'settings',  icon: '⚙️', label: 'הגדרות' },
+  ];
+
   return (
     <>
-      <Header
-        user={user}
-        currentMonth={currentMonth}
-        currentYear={currentYear}
-        onMonthChange={(m, y) => { setCurrentMonth(m); setCurrentYear(y); }}
-      />
+      <nav className="desktop-sidebar">
+        <div className="desktop-sidebar-title">כספית ✦</div>
+        {navItems.map((item) => (
+          <button
+            key={item.key}
+            className={`desktop-sidebar-item${page === item.key ? ' active' : ''}`}
+            onClick={() => setPage(item.key)}
+            style={{ background: 'none', border: 'none', fontFamily: 'Heebo,sans-serif', width: '100%', textAlign: 'right' }}
+          >
+            <span>{item.icon}</span> {item.label}
+          </button>
+        ))}
+        <div style={{ marginTop: 'auto', paddingTop: 16, borderTop: '1px solid var(--border)', fontSize: 13, color: 'var(--text3)' }}>
+          {user?.displayName}
+        </div>
+      </nav>
 
-      {page === 'dashboard' && <Dashboard {...pageProps} />}
-      {page === 'entries'   && <Entries   {...pageProps} />}
-      {page === 'breakeven' && <Breakeven {...pageProps} />}
-      {page === 'insights'  && <Insights  {...pageProps} />}
-      {page === 'settings'  && <Settings  {...pageProps} />}
+      <div className="app-shell">
+        <Header
+          user={user}
+          currentMonth={currentMonth}
+          currentYear={currentYear}
+          onMonthChange={(m, y) => { setCurrentMonth(m); setCurrentYear(y); }}
+        />
 
-      <BottomNav activePage={page} onNavigate={setPage} />
+        {page === 'dashboard' && <Dashboard {...pageProps} />}
+        {page === 'entries'   && <Entries   {...pageProps} />}
+        {page === 'breakeven' && <Breakeven {...pageProps} />}
+        {page === 'insights'  && <Insights  {...pageProps} />}
+        {page === 'settings'  && <Settings  {...pageProps} />}
 
-      <button className="fab" onClick={() => setModalOpen(true)}>
-        <span>+</span> הוסיפי פעולה
-      </button>
+        <BottomNav activePage={page} onNavigate={setPage} />
+
+        <button className="fab" onClick={() => setModalOpen(true)}>
+          <span>+</span> הוסיפי פעולה
+        </button>
+      </div>
 
       <AddEntryModal
         open={modalOpen || !!editEntry}
