@@ -1,0 +1,31 @@
+{
+  "name": "כספית",
+  "short_name": "כספית",
+  "description": "ניהול תקציב משפחתי",
+  "start_url": "/kaspit/",
+  "scope": "/kaspit/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f0f14",
+  "theme_color": "#7c6af7",
+  "lang": "he",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "/kaspit/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/kaspit/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/kaspit/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
