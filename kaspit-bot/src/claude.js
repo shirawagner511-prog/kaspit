@@ -81,10 +81,11 @@ ${catList}
 - מתנה / פרח / כרטיס ברכה → gifts`;
 }
 
-export async function parseMessage(text, customCategories = [], today = null) {
+export async function parseMessage(text, customCategories = [], today = null, apiKey = null) {
   const todayStr = today || new Date().toISOString().split('T')[0];
+  const claude = apiKey ? new Anthropic({ apiKey }) : client;
 
-  const response = await client.messages.create({
+  const response = await claude.messages.create({
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 1024,
     system: buildSystemPrompt(customCategories),
@@ -100,8 +101,9 @@ export async function parseMessage(text, customCategories = [], today = null) {
   return JSON.parse(raw);
 }
 
-export async function parseReceiptImage(imageUrl, mediaType, customCategories = [], today = null) {
+export async function parseReceiptImage(imageUrl, mediaType, customCategories = [], today = null, apiKey = null) {
   const todayStr = today || new Date().toISOString().split('T')[0];
+  const claude = apiKey ? new Anthropic({ apiKey }) : client;
 
   // Fetch image and convert to base64
   const imgResponse = await fetch(imageUrl, {
@@ -110,7 +112,7 @@ export async function parseReceiptImage(imageUrl, mediaType, customCategories = 
   const buffer = await imgResponse.arrayBuffer();
   const base64 = Buffer.from(buffer).toString('base64');
 
-  const response = await client.messages.create({
+  const response = await claude.messages.create({
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 1024,
     system: buildSystemPrompt(customCategories),

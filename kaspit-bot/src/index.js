@@ -27,10 +27,17 @@ app.post('/webhook', async (req, res) => {
 
   try {
     console.log('looking up household for phone:', phone);
-    const householdId = await getHouseholdByPhone(phone);
-    console.log('householdId:', householdId);
-    if (!householdId) {
-      await sendReply(from, 'היי! לא מצאתי חשבון מקושר למספר הזה 🤔\nפתחי את כספית ← הגדרות ← בית, ורשמי את מספר הטלפון שלך.');
+    const userData = await getHouseholdByPhone(phone);
+    console.log('userData:', userData);
+    if (!userData) {
+      await sendReply(from, 'היי! לא מצאתי חשבון מקושר למספר הזה 🤔\nפתחי את כספית ← הגדרות ← 🤖 קיקי, ורשמי את מספר הטלפון שלך.');
+      return;
+    }
+
+    const { householdId, anthropicApiKey } = userData;
+
+    if (!anthropicApiKey) {
+      await sendReply(from, 'היי! כדי שקיקי תעבוד צריך מפתח API אישי 🔑\nפתחי את כספית ← הגדרות ← 🤖 קיקי ← עקבי אחרי ההוראות.');
       return;
     }
 
@@ -39,10 +46,10 @@ app.post('/webhook', async (req, res) => {
 
     let parsed;
     if (numMedia > 0 && mediaUrl && mediaType?.startsWith('image/')) {
-      parsed = await parseReceiptImage(mediaUrl, mediaType, customCategories, today);
+      parsed = await parseReceiptImage(mediaUrl, mediaType, customCategories, today, anthropicApiKey);
     } else if (body) {
       console.log('parsing message:', body);
-      parsed = await parseMessage(body, customCategories, today);
+      parsed = await parseMessage(body, customCategories, today, anthropicApiKey);
       console.log('parsed:', JSON.stringify(parsed));
     } else {
       await sendReply(from, 'שלחי לי הודעת טקסט או תמונה של קבלה 📸');

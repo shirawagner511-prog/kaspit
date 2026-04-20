@@ -62,7 +62,8 @@ export async function getHouseholdByPhone(phone) {
   const data = await res.json();
   console.log('query result:', JSON.stringify(data?.[0]));
   if (!data[0]?.document) return null;
-  return fromFields(data[0].document.fields).householdId || null;
+  const fields = fromFields(data[0].document.fields);
+  return fields.householdId ? { householdId: fields.householdId, anthropicApiKey: fields.anthropicApiKey || null } : null;
 }
 
 export async function addEntryToFirestore(householdId, entry, addedBy) {

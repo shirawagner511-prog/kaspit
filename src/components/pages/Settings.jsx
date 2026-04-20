@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getHousehold, saveCustomCategories, saveBudgets, saveSavingsGoal, saveUserPhone } from '../../firebase/db';
+import { getHousehold, saveCustomCategories, saveBudgets, saveSavingsGoal, saveUserPhone, saveUserApiKey } from '../../firebase/db';
 import { DEFAULT_CATEGORIES } from '../../utils/constants';
 import { formatAmount } from '../../utils/format';
 
@@ -15,6 +15,8 @@ export default function Settings({ entries, householdId, user, customCategories,
   const [section, setSection] = useState('household');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [phoneSaved, setPhoneSaved] = useState(false);
+  const [apiKey, setApiKey] = useState('');
+  const [apiKeySaved, setApiKeySaved] = useState(false);
 
   useEffect(() => {
     if (householdId) getHousehold(householdId).then(setHousehold).catch(console.error);
@@ -77,6 +79,16 @@ export default function Settings({ entries, householdId, user, customCategories,
   }
 
   const expenseCategories = allCategories.filter((c) => !['income', 'savings'].includes(c.value));
+
+  async function handleSaveApiKey() {
+    if (!apiKey.trim()) return;
+    setSaving(true);
+    try {
+      await saveUserApiKey(user.uid, apiKey.trim());
+      setApiKeySaved(true);
+      setTimeout(() => setApiKeySaved(false), 3000);
+    } finally { setSaving(false); }
+  }
 
   async function handleSavePhone() {
     if (!phoneNumber.trim()) return;
@@ -166,7 +178,41 @@ export default function Settings({ entries, householdId, user, customCategories,
             </button>
           </div>
           <div className="be-card" style={{ marginTop: 12 }}>
-            <div className="be-title" style={{ marginBottom: 10 }}>איך מתחילים?</div>
+            <div className="be-title" style={{ marginBottom: 10 }}>🔑 מפתח API אישי (חובה לשימוש בקיקי)</div>
+            <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 12, lineHeight: 1.7 }}>
+              קיקי עובדת עם Claude AI. כל משתמש צריך מפתח API אישי — חינמי לחלוטין ל-3-6 חודשים.
+            </div>
+            {[
+              { n: '1', t: 'כנסי לאתר', link: 'console.anthropic.com', url: 'https://console.anthropic.com' },
+              { n: '2', t: 'לחצי "Sign up" → הירשמי עם מייל' },
+              { n: '3', t: 'אחרי הכניסה: לחצי על "API Keys" בתפריט השמאלי' },
+              { n: '4', t: 'לחצי "Create Key" → העתיקי את המפתח (מתחיל ב-sk-ant-)' },
+              { n: '5', t: 'הדביקי אותו כאן למטה ושמרי' },
+            ].map((s) => (
+              <div key={s.n} className="be-row" style={{ alignItems: 'flex-start', gap: 12, paddingTop: 8, paddingBottom: 8 }}>
+                <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--accent)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0, marginTop: 2 }}>{s.n}</div>
+                <div style={{ fontSize: 13, color: 'var(--text2)' }}>
+                  {s.t}{s.url && <> — <a href={s.url} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)' }}>{s.link}</a></>}
+                </div>
+              </div>
+            ))}
+            <div className="form-group" style={{ marginTop: 12 }}>
+              <input
+                className="form-input"
+                dir="ltr"
+                placeholder="sk-ant-..."
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                type="password"
+              />
+            </div>
+            <button className="submit-btn" onClick={handleSaveApiKey} disabled={saving || !apiKey.trim()}>
+              {apiKeySaved ? '✓ נשמר!' : saving ? 'שומרת...' : 'שמרי מפתח ✦'}
+            </button>
+          </div>
+
+          <div className="be-card" style={{ marginTop: 12 }}>
+            <div className="be-title" style={{ marginBottom: 10 }}>איך מתחילים עם קיקי?</div>
             {[
               { n: '1', t: 'שמרי את מספר קיקי בוואטסאפ' },
               { n: '2', t: 'רשמי כאן את מספר הטלפון שלך' },
