@@ -1,27 +1,27 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { signOut, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth, googleProvider } from '../../firebase/config';
-import { MONTHS_HE } from '../../utils/constants';
+import { getMonths } from '../../utils/constants';
 import { RefreshCw, LogOut } from 'lucide-react';
 
-function buildMonthOptions() {
-  const options = [];
-  const now = new Date();
-  const startYear = now.getFullYear() - 3;
-  const endYear = now.getFullYear() + 1;
-  for (let y = endYear; y >= startYear; y--) {
-    const mEnd = y === endYear ? now.getMonth() + 1 : 11;
-    for (let m = mEnd; m >= 0; m--) {
-      options.push({ month: m, year: y, label: `${MONTHS_HE[m]} ${y}` });
-    }
-  }
-  return options;
-}
-
-const MONTH_OPTIONS = buildMonthOptions();
-
 export default function Header({ user, currentMonth, currentYear, onMonthChange }) {
+  const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const months = getMonths(t);
+  const MONTH_OPTIONS = useMemo(() => {
+    const options = [];
+    const now = new Date();
+    const startYear = now.getFullYear() - 3;
+    const endYear = now.getFullYear() + 1;
+    for (let y = endYear; y >= startYear; y--) {
+      const mEnd = y === endYear ? now.getMonth() + 1 : 11;
+      for (let m = mEnd; m >= 0; m--) {
+        options.push({ month: m, year: y, label: `${months[m]} ${y}` });
+      }
+    }
+    return options;
+  }, [months]);
   const menuRef = useRef(null);
   const value = `${currentYear}-${currentMonth}`;
 
@@ -88,7 +88,7 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange 
                   fontFamily: 'DM Sans,Heebo,sans-serif', display: 'flex', alignItems: 'center', gap: 8,
                 }}
               >
-                <RefreshCw size={14} /> החלף משתמש
+                <RefreshCw size={14} /> {t('header.switchUser')}
               </button>
               <button
                 onClick={() => { setMenuOpen(false); signOut(auth); }}
@@ -99,7 +99,7 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange 
                   fontFamily: 'DM Sans,Heebo,sans-serif', display: 'flex', alignItems: 'center', gap: 8,
                 }}
               >
-                <LogOut size={14} /> יציאה מהחשבון
+                <LogOut size={14} /> {t('header.signOut')}
               </button>
             </div>
           )}

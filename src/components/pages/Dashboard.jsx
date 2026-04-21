@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { addEntry } from '../../firebase/db';
 import EntryItem from '../shared/EntryItem';
-import { MONTHS_HE } from '../../utils/constants';
+import { getMonths } from '../../utils/constants';
 import { formatAmount, getMonthEntries } from '../../utils/format';
 
 const PIE_COLORS = [
@@ -56,6 +57,8 @@ function computeSmartFixed(entries) {
 }
 
 export default function Dashboard({ entries, currentMonth, currentYear, householdId, user, onEdit, onDelete, allCategories = [], budgets = {}, savingsGoal = null }) {
+  const { t } = useTranslation();
+  const months = getMonths(t);
   const catMap = Object.fromEntries(allCategories.map((c) => [c.value, c]));
   const getIcon = (cat) => catMap[cat?.toLowerCase()]?.icon || catMap[cat]?.icon || '📦';
   const getName = (cat) => catMap[cat?.toLowerCase()]?.label || catMap[cat]?.label || cat;
@@ -137,7 +140,7 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
       )}
 
       <div className="summary-card">
-        <div className="label">יתרה — {MONTHS_HE[currentMonth]}</div>
+        <div className="label">{t('dashboard.balance')} — {months[currentMonth]}</div>
         <div className={`amount ${balance >= 0 ? 'green' : 'red'}`}>
           {balance < 0 ? '−' : ''}{formatAmount(balance)}
         </div>

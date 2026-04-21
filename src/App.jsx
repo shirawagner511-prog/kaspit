@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getRedirectResult } from 'firebase/auth';
 import { auth } from './firebase/config';
 import { useAuth } from './hooks/useAuth';
@@ -6,7 +7,7 @@ import { useEntries } from './hooks/useEntries';
 import { useHousehold } from './hooks/useHousehold';
 import { useAutoRecurring } from './hooks/useAutoRecurring';
 import { deleteEntry } from './firebase/db';
-import { DEFAULT_CATEGORIES } from './utils/constants';
+import { getDefaultCategories } from './utils/constants';
 
 import { LayoutDashboard, ListOrdered, Scale, TrendingUp, FolderInput, Settings as SettingsIcon } from 'lucide-react';
 import LoginScreen from './components/auth/LoginScreen';
@@ -23,13 +24,15 @@ import Settings from './components/pages/Settings';
 import ImportCSV from './components/pages/ImportCSV';
 
 export default function App() {
+  const { t, i18n } = useTranslation();
   const { user, householdId, setHouseholdId, loading } = useAuth();
   const entries = useEntries(householdId);
   const { budgets, savingsGoal, customCategories } = useHousehold(householdId);
 
+  const defaultCategories = getDefaultCategories(t);
   const allCategories = [
-    ...DEFAULT_CATEGORIES,
-    ...customCategories.filter((c) => !DEFAULT_CATEGORIES.some((d) => d.value === c.value)),
+    ...defaultCategories,
+    ...customCategories.filter((c) => !defaultCategories.some((d) => d.value === c.value)),
   ];
 
   const [page, setPage] = useState('dashboard');
@@ -43,11 +46,17 @@ export default function App() {
     getRedirectResult(auth).catch((e) => console.error('Redirect error:', e));
   }, []);
 
+  useEffect(() => {
+    const dir = i18n.language === 'he' ? 'rtl' : 'ltr';
+    document.documentElement.setAttribute('dir', dir);
+    document.documentElement.setAttribute('lang', i18n.language);
+  }, [i18n.language]);
+
   async function handleDeleteConfirmed() {
     try {
       await deleteEntry(householdId, deleteId);
     } catch (e) {
-      alert('שגיאה במחיקה: ' + e.message);
+      alert(t('misc.errorDelete') + e.message);
     } finally {
       setDeleteId(null);
     }
@@ -67,12 +76,12 @@ export default function App() {
   };
 
   const navItems = [
-    { key: 'dashboard', Icon: LayoutDashboard, label: 'ראשי' },
-    { key: 'entries',   Icon: ListOrdered,     label: 'פעולות' },
-    { key: 'breakeven', Icon: Scale,           label: 'נקודת איזון' },
-    { key: 'insights',  Icon: TrendingUp,      label: 'תובנות' },
-    { key: 'import',    Icon: FolderInput,     label: 'ייבוא CSV' },
-    { key: 'settings',  Icon: SettingsIcon,    label: 'הגדרות' },
+    { key: 'dashboard', Icon: LayoutDashboard, label: t('nav.dashboard') },
+    { key: 'entries',   Icon: ListOrdered,     label: t('nav.entries') },
+    { key: 'breakeven', Icon: Scale,           label: t('nav.breakeven') },
+    { key: 'insights',  Icon: TrendingUp,      label: t('nav.insights') },
+    { key: 'import',    Icon: FolderInput,     label: 'CSV' },
+    { key: 'settings',  Icon: SettingsIcon,    label: t('nav.settings') },
   ];
 
   return (
@@ -115,7 +124,7 @@ export default function App() {
         <BottomNav activePage={page} onNavigate={setPage} />
 
         <button className="fab" onClick={() => setModalOpen(true)}>
-          <span>+</span> הוסיפי פעולה
+          <span>+</span> {t('dashboard.addEntry')}
         </button>
       </div>
 
@@ -131,7 +140,7 @@ export default function App() {
 
       <ConfirmDialog
         open={!!deleteId}
-        message="למחוק את הפעולה?"
+        message={t('misc.confirmDelete')}
         onConfirm={handleDeleteConfirmed}
         onCancel={() => setDeleteId(null)}
       />

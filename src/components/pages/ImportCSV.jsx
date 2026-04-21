@@ -1,36 +1,10 @@
 import { useState, useRef } from 'react';
 import { addEntry } from '../../firebase/db';
 import { formatAmount } from '../../utils/format';
+import { CATEGORY_VALUES } from '../../utils/constants';
 
-const DEFAULT_CATEGORIES = [
-  { value: 'groceries', label: 'מכולת וסופר' },
-  { value: 'restaurants', label: 'מסעדות וקפה' },
-  { value: 'transport', label: 'תחבורה' },
-  { value: 'fuel', label: 'דלק' },
-  { value: 'health', label: 'בריאות ורפואה' },
-  { value: 'pharma', label: 'בית מרקחת' },
-  { value: 'fashion', label: 'ביגוד והנעלה' },
-  { value: 'home', label: 'בית וריהוט' },
-  { value: 'education', label: 'חינוך' },
-  { value: 'kids', label: 'ילדים' },
-  { value: 'entertainment', label: 'בילויים ופנאי' },
-  { value: 'subscriptions', label: 'מנויים ואינטרנט' },
-  { value: 'insurance', label: 'ביטוחים' },
-  { value: 'electricity', label: 'חשמל ומים' },
-  { value: 'rent', label: 'שכירות ומשכנתא' },
-  { value: 'gifts', label: 'מתנות' },
-  { value: 'travel', label: 'נסיעות וחופשות' },
-  { value: 'other', label: 'אחר' },
-  { value: 'income', label: 'הכנסה' },
-  { value: 'savings', label: 'חיסכון' },
-];
-
-async function parseCSVWithClaude(csvText, apiKey, existingEntries, customCategories) {
-  const allCats = [
-    ...DEFAULT_CATEGORIES,
-    ...customCategories.filter((c) => !DEFAULT_CATEGORIES.some((d) => d.value === c.value)),
-  ];
-  const catList = allCats.map((c) => `${c.value} = ${c.label}`).join('\n');
+async function parseCSVWithClaude(csvText, apiKey, existingEntries, allCategories) {
+  const catList = allCategories.map((c) => `${c.value} = ${c.label}`).join('\n');
 
   const existingSummary = existingEntries.slice(0, 200).map((e) =>
     `${e.date}|${e.amount}|${e.name}`
@@ -106,7 +80,7 @@ export default function ImportCSV({ entries, householdId, user, customCategories
 
     try {
       const text = await file.text();
-      const transactions = await parseCSVWithClaude(text, userApiKey || import.meta.env.VITE_ANTHROPIC_API_KEY, entries, customCategories);
+      const transactions = await parseCSVWithClaude(text, userApiKey || import.meta.env.VITE_ANTHROPIC_API_KEY, entries, allCategories);
 
       // Pre-select all non-duplicates
       const sel = {};

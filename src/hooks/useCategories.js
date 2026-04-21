@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config';
-import { DEFAULT_CATEGORIES } from '../utils/constants';
+import { CATEGORY_VALUES } from '../utils/constants';
 
 export function useCategories(householdId) {
   const [customCategories, setCustomCategories] = useState([]);
@@ -16,10 +16,5 @@ export function useCategories(householdId) {
     return unsubscribe;
   }, [householdId]);
 
-  const allCategories = [
-    ...DEFAULT_CATEGORIES,
-    ...customCategories.filter((c) => !DEFAULT_CATEGORIES.some((d) => d.value === c.value)),
-  ];
-
-  return { allCategories, customCategories };
+  return { customCategories };
 }

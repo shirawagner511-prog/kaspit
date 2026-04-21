@@ -1,4 +1,5 @@
-import { MONTHS_HE } from '../../utils/constants';
+import { useTranslation } from 'react-i18next';
+import { getMonths } from '../../utils/constants';
 import { formatAmount, getMonthEntries } from '../../utils/format';
 
 function computeTrends(entries, currentMonth, currentYear) {
@@ -18,26 +19,28 @@ function computeTrends(entries, currentMonth, currentYear) {
 }
 
 export default function Insights({ entries, currentMonth, currentYear, allCategories = [] }) {
+  const { t } = useTranslation();
+  const months = getMonths(t);
   const catMap = Object.fromEntries(allCategories.map((c) => [c.value, c]));
   const getIcon = (cat) => catMap[cat?.toLowerCase()]?.icon || catMap[cat]?.icon || '📦';
   const getName = (cat) => catMap[cat?.toLowerCase()]?.label || catMap[cat]?.label || cat;
   const trends = computeTrends(entries, currentMonth, currentYear);
-  const prevLabel = currentMonth === 0 ? MONTHS_HE[11] : MONTHS_HE[currentMonth - 1];
+  const prevLabel = currentMonth === 0 ? months[11] : months[currentMonth - 1];
 
   const monthTotals = [];
   for (let i = 5; i >= 0; i--) {
     let m = currentMonth - i, y = currentYear;
     if (m < 0) { m += 12; y--; }
     const tot = getMonthEntries(entries, m, y).filter((e) => e.type !== 'income').reduce((s, e) => s + e.amount, 0);
-    monthTotals.push({ label: MONTHS_HE[m].slice(0, 3), total: tot, isCurrent: m === currentMonth && y === currentYear });
+    monthTotals.push({ label: months[m].slice(0, 3), total: tot, isCurrent: m === currentMonth && y === currentYear });
   }
   const maxTotal = Math.max(...monthTotals.map((m) => m.total), 1);
 
   return (
     <div className="page">
-      <div className="section-title">📊 מגמות הוצאות</div>
+      <div className="section-title">{t('insights.title')}</div>
       <div className="alert info">
-        השוואה בין {MONTHS_HE[currentMonth]} ל-{prevLabel}
+        {months[currentMonth]} / {prevLabel}
       </div>
 
       {trends.length === 0 ? (

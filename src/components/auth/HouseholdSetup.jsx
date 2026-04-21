@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { createHousehold, joinHousehold } from '../../firebase/db';
 
 export default function HouseholdSetup({ user, onComplete }) {
-  const [step, setStep] = useState('choose'); // 'choose' | 'created' | 'join'
+  const { t } = useTranslation();
+  const [step, setStep] = useState('choose');
   const [inviteCode, setInviteCode] = useState('');
   const [joinCode, setJoinCode] = useState('');
   const [error, setError] = useState('');
@@ -17,7 +19,7 @@ export default function HouseholdSetup({ user, onComplete }) {
       setStep('created');
       onComplete(householdId);
     } catch (e) {
-      setError('שגיאה ביצירת הבית: ' + e.message);
+      setError(t('household.errorCreate') + e.message);
     } finally {
       setLoading(false);
     }
@@ -31,7 +33,7 @@ export default function HouseholdSetup({ user, onComplete }) {
       const householdId = await joinHousehold(user, joinCode);
       onComplete(householdId);
     } catch (e) {
-      setError(e.message || 'שגיאה בהצטרפות');
+      setError(e.message || t('household.errorJoin'));
     } finally {
       setLoading(false);
     }
@@ -41,15 +43,15 @@ export default function HouseholdSetup({ user, onComplete }) {
     return (
       <div className="household-screen">
         <div style={{ fontSize: 48 }}>🏠</div>
-        <h2>ברוכים הבאים ל-BUDGI</h2>
-        <p>צרי בית משותף חדש או הצטרפי לבית קיים עם קוד ההזמנה של בן/בת הזוג</p>
+        <h2>{t('household.welcome')}</h2>
+        <p>{t('household.chooseDesc')}</p>
         <div className="household-actions">
           <button className="btn-primary" onClick={handleCreate} disabled={loading}>
-            {loading ? 'יוצרת...' : '✦ צרי בית חדש'}
+            {loading ? t('household.creating') : t('household.create')}
           </button>
-          <div className="divider">— או —</div>
+          <div className="divider">{t('household.or')}</div>
           <button className="btn-secondary" onClick={() => setStep('join')}>
-            הצטרפי לבית קיים
+            {t('household.join')}
           </button>
         </div>
         {error && <div className="login-error">{error}</div>}
@@ -61,15 +63,15 @@ export default function HouseholdSetup({ user, onComplete }) {
     return (
       <div className="household-screen">
         <div style={{ fontSize: 48 }}>🎉</div>
-        <h2>הבית נוצר!</h2>
-        <p>שלחי את קוד ההזמנה לבן/בת הזוג כדי שיצטרפו</p>
+        <h2>{t('household.created')}</h2>
+        <p>{t('household.createdDesc')}</p>
         <div className="invite-code-display">
-          <p>קוד ההזמנה שלך</p>
+          <p>{t('household.inviteLabel')}</p>
           <div className="code">{inviteCode}</div>
-          <p>הם יכנסו לאפליקציה ויבחרו "הצטרפי לבית קיים"</p>
+          <p>{t('household.inviteHint')}</p>
         </div>
         <p style={{ fontSize: 13, color: 'var(--text2)', textAlign: 'center' }}>
-          הכניסה לאפליקציה תתחיל אוטומטית
+          {t('household.autoLogin')}
         </p>
       </div>
     );
@@ -79,12 +81,12 @@ export default function HouseholdSetup({ user, onComplete }) {
     return (
       <div className="household-screen">
         <div style={{ fontSize: 48 }}>🔑</div>
-        <h2>הצטרפי לבית קיים</h2>
-        <p>בקשי מבן/בת הזוג את קוד ההזמנה שלהם</p>
+        <h2>{t('household.joinTitle')}</h2>
+        <p>{t('household.joinDesc')}</p>
         <div className="join-form">
           <input
             className="form-input"
-            placeholder="הכניסי קוד (לדוגמא: ABC123)"
+            placeholder={t('household.joinPlaceholder')}
             value={joinCode}
             onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
             maxLength={6}
@@ -92,10 +94,10 @@ export default function HouseholdSetup({ user, onComplete }) {
           />
           {error && <div className="login-error">{error}</div>}
           <button className="btn-primary" onClick={handleJoin} disabled={loading || !joinCode.trim()}>
-            {loading ? 'מצטרפת...' : 'הצטרפי'}
+            {loading ? t('household.joining') : t('household.joinBtn')}
           </button>
           <button className="btn-secondary" onClick={() => { setStep('choose'); setError(''); }}>
-            חזרה
+            {t('household.back')}
           </button>
         </div>
       </div>

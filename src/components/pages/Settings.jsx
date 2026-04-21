@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getHousehold, getHouseholdMembers, getUserData, saveCustomCategories, saveBudgets, saveSavingsGoal, saveUserPhone, saveHouseholdApiKey, updateEntry } from '../../firebase/db';
-import { DEFAULT_CATEGORIES } from '../../utils/constants';
+import { CATEGORY_VALUES } from '../../utils/constants';
 import { formatAmount } from '../../utils/format';
 
 export default function Settings({ entries, householdId, user, customCategories, allCategories, budgets = {}, savingsGoal = null }) {
+  const { t, i18n } = useTranslation();
   const [household, setHousehold] = useState(null);
   const [members, setMembers] = useState([]);
   const [newCatName, setNewCatName] = useState('');
@@ -207,6 +209,22 @@ export default function Settings({ entries, householdId, user, customCategories,
             </div>
             <div className="si-arrow">›</div>
           </button>
+          <div className="section-title">{t('settings.language')}</div>
+          <div className="be-card" style={{ display: 'flex', gap: 8 }}>
+            {[{ code: 'he', label: 'עברית' }, { code: 'en', label: 'English' }].map(({ code, label }) => (
+              <button
+                key={code}
+                onClick={() => { i18n.changeLanguage(code); localStorage.setItem('budgi-lang', code); }}
+                style={{
+                  flex: 1, padding: '10px 0', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                  background: i18n.language === code ? 'var(--accent)' : 'var(--surface2)',
+                  color: i18n.language === code ? 'white' : 'var(--text2)',
+                  border: '1px solid ' + (i18n.language === code ? 'var(--accent)' : 'var(--border)'),
+                  fontFamily: 'DM Sans, Heebo, sans-serif',
+                }}
+              >{label}</button>
+            ))}
+          </div>
         </>
       )}
 

@@ -1,14 +1,15 @@
+import { useTranslation } from 'react-i18next';
 import { LayoutDashboard, ListOrdered, Scale, TrendingUp, Settings } from 'lucide-react';
 
-const TABS = [
-  { id: 'dashboard', Icon: LayoutDashboard, label: 'ראשי' },
-  { id: 'entries',   Icon: ListOrdered,     label: 'פעולות' },
-  { id: 'breakeven', Icon: Scale,           label: 'תחשיב' },
-  { id: 'insights',  Icon: TrendingUp,      label: 'מגמות' },
-  { id: 'settings',  Icon: Settings,        label: 'הגדרות' },
-];
-
 export default function BottomNav({ activePage, onNavigate }) {
+  const { t } = useTranslation();
+  const TABS = [
+    { id: 'dashboard', Icon: LayoutDashboard, label: t('nav.dashboard') },
+    { id: 'entries',   Icon: ListOrdered,     label: t('nav.entries') },
+    { id: 'breakeven', Icon: Scale,           label: t('nav.breakeven') },
+    { id: 'insights',  Icon: TrendingUp,      label: t('nav.insights') },
+    { id: 'settings',  Icon: Settings,        label: t('nav.settings') },
+  ];
   return (
     <nav className="bottom-nav">
       {TABS.map(({ id, Icon, label }) => (

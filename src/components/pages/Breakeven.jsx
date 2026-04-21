@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Clock } from 'lucide-react';
-import { MONTHS_HE } from '../../utils/constants';
+import { getMonths } from '../../utils/constants';
 import { formatAmount } from '../../utils/format';
 
 function buildRecurringSummary(entries, currentMonth, currentYear) {
@@ -31,6 +32,8 @@ function buildRecurringSummary(entries, currentMonth, currentYear) {
 }
 
 export default function Breakeven({ entries, currentMonth, currentYear, allCategories = [] }) {
+  const { t } = useTranslation();
+  const months = getMonths(t);
   const [isSep, setIsSep] = useState(false);
   const catMap = Object.fromEntries(allCategories.map((c) => [c.value, c]));
   const getIcon = (cat) => catMap[cat]?.icon || '📦';
@@ -71,7 +74,7 @@ export default function Breakeven({ entries, currentMonth, currentYear, allCateg
 
   return (
     <div className="page">
-      <div className="section-title">סיכום הוצאות קבועות — {MONTHS_HE[currentMonth]}</div>
+      <div className="section-title">{t('breakeven.title')} — {months[currentMonth]}</div>
 
       {fixedIncome.length > 0 && (
         <div className="be-card">
@@ -218,7 +221,7 @@ export default function Breakeven({ entries, currentMonth, currentYear, allCateg
 
       {monthIncome > 0 && (
         <div className="be-card" style={{ marginTop: 14 }}>
-          <div className="be-title">📊 {MONTHS_HE[currentMonth]} — מצב עכשווי</div>
+          <div className="be-title">📊 {months[currentMonth]}</div>
           <div className="be-row">
             <div className="name">הכנסה</div>
             <div className="val" style={{ color: 'var(--accent2)' }}>{formatAmount(monthIncome)}</div>

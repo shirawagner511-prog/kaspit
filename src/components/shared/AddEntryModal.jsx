@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { addEntry, updateEntry, saveCustomCategories } from '../../firebase/db';
-import { DEFAULT_CATEGORIES } from '../../utils/constants';
+import { CATEGORY_VALUES } from '../../utils/constants';
 
 const INCOME_CATEGORIES = ['income', 'other'];
 const SAVING_CATEGORIES = ['savings', 'other'];
@@ -31,15 +31,15 @@ function getDefaultCategory(type) {
 
 function filterCategories(allCategories, type) {
   if (type === 'income') {
-    return allCategories.filter((c) => INCOME_CATEGORIES.includes(c.value) || !DEFAULT_CATEGORIES.some((d) => d.value === c.value));
+    return allCategories.filter((c) => INCOME_CATEGORIES.includes(c.value) || !CATEGORY_VALUES.includes(c.value));
   }
   if (type === 'saving') {
-    return allCategories.filter((c) => SAVING_CATEGORIES.includes(c.value) || !DEFAULT_CATEGORIES.some((d) => d.value === c.value));
+    return allCategories.filter((c) => SAVING_CATEGORIES.includes(c.value) || !CATEGORY_VALUES.includes(c.value));
   }
   return allCategories.filter((c) => !['income', 'savings'].includes(c.value));
 }
 
-export default function AddEntryModal({ open, onClose, householdId, user, entry, allCategories = DEFAULT_CATEGORIES, customCategories = [] }) {
+export default function AddEntryModal({ open, onClose, householdId, user, entry, allCategories = [], customCategories = [] }) {
   const isEdit = !!entry;
 
   const [type, setType] = useState('expense');
