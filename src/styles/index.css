@@ -130,9 +130,13 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
   padding: 40px 24px;
   text-align: center;
   gap: 20px;
+  box-sizing: border-box;
 }
 .login-logo {
   font-family: 'Lora', Georgia, serif;
@@ -185,8 +189,12 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
   padding: 40px 24px;
   gap: 16px;
+  box-sizing: border-box;
 }
 .household-screen h2 {
   font-family: 'Lora', serif;
