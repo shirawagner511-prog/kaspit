@@ -169,7 +169,7 @@ export default function Settings({ entries, householdId, user, customCategories,
                     {(m.displayName || m.email || '?').charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <div style={{ fontSize: 14, color: 'var(--text)' }}>{m.displayName || m.email || m.uid}</div>
+                    <div style={{ fontSize: 14, color: 'var(--text)' }}>{m.displayName || m.email || 'משתמש'}</div>
                     {m.email && m.displayName && <div style={{ fontSize: 11, color: 'var(--text3)' }}>{m.email}</div>}
                   </div>
                 </div>
