@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { CheckCircle2, Clock } from 'lucide-react';
 import { MONTHS_HE } from '../../utils/constants';
 import { formatAmount } from '../../utils/format';
 
@@ -83,7 +84,7 @@ export default function Breakeven({ entries, currentMonth, currentYear, allCateg
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <div className="val" style={{ color: 'var(--accent2)' }}>+{formatAmount(r.avgAmount)}</div>
-                <span style={{ fontSize: 14 }}>{r.paidThisMonth ? '✅' : '⏳'}</span>
+                {r.paidThisMonth ? <CheckCircle2 size={16} color="var(--accent)" /> : <Clock size={16} color="var(--text3)" />}
               </div>
             </div>
           ))}
@@ -105,7 +106,7 @@ export default function Breakeven({ entries, currentMonth, currentYear, allCateg
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <div className="val" style={{ color: 'var(--danger)' }}>−{formatAmount(r.avgAmount)}</div>
-                <span style={{ fontSize: 14 }}>{r.paidThisMonth ? '✅' : '⏳'}</span>
+                {r.paidThisMonth ? <CheckCircle2 size={16} color="var(--text3)" /> : <Clock size={16} color="var(--text3)" />}
               </div>
             </div>
           ))}
@@ -127,7 +128,7 @@ export default function Breakeven({ entries, currentMonth, currentYear, allCateg
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <div className="val" style={{ color: 'var(--danger)' }}>−{formatAmount(r.avgAmount / 2)}/חודש</div>
-                <span style={{ fontSize: 14 }}>{r.paidThisMonth ? '✅' : '⏳'}</span>
+                {r.paidThisMonth ? <CheckCircle2 size={16} color="var(--text3)" /> : <Clock size={16} color="var(--text3)" />}
               </div>
             </div>
           ))}
