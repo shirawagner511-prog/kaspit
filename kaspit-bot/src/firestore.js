@@ -63,7 +63,16 @@ export async function getHouseholdByPhone(phone) {
   console.log('query result:', JSON.stringify(data?.[0]));
   if (!data[0]?.document) return null;
   const fields = fromFields(data[0].document.fields);
-  return fields.householdId ? { householdId: fields.householdId, anthropicApiKey: fields.anthropicApiKey || null } : null;
+  if (!fields.householdId) return null;
+
+  // Read anthropicApiKey from the household doc (per-household key)
+  const token2 = await getAccessToken();
+  const hRes = await fetch(`${BASE}/households/${fields.householdId}`, {
+    headers: { Authorization: `Bearer ${token2}` },
+  });
+  const hData = await hRes.json();
+  const hFields = fromFields(hData.fields || {});
+  return { householdId: fields.householdId, anthropicApiKey: hFields.anthropicApiKey || null };
 }
 
 export async function addEntryToFirestore(householdId, entry, addedBy) {

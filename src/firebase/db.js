@@ -37,8 +37,8 @@ export async function saveUserPhone(uid, phoneNumber) {
   await setDoc(doc(db, 'users', uid), { phoneNumber }, { merge: true });
 }
 
-export async function saveUserApiKey(uid, anthropicApiKey) {
-  await setDoc(doc(db, 'users', uid), { anthropicApiKey }, { merge: true });
+export async function saveHouseholdApiKey(householdId, anthropicApiKey) {
+  await setDoc(doc(db, 'households', householdId), { anthropicApiKey }, { merge: true });
 }
 
 // ── Households ─────────────────────────────────────────

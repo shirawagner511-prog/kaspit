@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getHousehold, getHouseholdMembers, saveCustomCategories, saveBudgets, saveSavingsGoal, saveUserPhone, saveUserApiKey, updateEntry } from '../../firebase/db';
+import { getHousehold, getHouseholdMembers, saveCustomCategories, saveBudgets, saveSavingsGoal, saveUserPhone, saveHouseholdApiKey, updateEntry } from '../../firebase/db';
 import { DEFAULT_CATEGORIES } from '../../utils/constants';
 import { formatAmount } from '../../utils/format';
 
@@ -25,6 +25,7 @@ export default function Settings({ entries, householdId, user, customCategories,
     if (!householdId) return;
     getHousehold(householdId).then((h) => {
       setHousehold(h);
+      if (h?.anthropicApiKey) setApiKey(h.anthropicApiKey);
       if (h?.members?.length) getHouseholdMembers(h.members).then(setMembers).catch(console.error);
     }).catch(console.error);
   }, [householdId]);
@@ -107,7 +108,7 @@ export default function Settings({ entries, householdId, user, customCategories,
     if (!apiKey.trim()) return;
     setSaving(true);
     try {
-      await saveUserApiKey(user.uid, apiKey.trim());
+      await saveHouseholdApiKey(householdId, apiKey.trim());
       setApiKeySaved(true);
       setTimeout(() => setApiKeySaved(false), 3000);
     } finally { setSaving(false); }
