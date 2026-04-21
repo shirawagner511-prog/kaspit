@@ -3,26 +3,24 @@ import Anthropic from '@anthropic-ai/sdk';
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const DEFAULT_CATEGORIES = [
-  { value: 'groceries', label: 'מכולת וסופר' },
-  { value: 'restaurants', label: 'מסעדות וקפה' },
+  { value: 'housing',   label: 'דיור' },
+  { value: 'food',      label: 'מזון וסופר' },
   { value: 'transport', label: 'תחבורה' },
-  { value: 'fuel', label: 'דלק' },
-  { value: 'health', label: 'בריאות ורפואה' },
-  { value: 'pharma', label: 'בית מרקחת' },
-  { value: 'fashion', label: 'ביגוד והנעלה' },
-  { value: 'home', label: 'בית וריהוט' },
+  { value: 'kids',      label: 'ילדים' },
+  { value: 'health',    label: 'בריאות' },
   { value: 'education', label: 'חינוך' },
-  { value: 'kids', label: 'ילדים' },
-  { value: 'entertainment', label: 'בילויים ופנאי' },
-  { value: 'subscriptions', label: 'מנויים ואינטרנט' },
-  { value: 'insurance', label: 'ביטוחים' },
-  { value: 'electricity', label: 'חשמל ומים' },
-  { value: 'rent', label: 'שכירות ומשכנתא' },
-  { value: 'gifts', label: 'מתנות' },
-  { value: 'travel', label: 'נסיעות וחופשות' },
-  { value: 'other', label: 'אחר' },
-  { value: 'income', label: 'הכנסה' },
-  { value: 'savings', label: 'חיסכון' },
+  { value: 'clothing',  label: 'ביגוד' },
+  { value: 'dining',    label: 'מסעדות' },
+  { value: 'leisure',   label: 'פנאי ובילויים' },
+  { value: 'sport',     label: 'ספורט' },
+  { value: 'telecom',   label: 'תקשורת' },
+  { value: 'travel',    label: 'נסיעות' },
+  { value: 'shopping',  label: 'קניות' },
+  { value: 'insurance', label: 'ביטוח' },
+  { value: 'pets',      label: 'חיות מחמד' },
+  { value: 'savings',   label: 'חיסכון' },
+  { value: 'income',    label: 'הכנסה' },
+  { value: 'other',     label: 'אחר' },
 ];
 
 function buildSystemPrompt(customCategories) {
@@ -63,22 +61,21 @@ ${catList}
 - אם אין מספיק מידע → entries: [], reply: שאלה למשתמש
 
 מיפוי קטגוריות — חובה לעקוב:
-- סופר / מכולת / שוק / רמי לוי / שופרסל / ויקטורי / מגה / יינות ביתן / אושר עד → groceries
-- מסעדה / קפה / בית קפה / פיצה / סושי / מזון מהיר / וולט / טוויגי / wolt → restaurants
-- רכבת / אוטובוס / מונית / אובר / גט / תחבורה ציבורית → transport
-- דלק / סונול / פז / דור אלון / תחנת דלק → fuel
-- רופא / קופת חולים / תרופה / בית חולים / פיזיו / אופטיקה → health
-- בית מרקחת / סופר פארם / yes פארם → pharma
-- בגד / נעל / זארה / H&M / פוקס / אדידס / נייקי → fashion
-- איקאה / רהיט / כלי בית / שיפוץ / ממד / חשמל (מוצר) → home
-- שכירות / משכנתא / ארנונה / ועד בית → rent, fixed
-- חשמל / מים / גז / חברת חשמל → electricity, fixed
+- סופר / מכולת / שוק / רמי לוי / שופרסל / ויקטורי / מגה / יינות ביתן / אושר עד → food
+- מסעדה / קפה / בית קפה / פיצה / סושי / מזון מהיר / וולט / טוויגי / wolt → dining
+- רכבת / אוטובוס / מונית / אובר / גט / תחבורה ציבורית / דלק / סונול / פז → transport
+- רופא / קופת חולים / תרופה / בית חולים / פיזיו / אופטיקה / בית מרקחת / סופר פארם → health
+- בגד / נעל / זארה / H&M / פוקס / אדידס / נייקי / ביגוד / אופנה / fashion → clothing
+- איקאה / רהיט / כלי בית / שיפוץ / ממד → shopping
+- שכירות / משכנתא / ארנונה / ועד בית / חשמל / מים / גז / חברת חשמל → housing, fixed
 - ביטוח / מגדל / הראל / כלל / מנורה → insurance, fixed
-- נטפליקס / ספוטיפיי / אמזון / מנוי / אינטרנט / סלולר → subscriptions
+- נטפליקס / ספוטיפיי / אמזון / מנוי / אינטרנט / סלולר / פלאפון / HOT / yes → telecom
 - גן / בית ספר / חוג / צהרון / פעוטון → kids
-- קולנוע / כרטיס / בילוי / אטרקציה / ספורט / חדר כושר → entertainment
+- קולנוע / כרטיס / בילוי / אטרקציה → leisure
+- חדר כושר / ספורט / ריצה / אימון → sport
 - טיול / מלון / טיסה / airbnb / booking → travel
-- מתנה / פרח / כרטיס ברכה → gifts`;
+- מתנה / פרח / כרטיס ברכה / מתנות → shopping
+- כלב / חתול / וטרינר / מזון לחיות → pets`;
 }
 
 export async function parseMessage(text, customCategories = [], today = null, apiKey = null) {
