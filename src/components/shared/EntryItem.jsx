@@ -1,7 +1,7 @@
 import {
   Home, ShoppingCart, Car, Baby, Pill, BookOpen, Shirt, UtensilsCrossed,
   Gamepad2, Dumbbell, Smartphone, Plane, ShoppingBag, Shield, PawPrint,
-  PiggyBank, Package, Zap, Gift, TrendingUp, Fuel, Trash2,
+  PiggyBank, Package, Zap, Droplets, Gift, TrendingUp, Fuel, Trash2,
 } from 'lucide-react';
 import { formatAmount } from '../../utils/format';
 
