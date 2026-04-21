@@ -41,7 +41,7 @@ export default function HouseholdSetup({ user, onComplete }) {
     return (
       <div className="household-screen">
         <div style={{ fontSize: 48 }}>🏠</div>
-        <h2>ברוכים הבאים לכספית</h2>
+        <h2>ברוכים הבאים ל-BUDGI</h2>
         <p>צרי בית משותף חדש או הצטרפי לבית קיים עם קוד ההזמנה של בן/בת הזוג</p>
         <div className="household-actions">
           <button className="btn-primary" onClick={handleCreate} disabled={loading}>

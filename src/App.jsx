@@ -78,7 +78,7 @@ export default function App() {
   return (
     <>
       <nav className="desktop-sidebar">
-        <div className="desktop-sidebar-title">כספית</div>
+        <div className="desktop-sidebar-title">BUDGI</div>
         {navItems.map(({ key, Icon, label }) => (
           <button
             key={key}

@@ -214,3 +214,35 @@ Icon: [Lucide icon name or "none"]
 Typography: [DM Sans / DM Mono / Lora + size]
 
 This checkpoint is mandatory. If you cannot explain WHY for each choice, stop and think before writing code.
+
+---
+
+## Logo & Favicon
+
+### Wordmark
+
+The logo is a typographic wordmark: capital B in forest green + "udgi" in near-black.
+Font: Georgia, serif (system fallback — no Google Fonts import needed for the logo).
+
+Construction:
+<text font-family="Georgia, serif" font-weight="700" fill="#2D6A4F">B</text>
+<text font-family="Georgia, serif" font-weight="400" fill="#1C1917">udgi</text>
+
+The B and "udgi" sit on the same baseline with no gap between them.
+Do NOT add spacing, tracking, or decorative elements between the letters.
+
+### Sizes
+
+- Large (header / splash screen): font-size 32px, total width ~130px
+- Medium (sidebar / navbar): font-size 22px, total width ~90px
+- Small (footer / email): font-size 15px, total width ~60px
+
+### Color variants
+
+- Default (on warm white #F7F5F0): B = #2D6A4F, udgi = #1C1917
+- On dark backgrounds: B = #2D6A4F, udgi = #F7F5F0
+- On green (#2D6A4F): B = #F4EBD0, udgi = #FFFFFF
+
+### Favicon
+
+The favicon is the letter B only — NOT the

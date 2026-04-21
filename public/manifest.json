@@ -1,13 +1,13 @@
 {
-  "name": "כספית",
-  "short_name": "כספית",
-  "description": "ניהול תקציב משפחתי",
+  "name": "BUDGI",
+  "short_name": "BUDGI",
+  "description": "Smart budget tracking",
   "start_url": "/kaspit/",
   "scope": "/kaspit/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0f0f14",
-  "theme_color": "#7c6af7",
+  "background_color": "#F7F5F0",
+  "theme_color": "#2D6A4F",
   "lang": "he",
   "dir": "rtl",
   "icons": [

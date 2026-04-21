@@ -150,7 +150,7 @@ export default function ImportCSV({ entries, householdId, user, customCategories
       <div className="section-title">ייבוא מהבנק</div>
       <div className="be-card">
         <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 16, lineHeight: 1.7 }}>
-          הורידי קובץ CSV מאתר הבנק שלך והעלי אותו כאן — כספית תזהה את התנועות אוטומטית, תקטלג אותן, ותאפשר לך לבחור מה לייבא.
+          הורידי קובץ CSV מאתר הבנק שלך והעלי אותו כאן — BUDGI תזהה את התנועות אוטומטית, תקטלג אותן, ותאפשר לך לבחור מה לייבא.
         </div>
 
         {[

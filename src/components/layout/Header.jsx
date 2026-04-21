@@ -50,7 +50,7 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange 
 
   return (
     <div className="app-header">
-      <div className="app-logo">כספית ✦</div>
+      <div className="app-logo">BUDGI</div>
       <div className="header-right">
         <select className="month-selector" value={value} onChange={handleChange}>
           {MONTH_OPTIONS.map((o) => (

@@ -26,7 +26,7 @@ export default function LoginScreen() {
 
   return (
     <div className="login-screen">
-      <div className="login-logo">כספית ✦</div>
+      <div className="login-logo">BUDGI</div>
       <div style={{ fontSize: 52 }}>💸</div>
       <div className="login-sub">
         ניהול תקציב משפחתי חכם<br />שניכם יכולים להשתמש יחד
