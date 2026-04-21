@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getHousehold, getHouseholdMembers, saveCustomCategories, saveBudgets, saveSavingsGoal, saveUserPhone, saveHouseholdApiKey, updateEntry } from '../../firebase/db';
+import { getHousehold, getHouseholdMembers, getUserData, saveCustomCategories, saveBudgets, saveSavingsGoal, saveUserPhone, saveHouseholdApiKey, updateEntry } from '../../firebase/db';
 import { DEFAULT_CATEGORIES } from '../../utils/constants';
 import { formatAmount } from '../../utils/format';
 
@@ -15,8 +15,12 @@ export default function Settings({ entries, householdId, user, customCategories,
   const [goalSaved, setGoalSaved] = useState('');
   const [section, setSection] = useState('household');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [phoneSaved, setPhoneSaved] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
+  const [savedPhone, setSavedPhone] = useState('');
+  const [editingPhone, setEditingPhone] = useState(false);
   const [apiKey, setApiKey] = useState('');
+  const [savedApiKey, setSavedApiKey] = useState('');
+  const [editingApiKey, setEditingApiKey] = useState(false);
   const [apiKeySaved, setApiKeySaved] = useState(false);
   const [deletingCat, setDeletingCat] = useState(null); // { value, label, count }
   const [transferTo, setTransferTo] = useState('');
@@ -25,10 +29,17 @@ export default function Settings({ entries, householdId, user, customCategories,
     if (!householdId) return;
     getHousehold(householdId).then((h) => {
       setHousehold(h);
-      if (h?.anthropicApiKey) setApiKey(h.anthropicApiKey);
+      if (h?.anthropicApiKey) { setApiKey(h.anthropicApiKey); setSavedApiKey(h.anthropicApiKey); }
       if (h?.members?.length) getHouseholdMembers(h.members).then(setMembers).catch(console.error);
     }).catch(console.error);
   }, [householdId]);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    getUserData(user.uid).then((d) => {
+      if (d?.phoneNumber) { setPhoneNumber(d.phoneNumber); setSavedPhone(d.phoneNumber); }
+    }).catch(console.error);
+  }, [user?.uid]);
 
   useEffect(() => { setLocalBudgets(budgets); }, [budgets]);
   useEffect(() => {
@@ -104,23 +115,33 @@ export default function Settings({ entries, householdId, user, customCategories,
 
   const expenseCategories = allCategories.filter((c) => !['income', 'savings'].includes(c.value));
 
-  async function handleSaveApiKey() {
-    if (!apiKey.trim()) return;
+  async function handleSavePhone() {
+    const phone = phoneNumber.trim();
+    if (!/^\+[1-9]\d{7,14}$/.test(phone)) {
+      setPhoneError('המספר חייב להתחיל ב-+ ולכלול קידומת מדינה, למשל +972501234567');
+      return;
+    }
+    setPhoneError('');
     setSaving(true);
     try {
-      await saveHouseholdApiKey(householdId, apiKey.trim());
-      setApiKeySaved(true);
-      setTimeout(() => setApiKeySaved(false), 3000);
+      await saveUserPhone(user.uid, phone);
+      setSavedPhone(phone);
+      setEditingPhone(false);
     } finally { setSaving(false); }
   }
 
-  async function handleSavePhone() {
-    if (!phoneNumber.trim()) return;
+  async function handleSaveApiKey() {
+    const key = apiKey.trim();
+    if (!key.startsWith('sk-ant-')) {
+      return;
+    }
     setSaving(true);
     try {
-      await saveUserPhone(user.uid, phoneNumber.trim());
-      setPhoneSaved(true);
-      setTimeout(() => setPhoneSaved(false), 3000);
+      await saveHouseholdApiKey(householdId, key);
+      setSavedApiKey(key);
+      setEditingApiKey(false);
+      setApiKeySaved(true);
+      setTimeout(() => setApiKeySaved(false), 3000);
     } finally { setSaving(false); }
   }
 
@@ -192,61 +213,103 @@ export default function Settings({ entries, householdId, user, customCategories,
       {section === 'kiki' && (
         <>
           <div className="section-title">קיקי — העוזרת בוואטסאפ</div>
+          {/* Phone */}
           <div className="be-card">
             <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 16, lineHeight: 1.7 }}>
-              שלחי הודעות לקיקי בוואטסאפ וכל הוצאה תירשם אוטומטית ✦<br/>
-              לדוגמה: <span style={{ color: 'var(--accent)', fontWeight: 600 }}>"קיקי, קפה 18 שקל"</span>
+              שלחי הודעות בוואטסאפ וכל הוצאה תירשם אוטומטית ✦<br/>
+              לדוגמה: <span style={{ color: 'var(--accent)', fontWeight: 600 }}>"קפה 18 שקל"</span>
             </div>
-            <div className="form-group">
-              <label className="form-label">מספר הטלפון שלך (עם קידומת מדינה)</label>
-              <input
-                className="form-input"
-                dir="ltr"
-                placeholder="+972501234567"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                type="tel"
-              />
-              <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4 }}>
-                זה המספר שממנו תשלחי הודעות לקיקי
-              </div>
-            </div>
-            <button className="submit-btn" onClick={handleSavePhone} disabled={saving || !phoneNumber.trim()}>
-              {phoneSaved ? '✓ נשמר!' : saving ? 'שומרת...' : 'שמרי מספר ✦'}
-            </button>
-          </div>
-          <div className="be-card" style={{ marginTop: 12 }}>
-            <div className="be-title" style={{ marginBottom: 10 }}>🔑 מפתח API אישי (חובה לשימוש בקיקי)</div>
-            <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 12, lineHeight: 1.7 }}>
-              קיקי עובדת עם Claude AI. כל משתמש צריך מפתח API אישי — חינמי לחלוטין ל-3-6 חודשים.
-            </div>
-            {[
-              { n: '1', t: 'כנסי לאתר', link: 'console.anthropic.com', url: 'https://console.anthropic.com' },
-              { n: '2', t: 'לחצי "Sign up" → הירשמי עם מייל' },
-              { n: '3', t: 'אחרי הכניסה: לחצי על "API Keys" בתפריט השמאלי' },
-              { n: '4', t: 'לחצי "Create Key" → העתיקי את המפתח (מתחיל ב-sk-ant-)' },
-              { n: '5', t: 'הדביקי אותו כאן למטה ושמרי' },
-            ].map((s) => (
-              <div key={s.n} className="be-row" style={{ alignItems: 'flex-start', gap: 12, paddingTop: 8, paddingBottom: 8 }}>
-                <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--accent)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0, marginTop: 2 }}>{s.n}</div>
-                <div style={{ fontSize: 13, color: 'var(--text2)' }}>
-                  {s.t}{s.url && <> — <a href={s.url} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)' }}>{s.link}</a></>}
+            {savedPhone && !editingPhone ? (
+              <div className="be-row" style={{ borderBottom: 'none' }}>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '.8px' }}>מספר מקושר</div>
+                  <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 15, color: 'var(--accent)', direction: 'ltr' }}>{savedPhone}</div>
                 </div>
+                <button onClick={() => setEditingPhone(true)} style={{ background: 'var(--surface2)', border: '0.5px solid var(--border)', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans,Heebo,sans-serif', color: 'var(--text2)' }}>
+                  ערכי
+                </button>
               </div>
-            ))}
-            <div className="form-group" style={{ marginTop: 12 }}>
-              <input
-                className="form-input"
-                dir="ltr"
-                placeholder="sk-ant-..."
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                type="password"
-              />
-            </div>
-            <button className="submit-btn" onClick={handleSaveApiKey} disabled={saving || !apiKey.trim()}>
-              {apiKeySaved ? '✓ נשמר!' : saving ? 'שומרת...' : 'שמרי מפתח ✦'}
-            </button>
+            ) : (
+              <>
+                <div className="form-group">
+                  <label className="form-label">מספר הטלפון שלך (עם קידומת מדינה)</label>
+                  <input
+                    className="form-input"
+                    dir="ltr"
+                    placeholder="+972501234567"
+                    value={phoneNumber}
+                    onChange={(e) => { setPhoneNumber(e.target.value); setPhoneError(''); }}
+                    type="tel"
+                  />
+                  {phoneError
+                    ? <div style={{ fontSize: 11, color: 'var(--expense)', marginTop: 4 }}>{phoneError}</div>
+                    : <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4 }}>פורמט: +972501234567</div>
+                  }
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button className="submit-btn" onClick={handleSavePhone} disabled={saving || !phoneNumber.trim()} style={{ margin: 0, flex: 1 }}>
+                    {saving ? 'שומרת...' : 'שמרי מספר'}
+                  </button>
+                  {savedPhone && <button onClick={() => { setEditingPhone(false); setPhoneNumber(savedPhone); setPhoneError(''); }} style={{ background: 'var(--surface2)', border: '0.5px solid var(--border)', borderRadius: 8, padding: '0 16px', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans,Heebo,sans-serif', color: 'var(--text2)' }}>ביטול</button>}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* API Key */}
+          <div className="be-card" style={{ marginTop: 12 }}>
+            <div className="be-title" style={{ marginBottom: 10 }}>מפתח API (חובה לשימוש בקיקי)</div>
+            {savedApiKey && !editingApiKey ? (
+              <div className="be-row" style={{ borderBottom: 'none' }}>
+                <div>
+                  <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '.8px' }}>מפתח מוגדר לבית</div>
+                  <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 13, color: 'var(--accent)', direction: 'ltr' }}>
+                    {savedApiKey.slice(0, 12)}{'•'.repeat(12)}{savedApiKey.slice(-4)}
+                  </div>
+                </div>
+                <button onClick={() => setEditingApiKey(true)} style={{ background: 'var(--surface2)', border: '0.5px solid var(--border)', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans,Heebo,sans-serif', color: 'var(--text2)' }}>
+                  ערכי
+                </button>
+              </div>
+            ) : (
+              <>
+                <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 12, lineHeight: 1.7 }}>
+                  קיקי עובדת עם Claude AI — חינמי לחלוטין ל-3-6 חודשים.
+                </div>
+                {[
+                  { n: '1', t: 'כנסי לאתר', link: 'console.anthropic.com', url: 'https://console.anthropic.com' },
+                  { n: '2', t: 'לחצי "Sign up" → הירשמי עם מייל' },
+                  { n: '3', t: 'לחצי "API Keys" → "Create Key"' },
+                  { n: '4', t: 'העתיקי את המפתח (מתחיל ב-sk-ant-) והדביקי למטה' },
+                ].map((s) => (
+                  <div key={s.n} className="be-row" style={{ alignItems: 'flex-start', gap: 12, paddingTop: 8, paddingBottom: 8 }}>
+                    <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'var(--accent)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0, marginTop: 1 }}>{s.n}</div>
+                    <div style={{ fontSize: 13, color: 'var(--text2)' }}>
+                      {s.t}{s.url && <> — <a href={s.url} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)' }}>{s.link}</a></>}
+                    </div>
+                  </div>
+                ))}
+                <div className="form-group" style={{ marginTop: 12 }}>
+                  <input
+                    className="form-input"
+                    dir="ltr"
+                    placeholder="sk-ant-..."
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    type="password"
+                  />
+                  {apiKey && !apiKey.startsWith('sk-ant-') && (
+                    <div style={{ fontSize: 11, color: 'var(--expense)', marginTop: 4 }}>המפתח חייב להתחיל ב-sk-ant-</div>
+                  )}
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button className="submit-btn" onClick={handleSaveApiKey} disabled={saving || !apiKey.trim() || !apiKey.startsWith('sk-ant-')} style={{ margin: 0, flex: 1 }}>
+                    {apiKeySaved ? '✓ נשמר!' : saving ? 'שומרת...' : 'שמרי מפתח'}
+                  </button>
+                  {savedApiKey && <button onClick={() => { setEditingApiKey(false); setApiKey(savedApiKey); }} style={{ background: 'var(--surface2)', border: '0.5px solid var(--border)', borderRadius: 8, padding: '0 16px', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans,Heebo,sans-serif', color: 'var(--text2)' }}>ביטול</button>}
+                </div>
+              </>
+            )}
           </div>
 
           <div className="be-card" style={{ marginTop: 12 }}>

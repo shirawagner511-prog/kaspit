@@ -29,6 +29,11 @@ export async function getOrCreateUser(firebaseUser) {
   return snap.data();
 }
 
+export async function getUserData(uid) {
+  const snap = await getDoc(doc(db, 'users', uid));
+  return snap.exists() ? snap.data() : {};
+}
+
 export async function setUserHousehold(uid, householdId) {
   await setDoc(doc(db, 'users', uid), { householdId }, { merge: true });
 }
