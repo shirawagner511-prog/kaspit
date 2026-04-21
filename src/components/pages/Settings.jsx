@@ -308,7 +308,12 @@ export default function Settings({ entries, householdId, user, customCategories,
             ) : customCategories.map((c) => (
               <div key={c.value} className="be-row" style={{ alignItems: 'center' }}>
                 <div className="name">{c.icon} {c.label}</div>
-                <button onClick={() => handleDeleteCategory(c.value)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent3)', fontSize: 18, padding: '4px 8px' }}>🗑</button>
+                <button
+                  onClick={() => handleDeleteCategory(c.value)}
+                  style={{ background: 'var(--surface3)', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer', color: 'var(--accent3)', fontSize: 12, fontWeight: 700, padding: '4px 12px', fontFamily: 'Heebo,sans-serif', flexShrink: 0 }}
+                >
+                  מחקי
+                </button>
               </div>
             ))}
           </div>
