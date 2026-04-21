@@ -26,8 +26,14 @@ export default function LoginScreen() {
 
   return (
     <div className="login-screen">
-      <div className="login-logo">BUDGI</div>
-      <div style={{ fontSize: 52 }}>💸</div>
+      <div className="login-logo">
+        <span style={{ fontWeight: 700, color: 'var(--accent)' }}>B</span>
+        <span style={{ fontWeight: 400, color: 'var(--text)' }}>udgi</span>
+      </div>
+      <svg width="48" height="48" viewBox="0 0 48 48" style={{ marginBottom: 4 }}>
+        <rect width="48" height="48" rx="11" fill="#2D6A4F"/>
+        <text x="24" y="34" textAnchor="middle" fontFamily="Georgia, serif" fontWeight="700" fontSize="30" fill="#FFFFFF">B</text>
+      </svg>
       <div className="login-sub">
         ניהול תקציב משפחתי חכם<br />שניכם יכולים להשתמש יחד
       </div>

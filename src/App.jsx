@@ -78,7 +78,10 @@ export default function App() {
   return (
     <>
       <nav className="desktop-sidebar">
-        <div className="desktop-sidebar-title">BUDGI</div>
+        <div className="desktop-sidebar-title">
+          <span style={{ fontWeight: 700, color: 'var(--accent)' }}>B</span>
+          <span style={{ fontWeight: 400, color: 'var(--text)' }}>udgi</span>
+        </div>
         {navItems.map(({ key, Icon, label }) => (
           <button
             key={key}

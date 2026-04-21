@@ -133,10 +133,8 @@ body {
   gap: 20px;
 }
 .login-logo {
-  font-family: 'Lora', serif;
-  font-size: 40px;
-  font-weight: 600;
-  color: var(--accent);
+  font-family: 'Lora', Georgia, serif;
+  font-size: 42px;
   letter-spacing: -1px;
 }
 .login-sub {
@@ -282,10 +280,9 @@ body {
   justify-content: space-between;
 }
 .app-logo {
-  font-family: 'Lora', serif;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--accent);
+  font-family: 'Lora', Georgia, serif;
+  font-size: 20px;
+  letter-spacing: -0.5px;
 }
 .header-right { display: flex; align-items: center; gap: 8px; }
 .month-selector {
