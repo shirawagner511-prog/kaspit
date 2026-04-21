@@ -148,11 +148,11 @@ export default function Settings({ entries, householdId, user, customCategories,
   }
 
   const tabs = [
-    { key: 'household', label: '🏠 בית' },
-    { key: 'kiki',      label: '🤖 קיקי' },
-    { key: 'budgets',   label: '📊 תקציב' },
-    { key: 'goals',     label: '🎯 יעדים' },
-    { key: 'cats',      label: '🏷️ קטגוריות' },
+    { key: 'household', label: `🏠 ${t('settings.household')}` },
+    { key: 'kiki',      label: `🤖 Kiki` },
+    { key: 'budgets',   label: `📊 ${t('settings.budgets')}` },
+    { key: 'goals',     label: `🎯 ${t('settings.savingsGoal')}` },
+    { key: 'cats',      label: `🏷️ ${t('settings.categories')}` },
   ];
 
   return (
@@ -175,16 +175,16 @@ export default function Settings({ entries, householdId, user, customCategories,
 
       {section === 'household' && household && (
         <>
-          <div className="section-title">הבית המשותף</div>
+          <div className="section-title">{t('settings.household')}</div>
           <div className="be-card">
             <div className="be-title">🏠 {household.name}</div>
             <div className="be-row">
-              <div className="name">קוד הזמנה לשיתוף</div>
+              <div className="name">{t('settings.inviteCode')}</div>
               <div className="val" style={{ color: 'var(--accent)', letterSpacing: 3 }}>{household.inviteCode}</div>
             </div>
             <div className="be-row" style={{ borderBottom: 'none' }}>
-              <div className="name" style={{ fontWeight: 600 }}>חברי הבית</div>
-              <div className="val" style={{ color: 'var(--text3)', fontSize: 13 }}>{household.members?.length || 1} משתמשים</div>
+              <div className="name" style={{ fontWeight: 600 }}>{t('settings.members')}</div>
+              <div className="val" style={{ color: 'var(--text3)', fontSize: 13 }}>{t('settings.membersCount', { count: household.members?.length || 1 })}</div>
             </div>
             {(members.length > 0 ? members : (household.members || []).map((uid) => ({ uid }))).map((m, i, arr) => (
               <div key={m.uid} className="be-row" style={{ borderBottom: i === arr.length - 1 ? 'none' : undefined, paddingRight: 8 }}>
@@ -193,19 +193,19 @@ export default function Settings({ entries, householdId, user, customCategories,
                     {(m.displayName || m.email || '?').charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <div style={{ fontSize: 14, color: 'var(--text)' }}>{m.displayName || m.email || 'משתמש'}</div>
+                    <div style={{ fontSize: 14, color: 'var(--text)' }}>{m.displayName || m.email || t('settings.user')}</div>
                     {m.email && m.displayName && <div style={{ fontSize: 11, color: 'var(--text3)' }}>{m.email}</div>}
                   </div>
                 </div>
-                {m.uid === user?.uid && <div style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 600 }}>את</div>}
+                {m.uid === user?.uid && <div style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 600 }}>{t('settings.you')}</div>}
               </div>
             ))}
           </div>
-          <div className="section-title">ייצוא נתונים</div>
+          <div className="section-title">{t('settings.exportData')}</div>
           <button className="settings-item" onClick={exportCSV}>
             <div className="si-left">
               <div className="si-icon" style={{ background: 'rgba(93,211,179,.15)' }}>📤</div>
-              <div><div className="si-title">ייצוא ל-CSV</div><div className="si-sub">שמירת כל הנתונים</div></div>
+              <div><div className="si-title">{t('settings.exportCsv')}</div><div className="si-sub">{t('settings.exportCsvSub')}</div></div>
             </div>
             <div className="si-arrow">›</div>
           </button>
@@ -230,119 +230,101 @@ export default function Settings({ entries, householdId, user, customCategories,
 
       {section === 'kiki' && (
         <>
-          <div className="section-title">קיקי — העוזרת בוואטסאפ</div>
-          {/* Phone */}
+          <div className="section-title">{t('settings.kiki')}</div>
           <div className="be-card">
             <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 16, lineHeight: 1.7 }}>
-              שלחי הודעות בוואטסאפ וכל הוצאה תירשם אוטומטית ✦<br/>
-              לדוגמה: <span style={{ color: 'var(--accent)', fontWeight: 600 }}>"קפה 18 שקל"</span>
+              {t('settings.kikiDesc')}<br/>
+              <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{t('settings.kikiExample')}</span>
             </div>
             {savedPhone && !editingPhone ? (
               <div className="be-row" style={{ borderBottom: 'none' }}>
                 <div>
-                  <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '.8px' }}>מספר מקושר</div>
+                  <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '.8px' }}>{t('settings.kikiPhoneSaved')}</div>
                   <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 15, color: 'var(--accent)', direction: 'ltr' }}>{savedPhone}</div>
                 </div>
                 <button onClick={() => setEditingPhone(true)} style={{ background: 'var(--surface2)', border: '0.5px solid var(--border)', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans,Heebo,sans-serif', color: 'var(--text2)' }}>
-                  ערכי
+                  {t('settings.edit')}
                 </button>
               </div>
             ) : (
               <>
                 <div className="form-group">
-                  <label className="form-label">מספר הטלפון שלך (עם קידומת מדינה)</label>
-                  <input
-                    className="form-input"
-                    dir="ltr"
-                    placeholder="+972501234567"
-                    value={phoneNumber}
-                    onChange={(e) => { setPhoneNumber(e.target.value); setPhoneError(''); }}
-                    type="tel"
-                  />
+                  <label className="form-label">{t('settings.kikiPhone')}</label>
+                  <input className="form-input" dir="ltr" placeholder="+972501234567" value={phoneNumber} onChange={(e) => { setPhoneNumber(e.target.value); setPhoneError(''); }} type="tel" />
                   {phoneError
                     ? <div style={{ fontSize: 11, color: 'var(--expense)', marginTop: 4 }}>{phoneError}</div>
-                    : <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4 }}>פורמט: +972501234567</div>
+                    : <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4 }}>{t('settings.kikiPhoneFormat')}</div>
                   }
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button className="submit-btn" onClick={handleSavePhone} disabled={saving || !phoneNumber.trim()} style={{ margin: 0, flex: 1 }}>
-                    {saving ? 'שומרת...' : 'שמרי מספר'}
+                    {saving ? t('settings.saving') : t('settings.savePhone')}
                   </button>
-                  {savedPhone && <button onClick={() => { setEditingPhone(false); setPhoneNumber(savedPhone); setPhoneError(''); }} style={{ background: 'var(--surface2)', border: '0.5px solid var(--border)', borderRadius: 8, padding: '0 16px', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans,Heebo,sans-serif', color: 'var(--text2)' }}>ביטול</button>}
+                  {savedPhone && <button onClick={() => { setEditingPhone(false); setPhoneNumber(savedPhone); setPhoneError(''); }} style={{ background: 'var(--surface2)', border: '0.5px solid var(--border)', borderRadius: 8, padding: '0 16px', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans,Heebo,sans-serif', color: 'var(--text2)' }}>{t('settings.cancel')}</button>}
                 </div>
               </>
             )}
           </div>
 
-          {/* API Key */}
           <div className="be-card" style={{ marginTop: 12 }}>
-            <div className="be-title" style={{ marginBottom: 10 }}>מפתח API (חובה לשימוש בקיקי)</div>
+            <div className="be-title" style={{ marginBottom: 10 }}>{t('settings.kikiApiKey')}</div>
             {savedApiKey && !editingApiKey ? (
               <div className="be-row" style={{ borderBottom: 'none' }}>
                 <div>
-                  <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '.8px' }}>מפתח מוגדר לבית</div>
+                  <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '.8px' }}>{t('settings.kikiApiKeySaved')}</div>
                   <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 13, color: 'var(--accent)', direction: 'ltr' }}>
                     {savedApiKey.slice(0, 12)}{'•'.repeat(12)}{savedApiKey.slice(-4)}
                   </div>
                 </div>
                 <button onClick={() => setEditingApiKey(true)} style={{ background: 'var(--surface2)', border: '0.5px solid var(--border)', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans,Heebo,sans-serif', color: 'var(--text2)' }}>
-                  ערכי
+                  {t('settings.edit')}
                 </button>
               </div>
             ) : (
               <>
-                <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 12, lineHeight: 1.7 }}>
-                  קיקי עובדת עם Claude AI — חינמי לחלוטין ל-3-6 חודשים.
-                </div>
+                <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 12, lineHeight: 1.7 }}>{t('settings.kikiApiKeyDesc')}</div>
                 {[
-                  { n: '1', t: 'כנסי לאתר', link: 'console.anthropic.com', url: 'https://console.anthropic.com' },
-                  { n: '2', t: 'לחצי "Sign up" → הירשמי עם מייל' },
-                  { n: '3', t: 'לחצי "API Keys" → "Create Key"' },
-                  { n: '4', t: 'העתיקי את המפתח (מתחיל ב-sk-ant-) והדביקי למטה' },
+                  { n: '1', key: 'kikiStep1', link: 'console.anthropic.com', url: 'https://console.anthropic.com' },
+                  { n: '2', key: 'kikiStep2' },
+                  { n: '3', key: 'kikiStep3' },
+                  { n: '4', key: 'kikiStep4' },
                 ].map((s) => (
                   <div key={s.n} className="be-row" style={{ alignItems: 'flex-start', gap: 12, paddingTop: 8, paddingBottom: 8 }}>
                     <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'var(--accent)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0, marginTop: 1 }}>{s.n}</div>
                     <div style={{ fontSize: 13, color: 'var(--text2)' }}>
-                      {s.t}{s.url && <> — <a href={s.url} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)' }}>{s.link}</a></>}
+                      {t(`settings.${s.key}`)}{s.url && <> — <a href={s.url} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)' }}>{s.link}</a></>}
                     </div>
                   </div>
                 ))}
                 <div className="form-group" style={{ marginTop: 12 }}>
-                  <input
-                    className="form-input"
-                    dir="ltr"
-                    placeholder="sk-ant-..."
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    type="password"
-                  />
+                  <input className="form-input" dir="ltr" placeholder="sk-ant-..." value={apiKey} onChange={(e) => setApiKey(e.target.value)} type="password" />
                   {apiKey && !apiKey.startsWith('sk-ant-') && (
-                    <div style={{ fontSize: 11, color: 'var(--expense)', marginTop: 4 }}>המפתח חייב להתחיל ב-sk-ant-</div>
+                    <div style={{ fontSize: 11, color: 'var(--expense)', marginTop: 4 }}>{t('settings.errorApiKey')}</div>
                   )}
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button className="submit-btn" onClick={handleSaveApiKey} disabled={saving || !apiKey.trim() || !apiKey.startsWith('sk-ant-')} style={{ margin: 0, flex: 1 }}>
-                    {apiKeySaved ? '✓ נשמר!' : saving ? 'שומרת...' : 'שמרי מפתח'}
+                    {apiKeySaved ? t('settings.saved') : saving ? t('settings.saving') : t('settings.saveKey')}
                   </button>
-                  {savedApiKey && <button onClick={() => { setEditingApiKey(false); setApiKey(savedApiKey); }} style={{ background: 'var(--surface2)', border: '0.5px solid var(--border)', borderRadius: 8, padding: '0 16px', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans,Heebo,sans-serif', color: 'var(--text2)' }}>ביטול</button>}
+                  {savedApiKey && <button onClick={() => { setEditingApiKey(false); setApiKey(savedApiKey); }} style={{ background: 'var(--surface2)', border: '0.5px solid var(--border)', borderRadius: 8, padding: '0 16px', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans,Heebo,sans-serif', color: 'var(--text2)' }}>{t('settings.cancel')}</button>}
                 </div>
               </>
             )}
           </div>
 
           <div className="be-card" style={{ marginTop: 12 }}>
-            <div className="be-title" style={{ marginBottom: 10 }}>איך מתחילים עם קיקי?</div>
+            <div className="be-title" style={{ marginBottom: 10 }}>{t('settings.kikiHowTitle')}</div>
             {[
-              { n: '1', t: 'שמרי מפתח API למעלה' },
-              { n: '2', t: 'רשמי את מספר הטלפון שלך למעלה' },
-              { n: '3', t: 'שמרי את מספר קיקי בוואטסאפ:', sub: '+1 415 523 8886' },
-              { n: '4', t: 'שלחי לקיקי את הקוד: join method-strike' },
-              { n: '5', t: 'שלחי לקיקי: "קפה 18 שקל" — וזהו ✦' },
+              { n: '1', key: 'kikiStepSaveKey' },
+              { n: '2', key: 'kikiStepSavePhone' },
+              { n: '3', key: 'kikiStepSaveContact', sub: '+1 415 523 8886' },
+              { n: '4', key: 'kikiStepJoin' },
+              { n: '5', key: 'kikiStepSend' },
             ].map((s) => (
               <div key={s.n} className="be-row" style={{ alignItems: 'flex-start', gap: 12, paddingTop: 8, paddingBottom: 8 }}>
                 <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--accent)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0, marginTop: 2 }}>{s.n}</div>
                 <div>
-                  <div style={{ fontSize: 13, color: 'var(--text2)' }}>{s.t}</div>
+                  <div style={{ fontSize: 13, color: 'var(--text2)' }}>{t(`settings.${s.key}`)}</div>
                   {s.sub && <div style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 700, direction: 'ltr', marginTop: 2 }}>{s.sub}</div>}
                 </div>
               </div>
@@ -353,7 +335,7 @@ export default function Settings({ entries, householdId, user, customCategories,
 
       {section === 'budgets' && (
         <>
-          <div className="section-title">תקציב חודשי לפי קטגוריה</div>
+          <div className="section-title">{t('settings.budgetsTitle')}</div>
           <div className="be-card">
             {expenseCategories.map((c) => (
               <div key={c.value} className="be-row" style={{ alignItems: 'center', gap: 8 }}>
@@ -361,7 +343,7 @@ export default function Settings({ entries, householdId, user, customCategories,
                 <input
                   type="number"
                   inputMode="numeric"
-                  placeholder="ללא מגבלה"
+                  placeholder={t('settings.noLimit')}
                   value={localBudgets[c.value] || ''}
                   onChange={(e) => setLocalBudgets((b) => ({ ...b, [c.value]: e.target.value ? parseFloat(e.target.value) : undefined }))}
                   style={{
@@ -373,7 +355,7 @@ export default function Settings({ entries, householdId, user, customCategories,
               </div>
             ))}
             <button className="submit-btn" style={{ marginTop: 16 }} onClick={handleSaveBudgets} disabled={saving}>
-              {saving ? 'שומרת...' : 'שמרי תקציב ✦'}
+              {saving ? t('settings.saving') : t('settings.saveBudget')}
             </button>
           </div>
         </>
@@ -381,7 +363,7 @@ export default function Settings({ entries, householdId, user, customCategories,
 
       {section === 'goals' && (
         <>
-          <div className="section-title">יעד חיסכון</div>
+          <div className="section-title">{t('settings.savingsGoal')}</div>
           <div className="be-card">
             {savingsGoal?.target > 0 && (
               <div style={{ marginBottom: 16 }}>
@@ -395,19 +377,19 @@ export default function Settings({ entries, householdId, user, customCategories,
               </div>
             )}
             <div className="form-group">
-              <label className="form-label">שם היעד</label>
-              <input className="form-input" placeholder="למשל: חופשה, רכב, דירה..." value={goalName} onChange={(e) => setGoalName(e.target.value)} />
+              <label className="form-label">{t('settings.goalName')}</label>
+              <input className="form-input" placeholder={t('settings.goalNamePlaceholder')} value={goalName} onChange={(e) => setGoalName(e.target.value)} />
             </div>
             <div className="form-group">
-              <label className="form-label">סכום יעד (₪)</label>
+              <label className="form-label">{t('settings.goalTarget')}</label>
               <input className="form-input" type="number" inputMode="numeric" placeholder="0" value={goalTarget} onChange={(e) => setGoalTarget(e.target.value)} dir="ltr" />
             </div>
             <div className="form-group">
-              <label className="form-label">כבר חסכתי (₪)</label>
+              <label className="form-label">{t('settings.goalSaved')}</label>
               <input className="form-input" type="number" inputMode="numeric" placeholder="0" value={goalSaved} onChange={(e) => setGoalSaved(e.target.value)} dir="ltr" />
             </div>
             <button className="submit-btn" onClick={handleSaveGoal} disabled={saving || !goalTarget}>
-              {saving ? 'שומרת...' : 'שמרי יעד ✦'}
+              {saving ? t('settings.saving') : t('settings.saveGoal')}
             </button>
           </div>
         </>
@@ -415,15 +397,15 @@ export default function Settings({ entries, householdId, user, customCategories,
 
       {section === 'cats' && (
         <>
-          <div className="section-title">קטגוריות מותאמות אישית</div>
+          <div className="section-title">{t('settings.categories')}</div>
           <div className="be-card">
             <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
               <input className="form-input" placeholder="😀" value={newCatIcon} onChange={(e) => setNewCatIcon(e.target.value)} style={{ width: 60, textAlign: 'center', fontSize: 20 }} maxLength={2} />
-              <input className="form-input" placeholder="שם קטגוריה חדשה..." value={newCatName} onChange={(e) => setNewCatName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()} style={{ flex: 1 }} />
-              <button className="btn-primary" onClick={handleAddCategory} disabled={saving || !newCatName.trim()} style={{ padding: '0 16px', fontSize: 13, width: 'auto' }}>+ הוסיפי</button>
+              <input className="form-input" placeholder={t('settings.addCategoryPlaceholder')} value={newCatName} onChange={(e) => setNewCatName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()} style={{ flex: 1 }} />
+              <button className="btn-primary" onClick={handleAddCategory} disabled={saving || !newCatName.trim()} style={{ padding: '0 16px', fontSize: 13, width: 'auto' }}>{t('settings.addCategoryBtn')}</button>
             </div>
             {customCategories.length === 0 ? (
-              <div style={{ color: 'var(--text3)', fontSize: 13, textAlign: 'center', padding: '8px 0' }}>אין עדיין קטגוריות מותאמות</div>
+              <div style={{ color: 'var(--text3)', fontSize: 13, textAlign: 'center', padding: '8px 0' }}>{t('settings.noCats')}</div>
             ) : customCategories.map((c) => (
               <div key={c.value} className="be-row" style={{ alignItems: 'center' }}>
                 <div className="name">{c.icon} {c.label}</div>
@@ -431,7 +413,7 @@ export default function Settings({ entries, householdId, user, customCategories,
                   onClick={() => startDeleteCategory(c)}
                   style={{ background: 'var(--surface3)', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer', color: 'var(--accent3)', fontSize: 12, fontWeight: 700, padding: '4px 12px', fontFamily: 'Heebo,sans-serif', flexShrink: 0 }}
                 >
-                  מחקי
+                  {t('settings.deleteCategory')}
                 </button>
               </div>
             ))}
@@ -442,26 +424,21 @@ export default function Settings({ entries, householdId, user, customCategories,
       {deletingCat && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
           <div className="be-card" style={{ width: '100%', maxWidth: 400, margin: 0 }}>
-            <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 8 }}>מחיקת קטגוריה</div>
+            <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 8 }}>{t('settings.deleteCatTitle')}</div>
             <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 16 }}>
-              יש {deletingCat.count} פעולות תחת "{deletingCat.label}". לאיזו קטגוריה להעביר אותן?
+              {t('settings.deleteCatDesc', { count: deletingCat.count, label: deletingCat.label })}
             </div>
-            <select
-              className="form-input"
-              value={transferTo}
-              onChange={(e) => setTransferTo(e.target.value)}
-              style={{ marginBottom: 16 }}
-            >
+            <select className="form-input" value={transferTo} onChange={(e) => setTransferTo(e.target.value)} style={{ marginBottom: 16 }}>
               {allCategories.filter((c) => c.value !== deletingCat.value).map((c) => (
                 <option key={c.value} value={c.value}>{c.icon ? `${c.icon} ` : ''}{c.label}</option>
               ))}
             </select>
             <div style={{ display: 'flex', gap: 8 }}>
               <button className="submit-btn" onClick={confirmDeleteCategory} disabled={saving} style={{ margin: 0, flex: 1 }}>
-                {saving ? 'מעביר...' : 'העבירי ומחקי'}
+                {saving ? t('settings.saving') : t('settings.deleteCatConfirm')}
               </button>
               <button onClick={() => setDeletingCat(null)} style={{ flex: 1, background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 12, padding: '12px 0', fontFamily: 'Heebo,sans-serif', fontSize: 14, cursor: 'pointer', color: 'var(--text2)' }}>
-                ביטול
+                {t('settings.cancel')}
               </button>
             </div>
           </div>
