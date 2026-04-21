@@ -84,6 +84,16 @@ export async function getHousehold(householdId) {
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
 
+export async function getHouseholdMembers(memberUids) {
+  const results = await Promise.all(
+    memberUids.map(async (uid) => {
+      const snap = await getDoc(doc(db, 'users', uid));
+      return snap.exists() ? { uid, ...snap.data() } : { uid, displayName: uid };
+    })
+  );
+  return results;
+}
+
 export async function saveCustomCategories(householdId, customCategories) {
   await setDoc(doc(db, 'households', householdId), { customCategories }, { merge: true });
 }

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { getHousehold, saveCustomCategories, saveBudgets, saveSavingsGoal, saveUserPhone, saveUserApiKey, updateEntry } from '../../firebase/db';
+import { getHousehold, getHouseholdMembers, saveCustomCategories, saveBudgets, saveSavingsGoal, saveUserPhone, saveUserApiKey, updateEntry } from '../../firebase/db';
 import { DEFAULT_CATEGORIES } from '../../utils/constants';
 import { formatAmount } from '../../utils/format';
 
 export default function Settings({ entries, householdId, user, customCategories, allCategories, budgets = {}, savingsGoal = null }) {
   const [household, setHousehold] = useState(null);
+  const [members, setMembers] = useState([]);
   const [newCatName, setNewCatName] = useState('');
   const [newCatIcon, setNewCatIcon] = useState('');
   const [saving, setSaving] = useState(false);
@@ -21,7 +22,11 @@ export default function Settings({ entries, householdId, user, customCategories,
   const [transferTo, setTransferTo] = useState('');
 
   useEffect(() => {
-    if (householdId) getHousehold(householdId).then(setHousehold).catch(console.error);
+    if (!householdId) return;
+    getHousehold(householdId).then((h) => {
+      setHousehold(h);
+      if (h?.members?.length) getHouseholdMembers(h.members).then(setMembers).catch(console.error);
+    }).catch(console.error);
   }, [householdId]);
 
   useEffect(() => { setLocalBudgets(budgets); }, [budgets]);
@@ -153,10 +158,20 @@ export default function Settings({ entries, householdId, user, customCategories,
               <div className="name">קוד הזמנה לשיתוף</div>
               <div className="val" style={{ color: 'var(--accent)', letterSpacing: 3 }}>{household.inviteCode}</div>
             </div>
-            <div className="be-row" style={{ borderBottom: 'none' }}>
-              <div className="name">חברי הבית</div>
-              <div className="val">{household.members?.length || 1} משתמשים</div>
-            </div>
+            {members.length > 0 && members.map((m, i) => (
+              <div key={m.uid} className="be-row" style={{ borderBottom: i === members.length - 1 ? 'none' : undefined }}>
+                <div className="name" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--accent-dim)', border: '0.5px solid rgba(45,106,79,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 600, color: 'var(--accent)', flexShrink: 0 }}>
+                    {(m.displayName || m.email || '?').charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 14, color: 'var(--text)' }}>{m.displayName || 'משתמש'}</div>
+                    {m.email && <div style={{ fontSize: 11, color: 'var(--text3)' }}>{m.email}</div>}
+                  </div>
+                </div>
+                {m.uid === user?.uid && <div style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 600 }}>את</div>}
+              </div>
+            ))}
           </div>
           <div className="section-title">ייצוא נתונים</div>
           <button className="settings-item" onClick={exportCSV}>
