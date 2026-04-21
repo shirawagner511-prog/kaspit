@@ -1,22 +1,24 @@
+import { LayoutDashboard, ListOrdered, Scale, TrendingUp, Settings } from 'lucide-react';
+
 const TABS = [
-  { id: 'dashboard', icon: '🏠', label: 'ראשי' },
-  { id: 'entries',   icon: '📋', label: 'פעולות' },
-  { id: 'breakeven', icon: '⚖️', label: 'תחשיב' },
-  { id: 'insights',  icon: '📈', label: 'מגמות' },
-  { id: 'settings',  icon: '⚙️', label: 'הגדרות' },
+  { id: 'dashboard', Icon: LayoutDashboard, label: 'ראשי' },
+  { id: 'entries',   Icon: ListOrdered,     label: 'פעולות' },
+  { id: 'breakeven', Icon: Scale,           label: 'תחשיב' },
+  { id: 'insights',  Icon: TrendingUp,      label: 'מגמות' },
+  { id: 'settings',  Icon: Settings,        label: 'הגדרות' },
 ];
 
 export default function BottomNav({ activePage, onNavigate }) {
   return (
     <nav className="bottom-nav">
-      {TABS.map((tab) => (
+      {TABS.map(({ id, Icon, label }) => (
         <button
-          key={tab.id}
-          className={`nav-item${activePage === tab.id ? ' active' : ''}`}
-          onClick={() => onNavigate(tab.id)}
+          key={id}
+          className={`nav-item${activePage === id ? ' active' : ''}`}
+          onClick={() => onNavigate(id)}
         >
-          <span className="nav-icon">{tab.icon}</span>
-          <span className="nav-label">{tab.label}</span>
+          <Icon size={20} strokeWidth={1.8} />
+          <span className="nav-label">{label}</span>
         </button>
       ))}
     </nav>

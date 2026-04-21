@@ -8,6 +8,7 @@ import { useAutoRecurring } from './hooks/useAutoRecurring';
 import { deleteEntry } from './firebase/db';
 import { DEFAULT_CATEGORIES } from './utils/constants';
 
+import { LayoutDashboard, ListOrdered, Scale, TrendingUp, FolderInput, Settings as SettingsIcon } from 'lucide-react';
 import LoginScreen from './components/auth/LoginScreen';
 import HouseholdSetup from './components/auth/HouseholdSetup';
 import Header from './components/layout/Header';
@@ -66,29 +67,29 @@ export default function App() {
   };
 
   const navItems = [
-    { key: 'dashboard', icon: '🏠', label: 'בית' },
-    { key: 'entries',   icon: '📋', label: 'פעולות' },
-    { key: 'breakeven', icon: '⚖️', label: 'נקודת איזון' },
-    { key: 'insights',  icon: '📈', label: 'תובנות' },
-    { key: 'import',    icon: '📂', label: 'ייבוא CSV' },
-    { key: 'settings',  icon: '⚙️', label: 'הגדרות' },
+    { key: 'dashboard', Icon: LayoutDashboard, label: 'ראשי' },
+    { key: 'entries',   Icon: ListOrdered,     label: 'פעולות' },
+    { key: 'breakeven', Icon: Scale,           label: 'נקודת איזון' },
+    { key: 'insights',  Icon: TrendingUp,      label: 'תובנות' },
+    { key: 'import',    Icon: FolderInput,     label: 'ייבוא CSV' },
+    { key: 'settings',  Icon: SettingsIcon,    label: 'הגדרות' },
   ];
 
   return (
     <>
       <nav className="desktop-sidebar">
-        <div className="desktop-sidebar-title">כספית ✦</div>
-        {navItems.map((item) => (
+        <div className="desktop-sidebar-title">כספית</div>
+        {navItems.map(({ key, Icon, label }) => (
           <button
-            key={item.key}
-            className={`desktop-sidebar-item${page === item.key ? ' active' : ''}`}
-            onClick={() => setPage(item.key)}
-            style={{ background: 'none', border: 'none', fontFamily: 'Heebo,sans-serif', width: '100%', textAlign: 'right' }}
+            key={key}
+            className={`desktop-sidebar-item${page === key ? ' active' : ''}`}
+            onClick={() => setPage(key)}
+            style={{ background: 'none', border: 'none', fontFamily: 'DM Sans,Heebo,sans-serif', width: '100%', textAlign: 'right' }}
           >
-            <span>{item.icon}</span> {item.label}
+            <Icon size={16} strokeWidth={1.8} /> {label}
           </button>
         ))}
-        <div style={{ marginTop: 'auto', paddingTop: 16, borderTop: '1px solid var(--border)', fontSize: 13, color: 'var(--text3)' }}>
+        <div style={{ marginTop: 'auto', paddingTop: 16, borderTop: '0.5px solid var(--border)', fontSize: 13, color: 'var(--text3)' }}>
           {user?.displayName}
         </div>
       </nav>

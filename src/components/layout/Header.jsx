@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { signOut, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth, googleProvider } from '../../firebase/config';
 import { MONTHS_HE } from '../../utils/constants';
+import { RefreshCw, LogOut } from 'lucide-react';
 
 function buildMonthOptions() {
   const options = [];
@@ -66,9 +67,9 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange 
           {menuOpen && (
             <div style={{
               position: 'absolute', top: 40, left: 0,
-              background: 'var(--surface2)', border: '1px solid var(--border)',
-              borderRadius: 12, minWidth: 160, zIndex: 300,
-              boxShadow: '0 8px 24px rgba(0,0,0,.4)', overflow: 'hidden',
+              background: 'var(--surface)', border: '0.5px solid var(--border)',
+              borderRadius: 'var(--radius)', minWidth: 180, zIndex: 300,
+              overflow: 'hidden',
             }}>
               <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--border)' }}>
                 <div style={{ fontSize: 13, fontWeight: 700 }}>{user?.displayName}</div>
@@ -77,25 +78,25 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange 
               <button
                 onClick={handleSwitchUser}
                 style={{
-                  width: '100%', padding: '12px 14px', background: 'none',
-                  border: 'none', borderBottom: '1px solid var(--border)',
-                  color: 'var(--text2)', fontSize: 14,
-                  fontWeight: 600, cursor: 'pointer', textAlign: 'right',
-                  fontFamily: 'Heebo,sans-serif', display: 'flex', alignItems: 'center', gap: 8,
+                  width: '100%', padding: '11px 14px', background: 'none',
+                  border: 'none', borderBottom: '0.5px solid var(--border)',
+                  color: 'var(--text2)', fontSize: 13,
+                  fontWeight: 500, cursor: 'pointer', textAlign: 'right',
+                  fontFamily: 'DM Sans,Heebo,sans-serif', display: 'flex', alignItems: 'center', gap: 8,
                 }}
               >
-                <span>🔄</span> החלף משתמש
+                <RefreshCw size={14} /> החלף משתמש
               </button>
               <button
                 onClick={() => { setMenuOpen(false); signOut(auth); }}
                 style={{
-                  width: '100%', padding: '12px 14px', background: 'none',
-                  border: 'none', color: 'var(--danger)', fontSize: 14,
-                  fontWeight: 600, cursor: 'pointer', textAlign: 'right',
-                  fontFamily: 'Heebo,sans-serif', display: 'flex', alignItems: 'center', gap: 8,
+                  width: '100%', padding: '11px 14px', background: 'none',
+                  border: 'none', color: 'var(--expense)', fontSize: 13,
+                  fontWeight: 500, cursor: 'pointer', textAlign: 'right',
+                  fontFamily: 'DM Sans,Heebo,sans-serif', display: 'flex', alignItems: 'center', gap: 8,
                 }}
               >
-                <span>🚪</span> יציאה מהחשבון
+                <LogOut size={14} /> יציאה מהחשבון
               </button>
             </div>
           )}
