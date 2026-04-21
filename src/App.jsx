@@ -19,6 +19,7 @@ import Entries from './components/pages/Entries';
 import Breakeven from './components/pages/Breakeven';
 import Insights from './components/pages/Insights';
 import Settings from './components/pages/Settings';
+import ImportCSV from './components/pages/ImportCSV';
 
 export default function App() {
   const { user, householdId, setHouseholdId, loading } = useAuth();
@@ -69,6 +70,7 @@ export default function App() {
     { key: 'entries',   icon: '📋', label: 'פעולות' },
     { key: 'breakeven', icon: '⚖️', label: 'נקודת איזון' },
     { key: 'insights',  icon: '📈', label: 'תובנות' },
+    { key: 'import',    icon: '📂', label: 'ייבוא CSV' },
     { key: 'settings',  icon: '⚙️', label: 'הגדרות' },
   ];
 
@@ -103,6 +105,7 @@ export default function App() {
         {page === 'entries'   && <Entries   {...pageProps} />}
         {page === 'breakeven' && <Breakeven {...pageProps} />}
         {page === 'insights'  && <Insights  {...pageProps} />}
+        {page === 'import'    && <ImportCSV  {...pageProps} />}
         {page === 'settings'  && <Settings  {...pageProps} />}
 
         <BottomNav activePage={page} onNavigate={setPage} />

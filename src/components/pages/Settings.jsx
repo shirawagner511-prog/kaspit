@@ -214,14 +214,18 @@ export default function Settings({ entries, householdId, user, customCategories,
           <div className="be-card" style={{ marginTop: 12 }}>
             <div className="be-title" style={{ marginBottom: 10 }}>איך מתחילים עם קיקי?</div>
             {[
-              { n: '1', t: 'שמרי את מספר קיקי בוואטסאפ' },
-              { n: '2', t: 'רשמי כאן את מספר הטלפון שלך' },
-              { n: '3', t: 'שלחי לקיקי "קיקי, הוצאתי 50 שקל על אוכל"' },
-              { n: '4', t: 'קיקי תרשום אוטומטית ותאשר ✦' },
+              { n: '1', t: 'שמרי מפתח API למעלה' },
+              { n: '2', t: 'רשמי את מספר הטלפון שלך למעלה' },
+              { n: '3', t: 'שמרי את מספר קיקי בוואטסאפ:', sub: '+1 415 523 8886' },
+              { n: '4', t: 'שלחי לקיקי את הקוד: join method-strike' },
+              { n: '5', t: 'שלחי לקיקי: "קפה 18 שקל" — וזהו ✦' },
             ].map((s) => (
-              <div key={s.n} className="be-row" style={{ alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--accent)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>{s.n}</div>
-                <div style={{ fontSize: 13, color: 'var(--text2)' }}>{s.t}</div>
+              <div key={s.n} className="be-row" style={{ alignItems: 'flex-start', gap: 12, paddingTop: 8, paddingBottom: 8 }}>
+                <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--accent)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0, marginTop: 2 }}>{s.n}</div>
+                <div>
+                  <div style={{ fontSize: 13, color: 'var(--text2)' }}>{s.t}</div>
+                  {s.sub && <div style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 700, direction: 'ltr', marginTop: 2 }}>{s.sub}</div>}
+                </div>
               </div>
             ))}
           </div>
