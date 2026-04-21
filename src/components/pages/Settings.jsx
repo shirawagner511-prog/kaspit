@@ -158,15 +158,19 @@ export default function Settings({ entries, householdId, user, customCategories,
               <div className="name">קוד הזמנה לשיתוף</div>
               <div className="val" style={{ color: 'var(--accent)', letterSpacing: 3 }}>{household.inviteCode}</div>
             </div>
-            {members.length > 0 && members.map((m, i) => (
-              <div key={m.uid} className="be-row" style={{ borderBottom: i === members.length - 1 ? 'none' : undefined }}>
-                <div className="name" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--accent-dim)', border: '0.5px solid rgba(45,106,79,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 600, color: 'var(--accent)', flexShrink: 0 }}>
+            <div className="be-row" style={{ borderBottom: 'none' }}>
+              <div className="name" style={{ fontWeight: 600 }}>חברי הבית</div>
+              <div className="val" style={{ color: 'var(--text3)', fontSize: 13 }}>{household.members?.length || 1} משתמשים</div>
+            </div>
+            {(members.length > 0 ? members : (household.members || []).map((uid) => ({ uid }))).map((m, i, arr) => (
+              <div key={m.uid} className="be-row" style={{ borderBottom: i === arr.length - 1 ? 'none' : undefined, paddingRight: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'var(--accent-dim)', border: '0.5px solid rgba(45,106,79,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 600, color: 'var(--accent)', flexShrink: 0 }}>
                     {(m.displayName || m.email || '?').charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <div style={{ fontSize: 14, color: 'var(--text)' }}>{m.displayName || 'משתמש'}</div>
-                    {m.email && <div style={{ fontSize: 11, color: 'var(--text3)' }}>{m.email}</div>}
+                    <div style={{ fontSize: 14, color: 'var(--text)' }}>{m.displayName || m.email || m.uid}</div>
+                    {m.email && m.displayName && <div style={{ fontSize: 11, color: 'var(--text3)' }}>{m.email}</div>}
                   </div>
                 </div>
                 {m.uid === user?.uid && <div style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 600 }}>את</div>}
