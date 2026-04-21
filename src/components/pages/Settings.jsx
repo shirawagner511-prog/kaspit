@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getHousehold, saveCustomCategories, saveBudgets, saveSavingsGoal, saveUserPhone, saveUserApiKey } from '../../firebase/db';
+import { getHousehold, saveCustomCategories, saveBudgets, saveSavingsGoal, saveUserPhone, saveUserApiKey, updateEntry } from '../../firebase/db';
 import { DEFAULT_CATEGORIES } from '../../utils/constants';
 import { formatAmount } from '../../utils/format';
 
@@ -17,6 +17,8 @@ export default function Settings({ entries, householdId, user, customCategories,
   const [phoneSaved, setPhoneSaved] = useState(false);
   const [apiKey, setApiKey] = useState('');
   const [apiKeySaved, setApiKeySaved] = useState(false);
+  const [deletingCat, setDeletingCat] = useState(null); // { value, label, count }
+  const [transferTo, setTransferTo] = useState('');
 
   useEffect(() => {
     if (householdId) getHousehold(householdId).then(setHousehold).catch(console.error);
@@ -46,8 +48,24 @@ export default function Settings({ entries, householdId, user, customCategories,
     } finally { setSaving(false); }
   }
 
-  async function handleDeleteCategory(value) {
-    await saveCustomCategories(householdId, customCategories.filter((c) => c.value !== value));
+  function startDeleteCategory(cat) {
+    const count = entries.filter((e) => e.category === cat.value).length;
+    if (count > 0) {
+      setTransferTo('other');
+      setDeletingCat({ ...cat, count });
+    } else {
+      saveCustomCategories(householdId, customCategories.filter((c) => c.value !== cat.value));
+    }
+  }
+
+  async function confirmDeleteCategory() {
+    setSaving(true);
+    try {
+      const affected = entries.filter((e) => e.category === deletingCat.value);
+      await Promise.all(affected.map((e) => updateEntry(householdId, e.id, { category: transferTo })));
+      await saveCustomCategories(householdId, customCategories.filter((c) => c.value !== deletingCat.value));
+      setDeletingCat(null);
+    } finally { setSaving(false); }
   }
 
   async function handleSaveBudgets() {
@@ -309,7 +327,7 @@ export default function Settings({ entries, householdId, user, customCategories,
               <div key={c.value} className="be-row" style={{ alignItems: 'center' }}>
                 <div className="name">{c.icon} {c.label}</div>
                 <button
-                  onClick={() => handleDeleteCategory(c.value)}
+                  onClick={() => startDeleteCategory(c)}
                   style={{ background: 'var(--surface3)', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer', color: 'var(--accent3)', fontSize: 12, fontWeight: 700, padding: '4px 12px', fontFamily: 'Heebo,sans-serif', flexShrink: 0 }}
                 >
                   מחקי
@@ -318,6 +336,35 @@ export default function Settings({ entries, householdId, user, customCategories,
             ))}
           </div>
         </>
+      )}
+
+      {deletingCat && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div className="be-card" style={{ width: '100%', maxWidth: 400, margin: 0 }}>
+            <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 8 }}>מחיקת קטגוריה</div>
+            <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 16 }}>
+              יש {deletingCat.count} פעולות תחת "{deletingCat.label}". לאיזו קטגוריה להעביר אותן?
+            </div>
+            <select
+              className="form-input"
+              value={transferTo}
+              onChange={(e) => setTransferTo(e.target.value)}
+              style={{ marginBottom: 16 }}
+            >
+              {allCategories.filter((c) => c.value !== deletingCat.value).map((c) => (
+                <option key={c.value} value={c.value}>{c.icon ? `${c.icon} ` : ''}{c.label}</option>
+              ))}
+            </select>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="submit-btn" onClick={confirmDeleteCategory} disabled={saving} style={{ margin: 0, flex: 1 }}>
+                {saving ? 'מעביר...' : 'העבירי ומחקי'}
+              </button>
+              <button onClick={() => setDeletingCat(null)} style={{ flex: 1, background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 12, padding: '12px 0', fontFamily: 'Heebo,sans-serif', fontSize: 14, cursor: 'pointer', color: 'var(--text2)' }}>
+                ביטול
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
