@@ -64,6 +64,7 @@ app.post('/webhook', async (req, res) => {
     }
 
     for (const entry of entries) {
+      if (entry.category) entry.category = entry.category.toLowerCase();
       await addEntryToFirestore(householdId, entry, 'קיקי 🤖');
     }
 

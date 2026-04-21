@@ -33,6 +33,10 @@ export default function Settings({ entries, householdId, user, customCategories,
 
   async function handleAddCategory() {
     if (!newCatName.trim()) return;
+    if (customCategories.some((c) => c.label === newCatName.trim())) {
+      alert('קטגוריה עם שם זה כבר קיימת');
+      return;
+    }
     const value = 'custom_' + newCatName.trim().replace(/\s+/g, '_') + '_' + Date.now();
     const newCat = { value, label: newCatName.trim(), icon: newCatIcon.trim() || '🏷️' };
     setSaving(true);
@@ -43,10 +47,6 @@ export default function Settings({ entries, householdId, user, customCategories,
   }
 
   async function handleDeleteCategory(value) {
-    if (entries.some((e) => e.category === value)) {
-      alert('לא ניתן למחוק קטגוריה שיש בה פעולות');
-      return;
-    }
     await saveCustomCategories(householdId, customCategories.filter((c) => c.value !== value));
   }
 
@@ -308,7 +308,7 @@ export default function Settings({ entries, householdId, user, customCategories,
             ) : customCategories.map((c) => (
               <div key={c.value} className="be-row" style={{ alignItems: 'center' }}>
                 <div className="name">{c.icon} {c.label}</div>
-                <button onClick={() => handleDeleteCategory(c.value)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text3)', fontSize: 16 }}>🗑</button>
+                <button onClick={() => handleDeleteCategory(c.value)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent3)', fontSize: 18, padding: '4px 8px' }}>🗑</button>
               </div>
             ))}
           </div>

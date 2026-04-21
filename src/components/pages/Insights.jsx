@@ -19,8 +19,8 @@ function computeTrends(entries, currentMonth, currentYear) {
 
 export default function Insights({ entries, currentMonth, currentYear, allCategories = [] }) {
   const catMap = Object.fromEntries(allCategories.map((c) => [c.value, c]));
-  const getIcon = (cat) => catMap[cat]?.icon || '📦';
-  const getName = (cat) => catMap[cat]?.label || cat;
+  const getIcon = (cat) => catMap[cat?.toLowerCase()]?.icon || catMap[cat]?.icon || '📦';
+  const getName = (cat) => catMap[cat?.toLowerCase()]?.label || catMap[cat]?.label || cat;
   const trends = computeTrends(entries, currentMonth, currentYear);
   const prevLabel = currentMonth === 0 ? MONTHS_HE[11] : MONTHS_HE[currentMonth - 1];
 

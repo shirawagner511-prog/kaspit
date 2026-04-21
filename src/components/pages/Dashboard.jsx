@@ -57,8 +57,8 @@ function computeSmartFixed(entries) {
 
 export default function Dashboard({ entries, currentMonth, currentYear, householdId, user, onEdit, onDelete, allCategories = [], budgets = {}, savingsGoal = null }) {
   const catMap = Object.fromEntries(allCategories.map((c) => [c.value, c]));
-  const getIcon = (cat) => catMap[cat]?.icon || '📦';
-  const getName = (cat) => catMap[cat]?.label || cat;
+  const getIcon = (cat) => catMap[cat?.toLowerCase()]?.icon || catMap[cat]?.icon || '📦';
+  const getName = (cat) => catMap[cat?.toLowerCase()]?.label || catMap[cat]?.label || cat;
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [incomeOpen, setIncomeOpen] = useState(false);
   const [drilldown, setDrilldown] = useState(null);
