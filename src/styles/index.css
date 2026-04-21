@@ -42,18 +42,20 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Desktop layout ─────────────────────────────────── */
+/* ── Layout ─────────────────────────────────────────── */
 
 #root {
   display: flex;
   min-height: 100vh;
 }
 
+.desktop-sidebar { display: none; }
+
 .app-shell {
   flex: 1;
   display: flex;
   flex-direction: column;
-  max-width: 430px;
+  max-width: 480px;
   margin: 0 auto;
   width: 100%;
   padding-bottom: 90px;
