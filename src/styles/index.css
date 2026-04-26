@@ -293,10 +293,10 @@ svg {
     display: none;
   }
 
-  /* Sidebar=280px left, content max 480px centered in remaining space.
-     Content center = 280 + max(0,(vw-760)/2) + 240 = 520 + max(0,(vw-760)/2) */
+  /* RTL: sidebar 280px on the right, content 480px centered in remaining left space.
+     Content center from left = (100vw - 760px)/2 + 240px */
   .fab {
-    left: calc(520px + max(0px, (100vw - 760px) / 2));
+    left: calc((100vw - 760px) / 2 + 240px);
     right: auto;
     margin-inline: 0;
     transform: translateX(-50%);
