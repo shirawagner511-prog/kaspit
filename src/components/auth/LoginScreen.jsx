@@ -6,9 +6,17 @@ import { auth, googleProvider } from '../../firebase/config';
 const FEATURES = ['feature1', 'feature2', 'feature3'];
 
 export default function LoginScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const isHe = i18n.language === 'he';
+
+  function toggleLang() {
+    const next = isHe ? 'en' : 'he';
+    i18n.changeLanguage(next);
+    localStorage.setItem('budgi-lang', next);
+    document.documentElement.dir = next === 'he' ? 'rtl' : 'ltr';
+  }
 
   async function handleLogin() {
     setError('');
@@ -33,16 +41,29 @@ export default function LoginScreen() {
   }
 
   return (
-    <div className="login-screen">
+    <div className="login-screen" dir={isHe ? 'rtl' : 'ltr'}>
+
+      {/* Language toggle — top corner */}
+      <button className="login-lang-btn" onClick={toggleLang}>
+        {isHe ? 'EN' : 'עב'}
+      </button>
+
+      {/* Hero */}
       <div className="login-hero">
         <div className="login-wordmark" dir="ltr">
           <span className="login-wordmark-b">B</span>
           <span className="login-wordmark-rest">udgi</span>
         </div>
-        <div className="login-tagline">{t('login.tagline')}</div>
+
+        <div className="login-tagline">
+          {t('login.tagline').split('\n').map((line, i) => (
+            <span key={i}>{line}{i === 0 && <br />}</span>
+          ))}
+        </div>
         <div className="login-tagline-sub">{t('login.taglineSub')}</div>
       </div>
 
+      {/* CTA card */}
       <div className="login-card">
         <button className="google-btn" onClick={handleLogin} disabled={loading}>
           <svg className="google-logo" viewBox="0 0 24 24">
@@ -57,10 +78,11 @@ export default function LoginScreen() {
         <div className="login-hint">{t('login.hint')}</div>
       </div>
 
+      {/* Feature bullets */}
       <div className="login-features">
         {FEATURES.map((key) => (
           <div key={key} className="login-feature-row">
-            <span className="login-feature-dot" />
+            <span className="login-feature-check">✓</span>
             <span>{t(`login.${key}`)}</span>
           </div>
         ))}

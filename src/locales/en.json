@@ -28,8 +28,8 @@
     "other":     "Other"
   },
   "login": {
-    "tagline": "Smart family budgeting — together",
-    "taglineSub": "Know where every shekel goes. Plan together, spend smarter.",
+    "tagline": "Your family's finances,\nclear and under control.",
+    "taglineSub": "Track every shekel. Plan together. Spend smarter.",
     "signIn": "Sign in with Google",
     "hint": "Shared data — sign in with the same Google account on any device",
     "errorGeneric": "Sign-in error: ",
