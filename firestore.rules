@@ -24,6 +24,12 @@ service cloud.firestore {
         allow read, write: if request.auth != null &&
           request.auth.uid in get(/databases/$(database)/documents/households/$(householdId)).data.members;
       }
+
+      // Accounts: only household members can access
+      match /accounts/{accountId} {
+        allow read, write: if request.auth != null &&
+          request.auth.uid in get(/databases/$(database)/documents/households/$(householdId)).data.members;
+      }
     }
   }
 }

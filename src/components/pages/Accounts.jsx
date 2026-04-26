@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Landmark, Trash2 } from 'lucide-react';
-import { saveAccount, deleteAccount, resetAccountBalance } from '../../firebase/db';
+import { saveHouseholdAccounts } from '../../firebase/db';
 import { formatAmount } from '../../utils/format';
 
 const COLORS = ['#2D6A4F', '#1A6B8A', '#7C3AED', '#C0392B', '#E67E22', '#78716C'];
@@ -10,11 +10,10 @@ function computeBalance(account, entries) {
   const linked = entries.filter(
     (e) => e.accountId === account.id && e.date >= account.initialBalanceDate
   );
-  const delta = linked.reduce((sum, e) => {
+  return (account.initialBalance || 0) + linked.reduce((sum, e) => {
     if (e.type === 'income') return sum + e.amount;
     return sum - e.amount;
   }, 0);
-  return (account.initialBalance || 0) + delta;
 }
 
 function formatDate(isoDate) {
@@ -38,12 +37,15 @@ export default function Accounts({ accounts = [], entries = [], householdId }) {
     if (!newName.trim() || newBalance === '') return;
     setSaving(true);
     try {
-      await saveAccount(householdId, {
+      const newAccount = {
+        id: 'acc_' + Date.now(),
         name: newName.trim(),
         initialBalance: parseFloat(newBalance) || 0,
         initialBalanceDate: new Date().toISOString().slice(0, 10),
         color: newColor,
-      });
+        createdAt: new Date().toISOString(),
+      };
+      await saveHouseholdAccounts(householdId, [...accounts, newAccount]);
       setNewName(''); setNewBalance(''); setNewColor(COLORS[0]); setShowAdd(false);
     } finally {
       setSaving(false);
@@ -53,12 +55,17 @@ export default function Accounts({ accounts = [], entries = [], householdId }) {
   async function handleReset(accountId) {
     const val = parseFloat(resetVal);
     if (isNaN(val)) return;
-    await resetAccountBalance(householdId, accountId, val);
+    const updated = accounts.map((a) =>
+      a.id === accountId
+        ? { ...a, initialBalance: val, initialBalanceDate: new Date().toISOString().slice(0, 10) }
+        : a
+    );
+    await saveHouseholdAccounts(householdId, updated);
     setResetId(null); setResetVal('');
   }
 
   async function handleDelete(accountId) {
-    await deleteAccount(householdId, accountId);
+    await saveHouseholdAccounts(householdId, accounts.filter((a) => a.id !== accountId));
     setDeleteId(null);
   }
 
@@ -94,12 +101,12 @@ export default function Accounts({ accounts = [], entries = [], householdId }) {
                       </div>
                     </div>
                     <div style={{ textAlign: 'left', minWidth: 80 }}>
-                      <div className="expense-amount" style={{ color: balance >= 0 ? 'var(--accent)' : 'var(--danger)', fontFamily: 'DM Mono, monospace' }}>
+                      <div style={{ color: balance >= 0 ? 'var(--accent)' : 'var(--danger)', fontFamily: 'DM Mono, monospace', fontWeight: 600 }}>
                         {formatAmount(Math.abs(balance))}
                       </div>
                     </div>
                     <button
-                      onClick={() => { setResetId(isResetting ? null : account.id); setResetVal(String(balance)); }}
+                      onClick={() => { setResetId(isResetting ? null : account.id); setResetVal(String(Math.round(balance))); }}
                       style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 6, padding: '4px 10px', fontSize: 12, cursor: 'pointer', color: 'var(--text2)', whiteSpace: 'nowrap' }}
                     >
                       {t('accounts.resetBalance')}
@@ -180,7 +187,8 @@ export default function Accounts({ accounts = [], entries = [], householdId }) {
                 key={c}
                 onClick={() => setNewColor(c)}
                 style={{
-                  width: 24, height: 24, borderRadius: '50%', background: c, border: newColor === c ? '2px solid var(--text)' : '2px solid transparent',
+                  width: 24, height: 24, borderRadius: '50%', background: c,
+                  border: newColor === c ? '2px solid var(--text)' : '2px solid transparent',
                   cursor: 'pointer', padding: 0, flexShrink: 0,
                 }}
               />

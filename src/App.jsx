@@ -7,7 +7,6 @@ import { useAuth } from './hooks/useAuth';
 import { useEntries } from './hooks/useEntries';
 import { useHousehold } from './hooks/useHousehold';
 import { useAutoRecurring } from './hooks/useAutoRecurring';
-import { useAccounts } from './hooks/useAccounts';
 import { deleteEntry } from './firebase/db';
 import { getDefaultCategories } from './utils/constants';
 
@@ -32,8 +31,7 @@ export default function App() {
   const { t, i18n } = useTranslation();
   const { user, householdId, setHouseholdId, loading } = useAuth();
   const entries = useEntries(householdId);
-  const { budgets, savingsGoal, customCategories } = useHousehold(householdId);
-  const accounts = useAccounts(householdId);
+  const { budgets, savingsGoal, customCategories, accounts } = useHousehold(householdId);
 
   const defaultCategories = getDefaultCategories(t);
   const allCategories = [
