@@ -888,7 +888,7 @@ svg {
 /* ── FAB ───────────────────────────────────────────── */
 .fab {
   position: fixed;
-  bottom: 92px;
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
   background: var(--accent);
@@ -1694,6 +1694,10 @@ svg {
 }
 .form-input option {
   background: var(--surface);
+}
+.form-input.input-error {
+  border-color: #c0392b;
+  background: rgba(192,57,43,0.04);
 }
 
 .type-toggle {

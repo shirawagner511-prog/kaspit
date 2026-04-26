@@ -1,11 +1,60 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { signInWithPopup, signInWithRedirect, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import {
+  signInWithPopup, signInWithRedirect,
+  createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile,
+} from 'firebase/auth';
 import { auth, googleProvider } from '../../firebase/config';
 import { isUsernameTaken, registerUsername, getEmailByUsername } from '../../firebase/db';
 
 const FEATURES = ['feature1', 'feature2', 'feature3'];
 const USERNAME_RE = /^[a-zA-Z0-9_\u0590-\u05FF]{2,20}$/;
+const EMAIL_RE    = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function passwordStrength(pw) {
+  let score = 0;
+  if (pw.length >= 8)                      score++;
+  if (pw.length >= 12)                     score++;
+  if (/[A-Z]/.test(pw))                   score++;
+  if (/[0-9]/.test(pw))                   score++;
+  if (/[^a-zA-Z0-9\u0590-\u05FF]/.test(pw)) score++;
+  return score; // 0-5
+}
+
+function StrengthBar({ password }) {
+  const { t } = useTranslation();
+  if (!password) return null;
+  const s = passwordStrength(password);
+  const labels = [
+    t('login.strengthVeryWeak'),
+    t('login.strengthWeak'),
+    t('login.strengthFair'),
+    t('login.strengthGood'),
+    t('login.strengthStrong'),
+  ];
+  const colors = ['#c0392b', '#e67e22', '#f1c40f', '#27ae60', '#2D6A4F'];
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <div style={{ display: 'flex', gap: 3 }}>
+        {[1,2,3,4,5].map((i) => (
+          <div key={i} style={{
+            flex: 1, height: 4, borderRadius: 2,
+            background: s >= i ? colors[Math.min(s,5)-1] : 'var(--border)',
+            transition: 'background 0.2s',
+          }} />
+        ))}
+      </div>
+      <div style={{ fontSize: 11, color: s >= 3 ? 'var(--text2)' : '#c0392b', textAlign: 'start' }}>
+        {labels[Math.min(s, 4)]}
+      </div>
+    </div>
+  );
+}
+
+function FieldError({ msg }) {
+  if (!msg) return null;
+  return <div style={{ fontSize: 11, color: '#c0392b', marginTop: -6, textAlign: 'start' }}>{msg}</div>;
+}
 
 function GoogleIcon() {
   return (
@@ -20,17 +69,20 @@ function GoogleIcon() {
 
 export default function LoginScreen() {
   const { t, i18n } = useTranslation();
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState('');
+  const [error, setError]       = useState('');
+  const [loading, setLoading]   = useState('');
   const [showManual, setShowManual] = useState(false);
   const [isCreate, setIsCreate] = useState(false);
 
-  // form fields
-  const [username, setUsername] = useState('');
+  const [username,    setUsername]    = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
+  const [email,       setEmail]       = useState('');
+  const [password,    setPassword]    = useState('');
+  const [confirm,     setConfirm]     = useState('');
+
+  // touched: only show errors after user leaves a field
+  const [touched, setTouched] = useState({});
+  const touch = (field) => setTouched((p) => ({ ...p, [field]: true }));
 
   const isHe = i18n.language === 'he';
 
@@ -40,6 +92,19 @@ export default function LoginScreen() {
     localStorage.setItem('budgi-lang', next);
     document.documentElement.dir = next === 'he' ? 'rtl' : 'ltr';
   }
+
+  // ── field-level errors ──────────────────────────────
+  const errs = {
+    username:    !USERNAME_RE.test(username.trim())    ? t('login.errorUsernameChars') : '',
+    displayName: displayName.trim().length < 2         ? t('login.errorDisplayName')   : '',
+    email:       !EMAIL_RE.test(email.trim())          ? t('login.errorEmailFormat')   : '',
+    password:    passwordStrength(password) < 2        ? t('login.errorWeakPassword')  : '',
+    confirm:     password !== confirm                  ? t('login.errorPasswordMatch') : '',
+  };
+
+  const formValid = isCreate
+    ? !errs.username && !errs.displayName && !errs.email && !errs.password && !errs.confirm
+    : !errs.username && password.length >= 1;
 
   async function handleGoogle() {
     setError(''); setLoading('google');
@@ -58,26 +123,23 @@ export default function LoginScreen() {
 
   async function handleManual(e) {
     e.preventDefault();
-    setError('');
-    const uname = username.trim();
+    // touch all fields to reveal errors
+    const allFields = isCreate
+      ? { username: true, displayName: true, email: true, password: true, confirm: true }
+      : { username: true, password: true };
+    setTouched(allFields);
+    if (!formValid) return;
 
-    if (!USERNAME_RE.test(uname)) { setError(t('login.errorUsernameChars')); return; }
-    if (!password) return;
-
-    setLoading('manual');
+    setError(''); setLoading('manual');
     try {
+      const uname = username.trim().toLowerCase();
       if (isCreate) {
-        if (password !== confirm) { setError(t('login.errorPasswordMatch')); return; }
-        if (password.length < 6) { setError(t('login.errorWeakPassword')); return; }
-        if (!email.trim()) { setError(t('login.errorGeneric') + 'Email required'); return; }
-
         const taken = await isUsernameTaken(uname);
         if (taken) { setError(t('login.errorUsernameTaken')); return; }
 
-        // use username@budgi.internal as the firebase email so it's unique
-        const firebaseEmail = `${uname.toLowerCase()}@budgi.internal`;
+        const firebaseEmail = `${uname}@budgi.internal`;
         const cred = await createUserWithEmailAndPassword(auth, firebaseEmail, password);
-        await updateProfile(cred.user, { displayName: displayName.trim() || uname });
+        await updateProfile(cred.user, { displayName: displayName.trim() });
         await registerUsername(uname, email.trim(), cred.user.uid);
       } else {
         const foundEmail = await getEmailByUsername(uname);
@@ -91,10 +153,9 @@ export default function LoginScreen() {
   }
 
   function openManual(create) {
-    setIsCreate(create);
-    setShowManual(true);
-    setError('');
+    setIsCreate(create); setShowManual(true); setError('');
     setUsername(''); setDisplayName(''); setEmail(''); setPassword(''); setConfirm('');
+    setTouched({});
   }
 
   return (
@@ -123,9 +184,7 @@ export default function LoginScreen() {
             <button className="login-provider-btn" onClick={handleGoogle} disabled={!!loading}>
               <GoogleIcon /> {loading === 'google' ? '...' : t('login.signInGoogle')}
             </button>
-
             <div className="login-or"><span>{t('login.orDivider')}</span></div>
-
             <button className="login-provider-btn login-provider-manual" onClick={() => openManual(false)} disabled={!!loading}>
               {t('login.signInManual')}
             </button>
@@ -134,72 +193,83 @@ export default function LoginScreen() {
             </button>
           </>
         ) : (
-          <form onSubmit={handleManual} style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%' }}>
+          <form onSubmit={handleManual} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
             <div className="login-form-title">
               {isCreate ? t('login.createAccount') : t('login.signInManual')}
             </div>
 
+            {/* Username */}
             <input
-              className="form-input"
+              className={`form-input${touched.username && errs.username ? ' input-error' : ''}`}
               placeholder={t('login.usernameLabel')}
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              autoFocus
-              autoCapitalize="none"
-              autoCorrect="off"
-              required
+              onBlur={() => touch('username')}
+              autoFocus autoCapitalize="none" autoCorrect="off"
               dir="ltr"
             />
+            {touched.username && <FieldError msg={errs.username} />}
 
             {isCreate && (
               <>
+                {/* Display name */}
                 <input
-                  className="form-input"
+                  className={`form-input${touched.displayName && errs.displayName ? ' input-error' : ''}`}
                   placeholder={t('login.displayNamePlaceholder')}
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
+                  onBlur={() => touch('displayName')}
                 />
+                {touched.displayName && <FieldError msg={errs.displayName} />}
+
+                {/* Email */}
                 <input
-                  className="form-input"
+                  className={`form-input${touched.email && errs.email ? ' input-error' : ''}`}
                   type="email"
                   placeholder={t('login.emailPlaceholder')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  required
+                  onBlur={() => touch('email')}
                   dir="ltr"
                 />
+                {touched.email && <FieldError msg={errs.email} />}
               </>
             )}
 
+            {/* Password */}
             <input
-              className="form-input"
+              className={`form-input${touched.password && errs.password ? ' input-error' : ''}`}
               type="password"
               placeholder={t('login.passwordLabel')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
+              onBlur={() => touch('password')}
               dir="ltr"
             />
+            {isCreate && <StrengthBar password={password} />}
+            {touched.password && !isCreate && <FieldError msg={errs.password} />}
 
             {isCreate && (
-              <input
-                className="form-input"
-                type="password"
-                placeholder={t('login.passwordConfirmLabel')}
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                required
-                dir="ltr"
-              />
+              <>
+                <input
+                  className={`form-input${touched.confirm && errs.confirm ? ' input-error' : ''}`}
+                  type="password"
+                  placeholder={t('login.passwordConfirmLabel')}
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                  onBlur={() => touch('confirm')}
+                  dir="ltr"
+                />
+                {touched.confirm && <FieldError msg={errs.confirm} />}
+              </>
             )}
 
-            {isCreate && (
-              <div className="login-email-note">
-                🔒 {t('login.emailPlaceholder')}
-              </div>
-            )}
-
-            <button className="login-provider-btn login-provider-manual" type="submit" disabled={!!loading} style={{ marginTop: 4 }}>
+            <button
+              className="login-provider-btn login-provider-manual"
+              type="submit"
+              disabled={!!loading}
+              style={{ marginTop: 6 }}
+            >
               {loading === 'manual' ? '...' : isCreate ? t('login.createAccount') : t('login.signInBtn')}
             </button>
 
@@ -207,7 +277,7 @@ export default function LoginScreen() {
               {isCreate ? t('login.switchToSignIn') : t('login.switchToCreate')}
             </button>
             <button type="button" className="login-switch-link" onClick={() => { setShowManual(false); setError(''); }}>
-              ← {t('login.signInGoogle')}
+              ← {t('login.backToOptions')}
             </button>
           </form>
         )}
