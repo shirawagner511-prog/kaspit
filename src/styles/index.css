@@ -922,8 +922,10 @@ svg {
 .fab {
   position: fixed;
   bottom: calc(80px + env(safe-area-inset-bottom, 0px));
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: fit-content;
   background: var(--accent);
   color: white;
   border: none;
@@ -959,24 +961,24 @@ svg {
   pointer-events: none;
 }
 .fab:hover {
-  transform: translateX(-50%) translateY(-2px);
+  transform: translateY(-2px);
   box-shadow:
     0 16px 36px rgba(15, 50, 32, 0.36),
     0 6px 14px rgba(15, 50, 32, 0.22);
   background: var(--accent-600);
 }
 .fab:active {
-  transform: translateX(-50%) translateY(0) scale(0.98);
+  transform: scale(0.97);
 }
 
 @keyframes fab-in {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(20px) scale(0.8);
+    transform: translateY(16px) scale(0.9);
   }
   to {
     opacity: 1;
-    transform: translateX(-50%) translateY(0) scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 
