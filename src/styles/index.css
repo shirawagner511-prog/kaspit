@@ -172,7 +172,7 @@ svg {
   max-width: 480px;
   margin: 0 auto;
   width: 100%;
-  padding-bottom: 110px;
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
   position: relative;
   animation: app-fade-in var(--d-slow) var(--ease-out) both;
 }
@@ -292,9 +292,6 @@ svg {
 
   .bottom-nav {
     display: none;
-  }
-  .fab {
-    bottom: 32px;
   }
 
   .modal {
@@ -830,13 +827,50 @@ svg {
   transform: translateX(-50%);
   width: 100%;
   max-width: 480px;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.96);
   -webkit-backdrop-filter: saturate(180%) blur(16px);
   backdrop-filter: saturate(180%) blur(16px);
   border-top: 1px solid var(--hairline);
   display: flex;
-  z-index: 100;
-  padding: 10px 0 calc(16px + env(safe-area-inset-bottom));
+  align-items: flex-end;
+  z-index: 200;
+  padding: 0 0 calc(10px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Center add button — raised above the nav bar */
+.nav-add-wrap {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 6px;
+}
+.nav-add-btn {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  border: 3px solid #fff;
+  box-shadow: 0 4px 18px rgba(45, 106, 79, 0.38), 0 1px 4px rgba(0,0,0,0.12);
+  font-size: 28px;
+  font-weight: 300;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  transition: transform 0.15s var(--ease-spring), box-shadow 0.15s var(--ease);
+  position: relative;
+  z-index: 201;
+}
+.nav-add-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 24px rgba(45, 106, 79, 0.45), 0 2px 6px rgba(0,0,0,0.14);
+}
+.nav-add-btn:active {
+  transform: scale(0.95);
 }
 
 .nav-item {

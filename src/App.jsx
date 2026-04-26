@@ -121,11 +121,7 @@ export default function App() {
         {page === 'import'    && <ImportCSV  {...pageProps} />}
         {page === 'settings'  && <Settings  {...pageProps} />}
 
-        <BottomNav activePage={page} onNavigate={setPage} />
-
-        <button className="fab" onClick={() => setModalOpen(true)}>
-          <span>+</span> {t('dashboard.addEntry')}
-        </button>
+        <BottomNav activePage={page} onNavigate={setPage} onAdd={() => setModalOpen(true)} />
       </div>
 
       <AddEntryModal
