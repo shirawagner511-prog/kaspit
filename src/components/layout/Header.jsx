@@ -3,10 +3,15 @@ import { useTranslation } from 'react-i18next';
 import { signOut, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth, googleProvider } from '../../firebase/config';
 import { getMonths } from '../../utils/constants';
-import { RefreshCw, LogOut } from 'lucide-react';
+import { RefreshCw, LogOut, Languages } from 'lucide-react';
 
 export default function Header({ user, currentMonth, currentYear, onMonthChange }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  function toggleLang() {
+    const next = i18n.language === 'he' ? 'en' : 'he';
+    i18n.changeLanguage(next);
+    localStorage.setItem('budgi-lang', next);
+  }
   const [menuOpen, setMenuOpen] = useState(false);
   const months = getMonths(t);
   const MONTH_OPTIONS = useMemo(() => {
@@ -50,10 +55,24 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange 
 
   return (
     <div className="app-header">
-      <div className="app-logo" dir="ltr">
-        <span><span style={{ fontWeight: 700, color: 'var(--accent)' }}>B</span>udgi</span>
+      <div className="app-logo" dir="ltr" style={{ gap: 0 }}>
+        <span style={{ fontWeight: 700, color: 'var(--accent)' }}>B</span><span style={{ fontWeight: 400, color: 'var(--text)' }}>udgi</span>
       </div>
       <div className="header-right">
+        <button
+          onClick={toggleLang}
+          title={i18n.language === 'he' ? 'Switch to English' : 'עברית'}
+          style={{
+            background: 'var(--surface)', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-pill)', padding: '6px 10px',
+            cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4,
+            fontSize: 11, fontWeight: 600, color: 'var(--text2)',
+            boxShadow: 'var(--shadow-xs)', transition: 'border-color var(--d) var(--ease)',
+          }}
+        >
+          <Languages size={13} />
+          {i18n.language === 'he' ? 'EN' : 'עב'}
+        </button>
         <select className="month-selector" value={value} onChange={handleChange}>
           {MONTH_OPTIONS.map((o) => (
             <option key={`${o.year}-${o.month}`} value={`${o.year}-${o.month}`}>
