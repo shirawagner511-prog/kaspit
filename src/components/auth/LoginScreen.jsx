@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  signInWithPopup, signInWithRedirect,
-  createUserWithEmailAndPassword, signInWithEmailAndPassword,
-} from 'firebase/auth';
-import { auth, googleProvider, appleProvider } from '../../firebase/config';
+import { signInWithPopup, signInWithRedirect, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { auth, googleProvider } from '../../firebase/config';
+import { isUsernameTaken, registerUsername, getEmailByUsername } from '../../firebase/db';
 
 const FEATURES = ['feature1', 'feature2', 'feature3'];
+const USERNAME_RE = /^[a-zA-Z0-9_\u0590-\u05FF]{2,20}$/;
 
 function GoogleIcon() {
   return (
@@ -19,32 +18,20 @@ function GoogleIcon() {
   );
 }
 
-function AppleIcon() {
-  return (
-    <svg width="16" height="18" viewBox="0 0 814 1000" style={{ flexShrink: 0 }}>
-      <path fill="currentColor" d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-57.8-155.5-127.4C46 790.8 0 663.3 0 541.3c0-207.8 135.4-317.7 268.3-317.7 99.5 0 163.2 52.6 220.9 52.6 55.4 0 132.7-55.7 242.1-55.7 38.8 0 144.1 3.6 215.7 120.4zm-257.4-152.2c28.2-36.3 48.3-86.5 48.3-136.7 0-7-.6-14.1-1.9-19.8-45.9 1.7-101.1 30.6-134.4 72.3-26.1 31.8-49.5 82-49.5 133s.6 13.5 1.3 18.8c3.2.6 8.4 1.3 13.6 1.3 40.8 0 90.9-27.1 122.6-69.3z"/>
-    </svg>
-  );
-}
-
-function MailIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-      <rect x="2" y="4" width="20" height="16" rx="2"/>
-      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-    </svg>
-  );
-}
-
 export default function LoginScreen() {
   const { t, i18n } = useTranslation();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState('');
-  const [showEmail, setShowEmail] = useState(false);
+  const [showManual, setShowManual] = useState(false);
   const [isCreate, setIsCreate] = useState(false);
+
+  // form fields
+  const [username, setUsername] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+
   const isHe = i18n.language === 'he';
 
   function toggleLang() {
@@ -54,13 +41,13 @@ export default function LoginScreen() {
     document.documentElement.dir = next === 'he' ? 'rtl' : 'ltr';
   }
 
-  async function withProvider(provider, key) {
-    setError(''); setLoading(key);
+  async function handleGoogle() {
+    setError(''); setLoading('google');
     try {
-      await signInWithPopup(auth, provider);
+      await signInWithPopup(auth, googleProvider);
     } catch (e) {
       if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user') {
-        try { await signInWithRedirect(auth, provider); } catch (e2) { setError(t('login.errorGeneric') + e2.message); }
+        try { await signInWithRedirect(auth, googleProvider); } catch (e2) { setError(t('login.errorGeneric') + e2.message); }
       } else if (e.code === 'auth/unauthorized-domain') {
         setError(t('login.errorDomain'));
       } else {
@@ -69,25 +56,45 @@ export default function LoginScreen() {
     } finally { setLoading(''); }
   }
 
-  async function handleEmail(e) {
+  async function handleManual(e) {
     e.preventDefault();
     setError('');
-    if (!email || !password) return;
-    if (isCreate && password !== confirm) { setError(t('login.errorPasswordMatch')); return; }
-    if (isCreate && password.length < 6) { setError(t('login.errorWeakPassword')); return; }
-    setLoading('email');
+    const uname = username.trim();
+
+    if (!USERNAME_RE.test(uname)) { setError(t('login.errorUsernameChars')); return; }
+    if (!password) return;
+
+    setLoading('manual');
     try {
       if (isCreate) {
-        await createUserWithEmailAndPassword(auth, email, password);
+        if (password !== confirm) { setError(t('login.errorPasswordMatch')); return; }
+        if (password.length < 6) { setError(t('login.errorWeakPassword')); return; }
+        if (!email.trim()) { setError(t('login.errorGeneric') + 'Email required'); return; }
+
+        const taken = await isUsernameTaken(uname);
+        if (taken) { setError(t('login.errorUsernameTaken')); return; }
+
+        // use username@budgi.internal as the firebase email so it's unique
+        const firebaseEmail = `${uname.toLowerCase()}@budgi.internal`;
+        const cred = await createUserWithEmailAndPassword(auth, firebaseEmail, password);
+        await updateProfile(cred.user, { displayName: displayName.trim() || uname });
+        await registerUsername(uname, email.trim(), cred.user.uid);
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        const foundEmail = await getEmailByUsername(uname);
+        if (!foundEmail) { setError(t('login.errorUsernameNotFound')); return; }
+        await signInWithEmailAndPassword(auth, foundEmail, password);
       }
     } catch (e) {
-      if (e.code === 'auth/email-already-in-use') setError(t('login.errorEmailInUse'));
-      else if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') setError(t('login.errorWrongPassword'));
-      else if (e.code === 'auth/user-not-found') setError(t('login.errorUserNotFound'));
+      if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') setError(t('login.errorWrongPassword'));
       else setError(t('login.errorGeneric') + e.message);
     } finally { setLoading(''); }
+  }
+
+  function openManual(create) {
+    setIsCreate(create);
+    setShowManual(true);
+    setError('');
+    setUsername(''); setDisplayName(''); setEmail(''); setPassword(''); setConfirm('');
   }
 
   return (
@@ -111,31 +118,59 @@ export default function LoginScreen() {
       </div>
 
       <div className="login-card">
-        {!showEmail ? (
+        {!showManual ? (
           <>
-            <button className="login-provider-btn" onClick={() => withProvider(googleProvider, 'google')} disabled={!!loading}>
+            <button className="login-provider-btn" onClick={handleGoogle} disabled={!!loading}>
               <GoogleIcon /> {loading === 'google' ? '...' : t('login.signInGoogle')}
             </button>
-            <button className="login-provider-btn login-provider-apple" onClick={() => withProvider(appleProvider, 'apple')} disabled={!!loading}>
-              <AppleIcon /> {loading === 'apple' ? '...' : t('login.signInApple')}
-            </button>
+
             <div className="login-or"><span>{t('login.orDivider')}</span></div>
-            <button className="login-provider-btn login-provider-email" onClick={() => setShowEmail(true)} disabled={!!loading}>
-              <MailIcon /> {t('login.signInEmail')}
+
+            <button className="login-provider-btn login-provider-manual" onClick={() => openManual(false)} disabled={!!loading}>
+              {t('login.signInManual')}
+            </button>
+            <button className="login-provider-btn login-provider-create" onClick={() => openManual(true)} disabled={!!loading}>
+              {t('login.createAccount')}
             </button>
           </>
         ) : (
-          <form onSubmit={handleEmail} style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%' }}>
+          <form onSubmit={handleManual} style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%' }}>
+            <div className="login-form-title">
+              {isCreate ? t('login.createAccount') : t('login.signInManual')}
+            </div>
+
             <input
               className="form-input"
-              type="email"
-              placeholder={t('login.emailLabel')}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              placeholder={t('login.usernameLabel')}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               autoFocus
+              autoCapitalize="none"
+              autoCorrect="off"
               required
               dir="ltr"
             />
+
+            {isCreate && (
+              <>
+                <input
+                  className="form-input"
+                  placeholder={t('login.displayNamePlaceholder')}
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                />
+                <input
+                  className="form-input"
+                  type="email"
+                  placeholder={t('login.emailPlaceholder')}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  dir="ltr"
+                />
+              </>
+            )}
+
             <input
               className="form-input"
               type="password"
@@ -145,6 +180,7 @@ export default function LoginScreen() {
               required
               dir="ltr"
             />
+
             {isCreate && (
               <input
                 className="form-input"
@@ -156,14 +192,22 @@ export default function LoginScreen() {
                 dir="ltr"
               />
             )}
-            <button className="login-provider-btn login-provider-email" type="submit" disabled={!!loading} style={{ marginTop: 4 }}>
-              {loading === 'email' ? '...' : isCreate ? t('login.createAccount') : t('login.signInBtn')}
+
+            {isCreate && (
+              <div className="login-email-note">
+                🔒 {t('login.emailPlaceholder')}
+              </div>
+            )}
+
+            <button className="login-provider-btn login-provider-manual" type="submit" disabled={!!loading} style={{ marginTop: 4 }}>
+              {loading === 'manual' ? '...' : isCreate ? t('login.createAccount') : t('login.signInBtn')}
             </button>
-            <button type="button" className="login-switch-link" onClick={() => { setIsCreate(!isCreate); setError(''); setConfirm(''); }}>
+
+            <button type="button" className="login-switch-link" onClick={() => openManual(!isCreate)}>
               {isCreate ? t('login.switchToSignIn') : t('login.switchToCreate')}
             </button>
-            <button type="button" className="login-switch-link" onClick={() => { setShowEmail(false); setError(''); }}>
-              ← {t('login.orDivider')}
+            <button type="button" className="login-switch-link" onClick={() => { setShowManual(false); setError(''); }}>
+              ← {t('login.signInGoogle')}
             </button>
           </form>
         )}
@@ -172,14 +216,16 @@ export default function LoginScreen() {
         <div className="login-hint">{t('login.hint')}</div>
       </div>
 
-      <div className="login-features">
-        {FEATURES.map((key) => (
-          <div key={key} className="login-feature-row">
-            <span className="login-feature-check">✓</span>
-            <span>{t(`login.${key}`)}</span>
-          </div>
-        ))}
-      </div>
+      {!showManual && (
+        <div className="login-features">
+          {FEATURES.map((key) => (
+            <div key={key} className="login-feature-row">
+              <span className="login-feature-check">✓</span>
+              <span>{t(`login.${key}`)}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="login-footer">{t('login.footer')}</div>
     </div>

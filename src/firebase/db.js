@@ -29,6 +29,23 @@ export async function getOrCreateUser(firebaseUser) {
   return snap.data();
 }
 
+// ── Username registry ───────────────────────────────────
+
+export async function isUsernameTaken(username) {
+  const snap = await getDoc(doc(db, 'usernames', username.toLowerCase()));
+  return snap.exists();
+}
+
+export async function registerUsername(username, email, uid) {
+  await setDoc(doc(db, 'usernames', username.toLowerCase()), { email, uid });
+}
+
+export async function getEmailByUsername(username) {
+  const snap = await getDoc(doc(db, 'usernames', username.toLowerCase()));
+  if (!snap.exists()) return null;
+  return snap.data().email;
+}
+
 export async function getUserData(uid) {
   const snap = await getDoc(doc(db, 'users', uid));
   return snap.exists() ? snap.data() : {};
