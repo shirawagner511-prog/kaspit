@@ -130,7 +130,7 @@ export default function App() {
 
       {!(modalOpen || !!editEntry) && createPortal(
         <button className="fab" onClick={() => setModalOpen(true)}>
-          <span>+</span> {t('dashboard.addEntry')}
+          {t('dashboard.addEntry')}
         </button>,
         document.body
       )}
