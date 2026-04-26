@@ -921,7 +921,7 @@ svg {
 /* ── FAB ───────────────────────────────────────────── */
 .fab {
   position: fixed;
-  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
   background: var(--accent);
@@ -936,7 +936,7 @@ svg {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  z-index: 50;
+  z-index: 300;
   box-shadow:
     0 10px 30px rgba(15, 50, 32, 0.32),
     0 4px 10px rgba(15, 50, 32, 0.18);
@@ -987,14 +987,8 @@ svg {
 }
 
 @keyframes page-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 .section-title {
