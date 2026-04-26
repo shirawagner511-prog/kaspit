@@ -300,10 +300,22 @@ export default function Settings({ entries, householdId, user, customCategories,
       {/* ── Categories ── */}
       <AccordionHeader skey="cats" icon="🏷️" label={t('settings.categories')} />
       <AccordionBody skey="cats">
-        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-          <input className="form-input" placeholder="😀" value={newCatIcon} onChange={(e) => setNewCatIcon(e.target.value)} style={{ width: 60, textAlign: 'center', fontSize: 20 }} maxLength={2} />
+        <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'stretch' }}>
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <input
+              className="form-input"
+              value={newCatIcon}
+              onChange={(e) => setNewCatIcon(e.target.value)}
+              maxLength={2}
+              style={{ width: 48, textAlign: 'center', fontSize: 22, padding: '0 4px', height: '100%', boxSizing: 'border-box', cursor: 'text' }}
+              title={t('settings.iconHint')}
+            />
+            {!newCatIcon && (
+              <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, pointerEvents: 'none', opacity: 0.35 }}>🏷️</span>
+            )}
+          </div>
           <input className="form-input" placeholder={t('settings.addCategoryPlaceholder')} value={newCatName} onChange={(e) => setNewCatName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()} style={{ flex: 1 }} />
-          <button className="btn-primary" onClick={handleAddCategory} disabled={saving || !newCatName.trim()} style={{ padding: '0 16px', fontSize: 13, width: 'auto' }}>{t('settings.addCategoryBtn')}</button>
+          <button className="btn-primary" onClick={handleAddCategory} disabled={saving || !newCatName.trim()} style={{ padding: '0 16px', fontSize: 13, width: 'auto', flexShrink: 0 }}>{t('settings.addCategoryBtn')}</button>
         </div>
         {customCategories.length === 0 ? (
           <div style={{ color: 'var(--text3)', fontSize: 13, textAlign: 'center', padding: '8px 0' }}>{t('settings.noCats')}</div>

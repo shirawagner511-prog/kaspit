@@ -29,10 +29,15 @@
   },
   "login": {
     "tagline": "Smart family budgeting — together",
+    "taglineSub": "Know where every shekel goes. Plan together, spend smarter.",
     "signIn": "Sign in with Google",
     "hint": "Shared data — sign in with the same Google account on any device",
     "errorGeneric": "Sign-in error: ",
-    "errorDomain": "Domain not authorized in Firebase. Add it under Authentication → Authorized Domains"
+    "errorDomain": "Domain not authorized in Firebase. Add it under Authentication → Authorized Domains",
+    "feature1": "Track income & expenses in seconds",
+    "feature2": "Shared household — both partners always in sync",
+    "feature3": "Break-even calculator & spending insights",
+    "footer": "Free · Private · No ads · Built for real families"
   },
   "household": {
     "welcome": "Welcome to BUDGI",
@@ -138,6 +143,7 @@
     "addCategory": "Add category",
     "addCategoryPlaceholder": "New category name...",
     "addCategoryBtn": "+ Add",
+    "iconHint": "Type an emoji for the icon",
     "deleteCategory": "Delete",
     "noCats": "No custom categories yet",
     "budgets": "Monthly budgets",

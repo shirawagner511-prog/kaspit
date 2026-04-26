@@ -307,78 +307,117 @@ svg {
 }
 
 /* ── Login ─────────────────────────────────────────── */
+/* ── Login Screen ─────────────────────────────── */
 .login-screen {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   min-height: 100vh;
   width: 100%;
   max-width: 480px;
   margin: 0 auto;
-  padding: 40px 24px;
+  padding: 64px 28px 36px;
   text-align: center;
-  gap: 22px;
   box-sizing: border-box;
   animation: app-fade-in var(--d-slow) var(--ease-out) both;
+  gap: 0;
 }
 
-.login-logo {
+.login-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 40px;
+}
+
+.login-wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0;
   font-family: "Lora", Georgia, serif;
-  font-size: 48px;
+  font-size: 58px;
   font-weight: 600;
-  letter-spacing: -1.5px;
+  letter-spacing: -2px;
+  line-height: 1;
+}
+.login-wordmark-b  { color: var(--accent); }
+.login-wordmark-rest { color: var(--text); }
+
+.login-tagline {
+  font-family: "DM Sans", sans-serif;
+  font-size: 20px;
+  font-weight: 500;
   color: var(--text);
-  background: linear-gradient(180deg, var(--text) 0%, var(--accent-700) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  line-height: 1.35;
+  max-width: 320px;
+}
+.login-tagline-sub {
+  font-size: 14px;
+  color: var(--text2);
+  line-height: 1.6;
+  max-width: 300px;
 }
 
-.login-sub {
-  font-size: 16px;
-  color: var(--text2);
-  line-height: 1.55;
-  max-width: 300px;
+.login-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 24px;
+  box-sizing: border-box;
 }
 
 .google-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
-  background: var(--surface);
+  width: 100%;
+  background: var(--bg);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 26px;
+  border-radius: 10px;
+  padding: 14px 20px;
   font-family: inherit;
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: var(--shadow-xs);
   transition:
     transform var(--d) var(--ease-spring),
     box-shadow var(--d) var(--ease),
-    border-color var(--d) var(--ease);
+    border-color var(--d) var(--ease),
+    background var(--d) var(--ease);
 }
-.google-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+.google-btn:hover:not(:disabled) {
+  background: var(--surface);
   border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(45, 106, 79, 0.12);
 }
-.google-btn:active {
+.google-btn:active:not(:disabled) {
   transform: translateY(0);
+}
+.google-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
 }
 .google-logo {
   width: 20px;
   height: 20px;
+  flex-shrink: 0;
 }
 
 .login-hint {
   font-size: 12px;
   color: var(--text3);
-  max-width: 260px;
-  line-height: 1.5;
+  max-width: 280px;
+  line-height: 1.55;
 }
 
 .login-error {
@@ -388,24 +427,47 @@ svg {
   border: 1px solid rgba(178, 58, 46, 0.18);
   border-radius: var(--radius);
   padding: 12px 16px;
-  max-width: 320px;
+  width: 100%;
+  box-sizing: border-box;
   text-align: center;
   animation: shake 0.4s var(--ease) both;
 }
 
+.login-features {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 32px 4px 0;
+}
+.login-feature-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--text2);
+  line-height: 1.4;
+}
+.login-feature-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+.login-footer {
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: 0.02em;
+  padding-top: 28px;
+}
+
 @keyframes shake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  20%,
-  60% {
-    transform: translateX(-4px);
-  }
-  40%,
-  80% {
-    transform: translateX(4px);
-  }
+  0%,  100% { transform: translateX(0); }
+  20%, 60%  { transform: translateX(-4px); }
+  40%, 80%  { transform: translateX(4px); }
 }
 
 /* ── Household Setup ───────────────────────────────── */

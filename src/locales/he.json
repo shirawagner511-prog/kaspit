@@ -29,10 +29,15 @@
   },
   "login": {
     "tagline": "ניהול תקציב משפחתי חכם — יחד",
+    "taglineSub": "דעו לאן הולך כל שקל. תכננו ביחד, הוציאו בחכמה.",
     "signIn": "כניסה עם Google",
     "hint": "נתוני המשפחה משותפים — כניסה עם אותו Google Account מכל מכשיר",
     "errorGeneric": "שגיאת כניסה: ",
-    "errorDomain": "הדומיין לא מורשה ב-Firebase. יש להוסיף אותו ב-Authentication → Authorized Domains"
+    "errorDomain": "הדומיין לא מורשה ב-Firebase. יש להוסיף אותו ב-Authentication → Authorized Domains",
+    "feature1": "מעקב הכנסות והוצאות בשניות",
+    "feature2": "בית משותף — שני בני הזוג תמיד מסונכרנים",
+    "feature3": "מחשבון נקודת איזון ותובנות הוצאה",
+    "footer": "חינמי · פרטי · ללא פרסומות · נבנה למשפחות אמיתיות"
   },
   "household": {
     "welcome": "ברוכים הבאים ל-BUDGI",
@@ -138,6 +143,7 @@
     "addCategory": "הוסיפי קטגוריה",
     "addCategoryPlaceholder": "שם קטגוריה חדשה...",
     "addCategoryBtn": "+ הוסיפי",
+    "iconHint": "הקלידי אמוג׳י לאייקון",
     "deleteCategory": "מחקי",
     "noCats": "אין עדיין קטגוריות מותאמות",
     "budgets": "תקציבים חודשיים",
