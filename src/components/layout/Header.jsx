@@ -50,9 +50,8 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange 
 
   return (
     <div className="app-header">
-      <div className="app-logo">
-        <span style={{ fontWeight: 700, color: 'var(--accent)' }}>B</span>
-        <span style={{ fontWeight: 400, color: 'var(--text)' }}>udgi</span>
+      <div className="app-logo" dir="ltr">
+        <span><span style={{ fontWeight: 700, color: 'var(--accent)' }}>B</span>udgi</span>
       </div>
       <div className="header-right">
         <select className="month-selector" value={value} onChange={handleChange}>

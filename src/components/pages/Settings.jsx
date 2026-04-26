@@ -89,7 +89,12 @@ export default function Settings({ entries, householdId, user, customCategories,
 
   async function handleSaveBudgets() {
     setSaving(true);
-    try { await saveBudgets(householdId, localBudgets); }
+    try {
+      const cleaned = Object.fromEntries(
+        Object.entries(localBudgets).filter(([, v]) => v !== undefined && !isNaN(v))
+      );
+      await saveBudgets(householdId, cleaned);
+    }
     finally { setSaving(false); }
   }
 
