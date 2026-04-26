@@ -10,7 +10,7 @@ const PIE_COLORS = [
   '#34d399','#fb923c','#f472b6','#60a5fa','#facc15',
 ];
 
-function DonutChart({ slices, onSliceClick }) {
+function DonutChart({ slices, onSliceClick, labelExpenses, labelByCategory }) {
   const [hovered, setHovered] = useState(null);
   const r = 54, cx = 64, cy = 64, baseStroke = 28;
   const circ = 2 * Math.PI * r;
@@ -49,8 +49,8 @@ function DonutChart({ slices, onSliceClick }) {
         </>
       ) : (
         <>
-          <text x={74} y={70} textAnchor="middle" fill="var(--text3)" fontSize={11} fontFamily="DM Sans,Heebo,sans-serif">הוצאות</text>
-          <text x={74} y={85} textAnchor="middle" fill="var(--text3)" fontSize={11} fontFamily="DM Sans,Heebo,sans-serif">לפי קטגוריה</text>
+          <text x={74} y={70} textAnchor="middle" fill="var(--text3)" fontSize={11} fontFamily="DM Sans,Heebo,sans-serif">{labelExpenses}</text>
+          <text x={74} y={85} textAnchor="middle" fill="var(--text3)" fontSize={11} fontFamily="DM Sans,Heebo,sans-serif">{labelByCategory}</text>
         </>
       )}
     </svg>
@@ -114,9 +114,9 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
     const d = new Date();
     const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     try {
-      await addEntry(householdId, { name, amount, category, date, fixed: 'fixed', type: 'expense', note: 'הוזן אוטומטית' }, user);
+      await addEntry(householdId, { name, amount, category, date, fixed: 'fixed', type: 'expense', note: t('misc.autoAdded') }, user);
     } catch (e) {
-      alert('שגיאה בהוספה: ' + e.message);
+      alert(t('dashboard.errorAdd') + e.message);
     }
   }
 
@@ -124,7 +124,7 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
     <div className="page">
       {exceededBudgets.length > 0 && (
         <div className="alert" style={{ flexDirection: 'column', gap: 6 }}>
-          <strong>⚠️ חריגה מתקציב ב-{exceededBudgets.length} קטגוריות</strong>
+          <strong>⚠️ {t('dashboard.overBudget', { count: exceededBudgets.length })}</strong>
           {exceededBudgets.map(([cat, amt]) => (
             <div key={cat} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
               <span>{getIcon(cat)} {getName(cat)}</span>
@@ -138,16 +138,16 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
         <div className="alert info" style={{ cursor: 'pointer' }} onClick={() => setSuggestionsOpen((o) => !o)}>
           💡
           <div>
-            <strong>יש {suggested.length} הוצאות קבועות שלא הוזנו החודש</strong>
+            <strong>{t('dashboard.suggestedMsg', { count: suggested.length })}</strong>
             {suggestionsOpen && (
               <div style={{ marginTop: 8 }}>
                 {suggested.map((s) => (
                   <div key={s.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid rgba(124,106,247,.2)' }}>
-                    <span>{s.name} <small style={{ color: 'var(--text3)' }}>(ממוצע {formatAmount(s.avgAmount)})</small></span>
+                    <span>{s.name} <small style={{ color: 'var(--text3)' }}>({t('dashboard.suggestedAvg')} {formatAmount(s.avgAmount)})</small></span>
                     <button
                       onClick={(e) => { e.stopPropagation(); quickAddFixed(s.name, s.avgAmount, s.category); }}
                       style={{ background: 'var(--accent)', border: 'none', color: 'white', borderRadius: 6, padding: '3px 10px', fontSize: 11, fontFamily: 'Heebo,sans-serif', cursor: 'pointer' }}
-                    >+ הוסיפי</button>
+                    >{t('dashboard.suggestedAdd')}</button>
                   </div>
                 ))}
               </div>
@@ -166,9 +166,9 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
             style={{ cursor: totalIn > 0 ? 'pointer' : 'default', textDecoration: totalIn > 0 ? 'underline dotted' : 'none' }}
             onClick={() => totalIn > 0 && setIncomeOpen((o) => !o)}
           >
-            הכנסות {formatAmount(totalIn)} {totalIn > 0 ? (incomeOpen ? '▴' : '▾') : ''}
+            {t('dashboard.income')} {formatAmount(totalIn)} {totalIn > 0 ? (incomeOpen ? '▴' : '▾') : ''}
           </span>
-          {' · '}הוצאות {formatAmount(totalOut)}
+          {' · '}{t('dashboard.expenses')} {formatAmount(totalOut)}
         </div>
         {incomeOpen && (
           <div style={{ marginTop: 12, borderTop: '1px solid rgba(255,255,255,.1)', paddingTop: 10, textAlign: 'right' }}>
@@ -185,7 +185,7 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
       {(totalIn > 0 || totalOut > 0) && (
         <div className="progress-section">
           <div className="progress-label">
-            <span>ניצול הכנסה</span><span>{Math.round(pct)}%</span>
+            <span>{t('dashboard.incomeUtil')}</span><span>{Math.round(pct)}%</span>
           </div>
           <div className="progress-bar">
             <div className={`progress-fill ${bc}`} style={{ width: `${pct}%` }} />
@@ -196,7 +196,7 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
       {totalBudget > 0 && (
         <div className="progress-section">
           <div className="progress-label">
-            <span>ניצול תקציב</span>
+            <span>{t('dashboard.budgetUtil')}</span>
             <span style={{ color: totalOut > totalBudget ? 'var(--danger)' : 'var(--text2)' }}>
               {formatAmount(totalOut)} / {formatAmount(totalBudget)}
             </span>
@@ -210,7 +210,7 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
       {savingsGoal?.target > 0 && (
         <div className="progress-section">
           <div className="progress-label">
-            <span>🎯 {savingsGoal.name || 'יעד חיסכון'}</span>
+            <span>🎯 {savingsGoal.name || t('dashboard.savingsGoal')}</span>
             <span>{formatAmount(savingsGoal.saved || 0)} / {formatAmount(savingsGoal.target)}</span>
           </div>
           <div className="progress-bar">
@@ -221,10 +221,10 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
 
       <div className="cards-row">
         {[
-          { key: 'fixed',    label: 'קבועות',   val: fixedTotal,    color: 'red',              filter: (e) => e.type !== 'income' && e.fixed === 'fixed' },
-          { key: 'variable', label: 'משתנות',   val: variableTotal, color: 'orange',           filter: (e) => e.type !== 'income' && e.fixed === 'variable' },
-          { key: 'saving',   label: 'חיסכונות', val: savingsTotal,  color: 'var(--accent)',    filter: (e) => e.type === 'saving' },
-          { key: 'income',   label: 'הכנסות',   val: totalIn,       color: 'var(--accent2)',   filter: (e) => e.type === 'income' },
+          { key: 'fixed',    label: t('dashboard.fixed'),        val: fixedTotal,    color: 'red',            filter: (e) => e.type !== 'income' && e.fixed === 'fixed' },
+          { key: 'variable', label: t('dashboard.variable'),     val: variableTotal, color: 'orange',         filter: (e) => e.type !== 'income' && e.fixed === 'variable' },
+          { key: 'saving',   label: t('dashboard.savingsLabel'), val: savingsTotal,  color: 'var(--accent)',  filter: (e) => e.type === 'saving' },
+          { key: 'income',   label: t('dashboard.incomeLabel'),  val: totalIn,       color: 'var(--accent2)', filter: (e) => e.type === 'income' },
         ].map(({ key, label, val, color, filter }) => (
           <div
             key={key}
@@ -257,9 +257,11 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
 
       {sortedCats.length > 0 && (
         <>
-          <div className="section-title">לפי קטגוריה</div>
+          <div className="section-title">{t('dashboard.byCategory')}</div>
           <div style={{ display: 'flex', justifyContent: 'center', margin: '8px 0 4px' }}>
             <DonutChart
+              labelExpenses={t('dashboard.donutExpenses')}
+              labelByCategory={t('dashboard.donutByCategory')}
               slices={sortedCats.map(([cat, amt], i) => ({
                 pct: totalOut > 0 ? (amt / totalOut) * 100 : 0,
                 color: PIE_COLORS[i % PIE_COLORS.length],
@@ -318,7 +320,7 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
 
       {me.length > 0 ? (
         <>
-          <div className="section-title">אחרונות</div>
+          <div className="section-title">{t('dashboard.recent')}</div>
           <div className="expense-list">
             {me.slice(0, 5).map((e) => (
               <EntryItem key={e.id} entry={e} showDelete={true} onEdit={onEdit} onDelete={onDelete} />
@@ -328,7 +330,7 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
       ) : (
         <div className="empty-state">
           <div className="es-icon">💸</div>
-          <div className="es-text">עוד אין פעולות לחודש זה<br />לחצי + להוסיף</div>
+          <div className="es-text">{t('dashboard.noEntries')}<br />{t('dashboard.noEntriesHint')}</div>
         </div>
       )}
     </div>

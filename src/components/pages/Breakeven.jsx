@@ -63,10 +63,10 @@ export default function Breakeven({ entries, currentMonth, currentYear, allCateg
   if (summary.length === 0 && savings.length === 0) {
     return (
       <div className="page">
-        <div className="section-title">הוצאות קבועות ו-Break-Even</div>
+        <div className="section-title">{t('breakeven.title')}</div>
         <div className="empty-state">
           <div className="es-icon">⚖️</div>
-          <div className="es-text">הוסיפי הוצאות קבועות כדי לראות את הסיכום</div>
+          <div className="es-text">{t('breakeven.empty')}</div>
         </div>
       </div>
     );
@@ -78,12 +78,11 @@ export default function Breakeven({ entries, currentMonth, currentYear, allCateg
 
       {fixedIncome.length > 0 && (
         <div className="be-card">
-          <div className="be-title">💳 הכנסות קבועות</div>
+          <div className="be-title">💳 {t('breakeven.fixedIncome')}</div>
           {fixedIncome.map((r) => (
             <div key={r.name} className="be-row">
               <div className="name" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span>{getIcon(r.category)}</span>
-                <span>{r.name}</span>
+                <span>{getIcon(r.category)}</span><span>{r.name}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <div className="val" style={{ color: 'var(--accent2)' }}>+{formatAmount(r.avgAmount)}</div>
@@ -92,7 +91,7 @@ export default function Breakeven({ entries, currentMonth, currentYear, allCateg
             </div>
           ))}
           <div className="be-total">
-            <div className="name">סה"כ הכנסות קבועות</div>
+            <div className="name">{t('breakeven.totalIncome')}</div>
             <div className="val" style={{ color: 'var(--accent2)' }}>{formatAmount(fixedIncome.reduce((s, r) => s + r.avgAmount, 0))}</div>
           </div>
         </div>
@@ -100,12 +99,11 @@ export default function Breakeven({ entries, currentMonth, currentYear, allCateg
 
       {fixed.length > 0 && (
         <div className="be-card">
-          <div className="be-title">📌 חודשיות</div>
+          <div className="be-title">📌 {t('breakeven.monthly')}</div>
           {fixed.map((r) => (
             <div key={r.name} className="be-row">
               <div className="name" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span>{getIcon(r.category)}</span>
-                <span>{r.name}</span>
+                <span>{getIcon(r.category)}</span><span>{r.name}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <div className="val" style={{ color: 'var(--danger)' }}>−{formatAmount(r.avgAmount)}</div>
@@ -114,7 +112,7 @@ export default function Breakeven({ entries, currentMonth, currentYear, allCateg
             </div>
           ))}
           <div className="be-total">
-            <div className="name">סה"כ חודשיות</div>
+            <div className="name">{t('breakeven.totalMonthly')}</div>
             <div className="val">{formatAmount(fTotal)}</div>
           </div>
         </div>
@@ -122,21 +120,20 @@ export default function Breakeven({ entries, currentMonth, currentYear, allCateg
 
       {bimonthly.length > 0 && (
         <div className="be-card">
-          <div className="be-title">📆 דו-חודשיות (ממוצע חודשי)</div>
+          <div className="be-title">📆 {t('breakeven.bimonthly')}</div>
           {bimonthly.map((r) => (
             <div key={r.name} className="be-row">
               <div className="name" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span>{getIcon(r.category)}</span>
-                <span>{r.name}</span>
+                <span>{getIcon(r.category)}</span><span>{r.name}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div className="val" style={{ color: 'var(--danger)' }}>−{formatAmount(r.avgAmount / 2)}/חודש</div>
+                <div className="val" style={{ color: 'var(--danger)' }}>−{formatAmount(r.avgAmount / 2)}{t('breakeven.perMonth')}</div>
                 {r.paidThisMonth ? <CheckCircle2 size={16} color="var(--text3)" /> : <Clock size={16} color="var(--text3)" />}
               </div>
             </div>
           ))}
           <div className="be-total">
-            <div className="name">תוספת ממוצעת חודשית</div>
+            <div className="name">{t('breakeven.monthlyAvg')}</div>
             <div className="val">{formatAmount(bTotal)}</div>
           </div>
         </div>
@@ -144,7 +141,7 @@ export default function Breakeven({ entries, currentMonth, currentYear, allCateg
 
       {savings.length > 0 && (
         <div className="be-card">
-          <div className="be-title">💰 חיסכונות קבועים</div>
+          <div className="be-title">💰 {t('breakeven.fixedSavings')}</div>
           {savings.map((e) => (
             <div key={e.name} className="be-row">
               <div className="name">{e.name}</div>
@@ -158,8 +155,8 @@ export default function Breakeven({ entries, currentMonth, currentYear, allCateg
         <>
           <div className="toggle-row">
             <div>
-              <div className="toggle-label">מצב ספטמבר (מעון)</div>
-              <div className="toggle-sub">הוסיפי הוצאות מעון לתחשיב</div>
+              <div className="toggle-label">{t('breakeven.septemberMode')}</div>
+              <div className="toggle-sub">{t('breakeven.septemberHint')}</div>
             </div>
             <label className="toggle">
               <input type="checkbox" checked={isSep} onChange={(e) => setIsSep(e.target.checked)} />
@@ -167,7 +164,7 @@ export default function Breakeven({ entries, currentMonth, currentYear, allCateg
             </label>
           </div>
           <div className="be-card" style={isSep ? {} : { opacity: .4 }}>
-            <div className="be-title">⚠️ ספטמבר+ (מעון)</div>
+            <div className="be-title">⚠️ {t('breakeven.septemberSection')}</div>
             {sep.map((r) => (
               <div key={r.name} className="be-row">
                 <div className="name">{r.name}</div>
@@ -175,7 +172,7 @@ export default function Breakeven({ entries, currentMonth, currentYear, allCateg
               </div>
             ))}
             <div className="be-total">
-              <div className="name">תוספת ספטמבר</div>
+              <div className="name">{t('breakeven.septemberAddition')}</div>
               <div className="val">{formatAmount(sTotal)}</div>
             </div>
           </div>
@@ -185,37 +182,37 @@ export default function Breakeven({ entries, currentMonth, currentYear, allCateg
       <div className="section-title">🎯 Break-Even</div>
       <div className="be-card">
         <div className="be-row">
-          <div className="name">קבועות חודשיות</div>
+          <div className="name">{t('breakeven.monthly')}</div>
           <div className="val">{formatAmount(fTotal)}</div>
         </div>
         {bimonthly.length > 0 && (
           <div className="be-row">
-            <div className="name">דו-חודשיות (ממוצע)</div>
+            <div className="name">{t('breakeven.bimonthly')}</div>
             <div className="val">{formatAmount(bTotal)}</div>
           </div>
         )}
         {savTotal > 0 && (
           <div className="be-row">
-            <div className="name">חיסכונות</div>
+            <div className="name">{t('breakeven.fixedSavings')}</div>
             <div className="val">{formatAmount(savTotal)}</div>
           </div>
         )}
         <div className="be-total">
-          <div className="name">Break-Even{isSep ? ' (ספטמבר)' : ''}</div>
+          <div className="name">{isSep ? t('breakeven.breakevenSep') : t('breakeven.breakevenPoint')}</div>
           <div className="val">₪{Math.round(activeTotal).toLocaleString()}</div>
         </div>
       </div>
 
-      <div className={`target-row breakeven`}>
-        <div className="tname">Break-Even</div>
+      <div className="target-row breakeven">
+        <div className="tname">{t('breakeven.breakevenPoint')}</div>
         <div className="tval">₪{Math.round(activeTotal).toLocaleString()}</div>
       </div>
       <div className="target-row surplus">
-        <div className="tname">פלוס 10%</div>
+        <div className="tname">{t('breakeven.plus10')}</div>
         <div className="tval">₪{Math.ceil(activeTotal * 1.1).toLocaleString()}</div>
       </div>
       <div className="target-row surplus">
-        <div className="tname">פלוס 20%</div>
+        <div className="tname">{t('breakeven.plus20')}</div>
         <div className="tval">₪{Math.ceil(activeTotal * 1.2).toLocaleString()}</div>
       </div>
 
@@ -223,7 +220,7 @@ export default function Breakeven({ entries, currentMonth, currentYear, allCateg
         <div className="be-card" style={{ marginTop: 14 }}>
           <div className="be-title">📊 {months[currentMonth]}</div>
           <div className="be-row">
-            <div className="name">הכנסה</div>
+            <div className="name">{t('breakeven.monthIncome')}</div>
             <div className="val" style={{ color: 'var(--accent2)' }}>{formatAmount(monthIncome)}</div>
           </div>
           <div className="be-row">
@@ -231,7 +228,7 @@ export default function Breakeven({ entries, currentMonth, currentYear, allCateg
             <div className="val">{formatAmount(activeTotal)}</div>
           </div>
           <div className="be-total">
-            <div className="name">מצב</div>
+            <div className="name">{t('breakeven.monthBalance')}</div>
             <div className="val" style={{ color: monthIncome >= activeTotal ? 'var(--accent2)' : 'var(--danger)' }}>
               {monthIncome >= activeTotal ? '✅ +' : '⚠️ −'}{formatAmount(Math.abs(monthIncome - activeTotal))}
             </div>

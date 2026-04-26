@@ -3,6 +3,7 @@ import {
   Gamepad2, Dumbbell, Smartphone, Plane, ShoppingBag, Shield, PawPrint,
   PiggyBank, Package, Zap, Droplets, Gift, TrendingUp, Fuel, Trash2,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { formatAmount } from '../../utils/format';
 
 const CAT_ICONS = {
@@ -30,14 +31,14 @@ const CAT_ICONS = {
   fuel: Fuel,
 };
 
-const TAG_MAP = {
-  fixed:     <span className="tag fixed">קבועה</span>,
-  bimonthly: <span className="tag bimonthly">דו-חודשית</span>,
-  variable:  <span className="tag var">משתנה</span>,
-  sep:       <span className="sep-badge">ספטמ׳+</span>,
-};
-
 export default function EntryItem({ entry, showDelete, onDelete, onEdit }) {
+  const { t } = useTranslation();
+  const TAG_MAP = {
+    fixed:     <span className="tag fixed">{t('entryItem.fixed')}</span>,
+    bimonthly: <span className="tag bimonthly">{t('entryItem.bimonthly')}</span>,
+    variable:  <span className="tag var">{t('entryItem.variable')}</span>,
+    sep:       <span className="sep-badge">{t('entryItem.sep')}</span>,
+  };
   const isIn = entry.type === 'income';
   const [year, month, day] = (entry.date || '').split('-');
   const dateStr = day ? `${parseInt(day)}/${parseInt(month)}` : '';

@@ -46,7 +46,7 @@ export default function Insights({ entries, currentMonth, currentYear, allCatego
       {trends.length === 0 ? (
         <div className="empty-state">
           <div className="es-icon">📈</div>
-          <div className="es-text">צריך לפחות שני חודשים כדי להציג מגמות</div>
+          <div className="es-text">{t('insights.twoMonthsMin')}</div>
         </div>
       ) : (
         <div className="expense-list">
@@ -74,7 +74,7 @@ export default function Insights({ entries, currentMonth, currentYear, allCatego
         </div>
       )}
 
-      <div className="section-title">הוצאות 6 חודשים</div>
+      <div className="section-title">{t('insights.last6')}</div>
       <div className="be-card">
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 80, paddingBottom: 4 }}>
           {monthTotals.map((m) => {
