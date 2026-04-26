@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { getRedirectResult } from 'firebase/auth';
 import { auth } from './firebase/config';
@@ -124,9 +125,12 @@ export default function App() {
         <BottomNav activePage={page} onNavigate={setPage} />
       </div>
 
-      <button className="fab" onClick={() => setModalOpen(true)}>
-        <span>+</span> {t('dashboard.addEntry')}
-      </button>
+      {createPortal(
+        <button className="fab" onClick={() => setModalOpen(true)}>
+          <span>+</span> {t('dashboard.addEntry')}
+        </button>,
+        document.body
+      )}
 
       <AddEntryModal
         open={modalOpen || !!editEntry}

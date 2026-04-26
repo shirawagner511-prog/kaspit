@@ -293,6 +293,22 @@ svg {
     display: none;
   }
 
+  /* On desktop: sidebar 280px on the right (RTL), content is left portion max 480px.
+     Center FAB within the content column. */
+  .fab {
+    right: calc(280px + (max(100vw - 280px, 0px) - min(100vw - 280px, 480px)) / 2 + min(100vw - 280px, 480px) / 2);
+    left: auto;
+    margin-inline: 0;
+    transform: translateX(50%);
+    bottom: 32px;
+  }
+  .fab:hover {
+    transform: translateX(50%) translateY(-2px);
+  }
+  .fab:active {
+    transform: translateX(50%) scale(0.97);
+  }
+
   .modal {
     border-radius: var(--radius-lg);
     max-width: 480px;
