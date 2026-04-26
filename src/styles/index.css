@@ -987,6 +987,40 @@ svg {
   transform: scale(0.97);
 }
 
+/* ── Scroll-to-top button ───────────────────────── */
+.scroll-top-btn {
+  position: fixed;
+  bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  inset-inline-end: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.10);
+  animation: scroll-top-in 0.2s var(--ease-spring) both;
+  transition: background var(--d) var(--ease), color var(--d) var(--ease), transform 0.15s var(--ease-spring);
+}
+.scroll-top-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+.scroll-top-btn:active {
+  transform: scale(0.92);
+}
+@keyframes scroll-top-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.8); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);   }
+}
+
 @keyframes fab-in {
   from {
     opacity: 0;

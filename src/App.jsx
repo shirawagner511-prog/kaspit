@@ -14,6 +14,7 @@ import { LayoutDashboard, ListOrdered, Scale, TrendingUp, FolderInput, Settings 
 import LoginScreen from './components/auth/LoginScreen';
 import HouseholdSetup from './components/auth/HouseholdSetup';
 import Loader from './components/shared/Loader';
+import ScrollToTop from './components/shared/ScrollToTop';
 import Header from './components/layout/Header';
 import BottomNav from './components/layout/BottomNav';
 import AddEntryModal from './components/shared/AddEntryModal';
@@ -124,6 +125,8 @@ export default function App() {
 
         <BottomNav activePage={page} onNavigate={setPage} />
       </div>
+
+      <ScrollToTop />
 
       {createPortal(
         <button className="fab" onClick={() => setModalOpen(true)}>
