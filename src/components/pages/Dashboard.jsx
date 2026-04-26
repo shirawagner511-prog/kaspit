@@ -10,32 +10,49 @@ const PIE_COLORS = [
   '#34d399','#fb923c','#f472b6','#60a5fa','#facc15',
 ];
 
-function DonutChart({ slices }) {
-  const r = 54, cx = 64, cy = 64, stroke = 28;
+function DonutChart({ slices, onSliceClick }) {
+  const [hovered, setHovered] = useState(null);
+  const r = 54, cx = 64, cy = 64, baseStroke = 28;
   const circ = 2 * Math.PI * r;
   let offset = 0;
+  const activeSlice = hovered !== null ? slices[hovered] : null;
+
   return (
-    <svg width={128} height={128} viewBox="0 0 128 128">
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--surface3)" strokeWidth={stroke} />
+    <svg width={148} height={148} viewBox="0 0 148 148" style={{ cursor: 'pointer', overflow: 'visible' }}>
+      <circle cx={74} cy={74} r={r} fill="none" stroke="var(--surface3)" strokeWidth={baseStroke} />
       {slices.map((s, i) => {
         const dash = (s.pct / 100) * circ;
+        const isHovered = hovered === i;
+        const sw = isHovered ? baseStroke + 6 : baseStroke;
         const el = (
           <circle
             key={i}
-            cx={cx} cy={cy} r={r}
+            cx={74} cy={74} r={r}
             fill="none"
             stroke={s.color}
-            strokeWidth={stroke}
+            strokeWidth={sw}
             strokeDasharray={`${dash} ${circ - dash}`}
             strokeDashoffset={circ * 0.25 - offset}
-            style={{ transition: 'stroke-dasharray .4s' }}
+            style={{ transition: 'stroke-width .15s, opacity .15s', opacity: hovered !== null && !isHovered ? 0.45 : 1, cursor: 'pointer' }}
+            onMouseEnter={() => setHovered(i)}
+            onMouseLeave={() => setHovered(null)}
+            onClick={() => onSliceClick(i)}
           />
         );
         offset += dash;
         return el;
       })}
-      <text x={cx} y={cy - 6} textAnchor="middle" fill="var(--text1)" fontSize={11} fontFamily="Heebo,sans-serif">הוצאות</text>
-      <text x={cx} y={cy + 10} textAnchor="middle" fill="var(--text1)" fontSize={11} fontFamily="Heebo,sans-serif">לפי קטגוריה</text>
+      {activeSlice ? (
+        <>
+          <text x={74} y={68} textAnchor="middle" fill="var(--text)" fontSize={11} fontFamily="DM Sans,Heebo,sans-serif" fontWeight="600">{activeSlice.name}</text>
+          <text x={74} y={84} textAnchor="middle" fill={activeSlice.color} fontSize={14} fontFamily="DM Mono,monospace" fontWeight="500">{Math.round(activeSlice.pct)}%</text>
+        </>
+      ) : (
+        <>
+          <text x={74} y={70} textAnchor="middle" fill="var(--text3)" fontSize={11} fontFamily="DM Sans,Heebo,sans-serif">הוצאות</text>
+          <text x={74} y={85} textAnchor="middle" fill="var(--text3)" fontSize={11} fontFamily="DM Sans,Heebo,sans-serif">לפי קטגוריה</text>
+        </>
+      )}
     </svg>
   );
 }
@@ -242,10 +259,17 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
         <>
           <div className="section-title">לפי קטגוריה</div>
           <div style={{ display: 'flex', justifyContent: 'center', margin: '8px 0 4px' }}>
-            <DonutChart slices={sortedCats.map(([, amt], i) => ({
-              pct: totalOut > 0 ? (amt / totalOut) * 100 : 0,
-              color: PIE_COLORS[i % PIE_COLORS.length],
-            }))} />
+            <DonutChart
+              slices={sortedCats.map(([cat, amt], i) => ({
+                pct: totalOut > 0 ? (amt / totalOut) * 100 : 0,
+                color: PIE_COLORS[i % PIE_COLORS.length],
+                name: getName(cat),
+              }))}
+              onSliceClick={(i) => {
+                const cat = sortedCats[i][0];
+                setCatDrilldown((d) => d === cat ? null : cat);
+              }}
+            />
           </div>
           <div className="expense-list">
             {sortedCats.map(([cat, amt], i) => {
