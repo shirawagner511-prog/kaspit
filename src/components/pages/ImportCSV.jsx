@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { addEntry } from '../../firebase/db';
+import Loader from '../shared/Loader';
 import { formatAmount } from '../../utils/format';
 import { CATEGORY_VALUES } from '../../utils/constants';
 
@@ -155,10 +156,8 @@ export default function ImportCSV({ entries, householdId, user, customCategories
 
   if (step === 'parsing') return (
     <div className="page">
-      <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-        <div className="loading-spinner" style={{ margin: '0 auto 16px' }} />
-        <div style={{ color: 'var(--text2)', fontSize: 14 }}>קיקי קוראת את הקובץ...</div>
-      </div>
+      <Loader />
+      <div style={{ textAlign: 'center', color: 'var(--text2)', fontSize: 14, marginTop: 4 }}>קיקי קוראת את הקובץ...</div>
     </div>
   );
 

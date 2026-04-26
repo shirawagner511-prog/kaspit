@@ -2102,26 +2102,83 @@ svg {
 }
 
 /* ── Loading ───────────────────────────────────────── */
+/* ── Branded Loader ─────────────────────────────── */
+
+/* Fullscreen overlay — fixed so it always covers viewport on mobile too */
+.loader-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Inline (inside a card / page section) */
+.loader-inline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 24px 0;
+}
+
+/* The mark itself: spinning ring + B letter */
+.loader-mark {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: loader-breathe 1.6s var(--ease) infinite;
+}
+
+.loader-ring {
+  animation: loader-spin 1s linear infinite;
+}
+
+.loader-arc {
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+.loader-letter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Lora", Georgia, serif;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: -0.5px;
+  user-select: none;
+  line-height: 1;
+}
+
+@keyframes loader-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes loader-breathe {
+  0%, 100% { opacity: 1;   transform: scale(1);    }
+  50%       { opacity: 0.7; transform: scale(0.96); }
+}
+
+/* Legacy — keep for any stray references */
 .loading-screen {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  flex-direction: column;
-  gap: 16px;
 }
 .loading-spinner {
-  width: 36px;
-  height: 36px;
-  border: 2.5px solid var(--surface3);
+  width: 32px;
+  height: 32px;
+  border: 2.5px solid var(--border);
   border-top-color: var(--accent);
   border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  animation: loader-spin 0.7s linear infinite;
 }
 
 /* ── RTL number direction (preserved) ──────────────── */

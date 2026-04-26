@@ -12,6 +12,7 @@ import { getDefaultCategories } from './utils/constants';
 import { LayoutDashboard, ListOrdered, Scale, TrendingUp, FolderInput, Settings as SettingsIcon } from 'lucide-react';
 import LoginScreen from './components/auth/LoginScreen';
 import HouseholdSetup from './components/auth/HouseholdSetup';
+import Loader from './components/shared/Loader';
 import Header from './components/layout/Header';
 import BottomNav from './components/layout/BottomNav';
 import AddEntryModal from './components/shared/AddEntryModal';
@@ -64,7 +65,7 @@ export default function App() {
 
   useAutoRecurring(entries, currentMonth, currentYear, householdId, user);
 
-  if (loading) return <div className="loading-screen"><div className="loading-spinner" /></div>;
+  if (loading) return <Loader fullscreen />;
   if (!user) return <LoginScreen />;
   if (!householdId) return <HouseholdSetup user={user} onComplete={setHouseholdId} />;
 
