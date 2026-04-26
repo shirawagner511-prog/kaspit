@@ -293,20 +293,20 @@ svg {
     display: none;
   }
 
-  /* On desktop: sidebar 280px on the right (RTL), content is left portion max 480px.
-     Center FAB within the content column. */
+  /* Sidebar=280px left, content max 480px centered in remaining space.
+     Content center = 280 + max(0,(vw-760)/2) + 240 = 520 + max(0,(vw-760)/2) */
   .fab {
-    right: calc(280px + (max(100vw - 280px, 0px) - min(100vw - 280px, 480px)) / 2 + min(100vw - 280px, 480px) / 2);
-    left: auto;
+    left: calc(520px + max(0px, (100vw - 760px) / 2));
+    right: auto;
     margin-inline: 0;
-    transform: translateX(50%);
+    transform: translateX(-50%);
     bottom: 32px;
   }
   .fab:hover {
-    transform: translateX(50%) translateY(-2px);
+    transform: translateX(-50%) translateY(-2px);
   }
   .fab:active {
-    transform: translateX(50%) scale(0.97);
+    transform: translateX(-50%) scale(0.97);
   }
 
   .modal {
