@@ -105,7 +105,7 @@
     "savingsGoal": "Savings goal",
     "byCategory": "By category",
     "recent": "Recent",
-    "addEntry": "+ Add entry",
+    "addEntry": "Add entry",
     "overBudget": "Over budget in {{count}} categories",
     "errorAdd": "Error adding: ",
     "donutExpenses": "Expenses",
