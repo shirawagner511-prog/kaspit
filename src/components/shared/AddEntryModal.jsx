@@ -27,7 +27,7 @@ function filterCategories(allCategories, type) {
   return allCategories.filter((c) => !['income', 'savings'].includes(c.value));
 }
 
-export default function AddEntryModal({ open, onClose, householdId, user, entry, allCategories = [], customCategories = [] }) {
+export default function AddEntryModal({ open, onClose, householdId, user, entry, allCategories = [], customCategories = [], accounts = [] }) {
   const { t } = useTranslation();
   const isEdit = !!entry;
 
@@ -38,6 +38,7 @@ export default function AddEntryModal({ open, onClose, householdId, user, entry,
   const [date, setDate] = useState(today());
   const [fixed, setFixed] = useState('fixed');
   const [note, setNote] = useState('');
+  const [accountId, setAccountId] = useState('');
   const [loading, setLoading] = useState(false);
   const [addingCat, setAddingCat] = useState(false);
   const [newCatName, setNewCatName] = useState('');
@@ -65,6 +66,7 @@ export default function AddEntryModal({ open, onClose, householdId, user, entry,
       setDate(entry.date || today());
       setFixed(entry.fixed || 'fixed');
       setNote(entry.note || '');
+      setAccountId(entry.accountId || '');
     } else {
       resetFields();
     }
@@ -89,7 +91,7 @@ export default function AddEntryModal({ open, onClose, householdId, user, entry,
   function resetFields() {
     setName(''); setAmount(''); setNote('');
     setType('expense'); setDate(today());
-    setCategory('housing'); setFixed('fixed');
+    setCategory('housing'); setFixed('fixed'); setAccountId('');
   }
 
   const visibleCategories = filterCategories(allCategories, type);
@@ -105,7 +107,7 @@ export default function AddEntryModal({ open, onClose, householdId, user, entry,
     }
     setLoading(true);
     try {
-      const data = { name: name.trim(), amount: parseFloat(amount), category, date, fixed, type, note: note.trim() };
+      const data = { name: name.trim(), amount: parseFloat(amount), category, date, fixed, type, note: note.trim(), accountId: accountId || null };
       if (isEdit) {
         await updateEntry(householdId, entry.id, data);
       } else {
@@ -200,6 +202,18 @@ export default function AddEntryModal({ open, onClose, householdId, user, entry,
           <label className="form-label">{t('addEntry.note')}</label>
           <input className="form-input" placeholder={t('addEntry.notePlaceholder')} value={note} onChange={(e) => setNote(e.target.value)} />
         </div>
+
+        {accounts.length > 0 && (
+          <div className="form-group">
+            <label className="form-label">{t('accounts.nav')}</label>
+            <select className="form-input" value={accountId} onChange={(e) => setAccountId(e.target.value)}>
+              <option value="">{t('accounts.noAccount')}</option>
+              {accounts.map((a) => (
+                <option key={a.id} value={a.id}>{a.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <button className="submit-btn" onClick={handleSubmit} disabled={loading}>
           {loading ? t('addEntry.saving2') : isEdit ? t('addEntry.saveChanges') : t('addEntry.addNew')}

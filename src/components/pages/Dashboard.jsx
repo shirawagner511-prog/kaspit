@@ -73,9 +73,20 @@ function computeSmartFixed(entries) {
   }));
 }
 
-export default function Dashboard({ entries, currentMonth, currentYear, householdId, user, onEdit, onDelete, allCategories = [], budgets = {}, savingsGoal = null }) {
+function computeAccountBalance(account, entries) {
+  const linked = entries.filter(
+    (e) => e.accountId === account.id && e.date >= account.initialBalanceDate
+  );
+  return (account.initialBalance || 0) + linked.reduce((sum, e) => {
+    if (e.type === 'income') return sum + e.amount;
+    return sum - e.amount;
+  }, 0);
+}
+
+export default function Dashboard({ entries, currentMonth, currentYear, householdId, user, onEdit, onDelete, allCategories = [], budgets = {}, savingsGoal = null, accounts = [], onNavigate }) {
   const { t } = useTranslation();
   const months = getMonths(t);
+  const accountsTotal = accounts.reduce((sum, a) => sum + computeAccountBalance(a, entries), 0);
   const catMap = Object.fromEntries(allCategories.map((c) => [c.value, c]));
   const getIcon = (cat) => catMap[cat?.toLowerCase()]?.icon || catMap[cat]?.icon || '📦';
   const getName = (cat) => catMap[cat?.toLowerCase()]?.label || catMap[cat]?.label || cat;
@@ -215,6 +226,39 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
           </div>
           <div className="progress-bar">
             <div className="progress-fill safe" style={{ width: `${Math.min(((savingsGoal.saved||0)/savingsGoal.target)*100,100)}%` }} />
+          </div>
+        </div>
+      )}
+
+      {accounts.length > 0 && (
+        <div className="card" style={{ marginBottom: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+            <span className="label">{t('accounts.title')}</span>
+            {onNavigate && (
+              <button onClick={() => onNavigate('accounts')} style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: 12, cursor: 'pointer', padding: 0 }}>
+                {t('accounts.nav')} ›
+              </button>
+            )}
+          </div>
+          {accounts.map((a) => {
+            const bal = computeAccountBalance(a, entries);
+            return (
+              <div key={a.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '5px 0', borderBottom: '0.5px solid var(--border)', fontSize: 13 }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: a.color, display: 'inline-block' }} />
+                  {a.name}
+                </span>
+                <span style={{ fontFamily: 'DM Mono, monospace', color: bal >= 0 ? 'var(--accent)' : 'var(--danger)', fontWeight: 500 }}>
+                  {formatAmount(Math.abs(bal))}
+                </span>
+              </div>
+            );
+          })}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 8, fontWeight: 600 }}>
+            <span className="label">{t('accounts.total')}</span>
+            <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 16, color: accountsTotal >= 0 ? 'var(--accent)' : 'var(--danger)' }}>
+              {formatAmount(Math.abs(accountsTotal))}
+            </span>
           </div>
         </div>
       )}

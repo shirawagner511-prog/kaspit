@@ -7,10 +7,11 @@ import { useAuth } from './hooks/useAuth';
 import { useEntries } from './hooks/useEntries';
 import { useHousehold } from './hooks/useHousehold';
 import { useAutoRecurring } from './hooks/useAutoRecurring';
+import { useAccounts } from './hooks/useAccounts';
 import { deleteEntry } from './firebase/db';
 import { getDefaultCategories } from './utils/constants';
 
-import { LayoutDashboard, ListOrdered, Scale, TrendingUp, FolderInput, Settings as SettingsIcon } from 'lucide-react';
+import { LayoutDashboard, ListOrdered, Scale, TrendingUp, FolderInput, Landmark, Settings as SettingsIcon } from 'lucide-react';
 import LoginScreen from './components/auth/LoginScreen';
 import HouseholdSetup from './components/auth/HouseholdSetup';
 import Loader from './components/shared/Loader';
@@ -25,12 +26,14 @@ import Breakeven from './components/pages/Breakeven';
 import Insights from './components/pages/Insights';
 import Settings from './components/pages/Settings';
 import ImportCSV from './components/pages/ImportCSV';
+import Accounts from './components/pages/Accounts';
 
 export default function App() {
   const { t, i18n } = useTranslation();
   const { user, householdId, setHouseholdId, loading } = useAuth();
   const entries = useEntries(householdId);
   const { budgets, savingsGoal, customCategories } = useHousehold(householdId);
+  const accounts = useAccounts(householdId);
 
   const defaultCategories = getDefaultCategories(t);
   const allCategories = [
@@ -73,9 +76,10 @@ export default function App() {
 
   const pageProps = {
     entries, currentMonth, currentYear, householdId, user,
-    allCategories, customCategories, budgets, savingsGoal,
+    allCategories, customCategories, budgets, savingsGoal, accounts,
     onEdit: setEditEntry,
     onDelete: setDeleteId,
+    onNavigate: setPage,
   };
 
   const navItems = [
@@ -84,6 +88,7 @@ export default function App() {
     { key: 'breakeven', Icon: Scale,           label: t('nav.breakeven') },
     { key: 'insights',  Icon: TrendingUp,      label: t('nav.insights') },
     { key: 'import',    Icon: FolderInput,     label: 'CSV' },
+    { key: 'accounts',  Icon: Landmark,        label: t('accounts.nav') },
     { key: 'settings',  Icon: SettingsIcon,    label: t('nav.settings') },
   ];
 
@@ -121,6 +126,7 @@ export default function App() {
         {page === 'breakeven' && <Breakeven {...pageProps} />}
         {page === 'insights'  && <Insights  {...pageProps} />}
         {page === 'import'    && <ImportCSV  {...pageProps} />}
+        {page === 'accounts'  && <Accounts  {...pageProps} />}
         {page === 'settings'  && <Settings  {...pageProps} />}
 
         <BottomNav activePage={page} onNavigate={setPage} />
@@ -143,6 +149,7 @@ export default function App() {
         entry={editEntry}
         allCategories={allCategories}
         customCategories={customCategories}
+        accounts={accounts}
       />
 
       <ConfirmDialog

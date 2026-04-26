@@ -128,6 +128,32 @@ export async function saveSavingsGoal(householdId, savingsGoal) {
   await setDoc(doc(db, 'households', householdId), { savingsGoal }, { merge: true });
 }
 
+// ── Accounts ───────────────────────────────────────────
+
+export async function saveAccount(householdId, accountData) {
+  const { id, ...data } = accountData;
+  if (id) {
+    await setDoc(doc(db, 'households', householdId, 'accounts', id), data, { merge: true });
+    return id;
+  }
+  const ref = await addDoc(collection(db, 'households', householdId, 'accounts'), {
+    ...data,
+    createdAt: new Date().toISOString(),
+  });
+  return ref.id;
+}
+
+export async function deleteAccount(householdId, accountId) {
+  await deleteDoc(doc(db, 'households', householdId, 'accounts', accountId));
+}
+
+export async function resetAccountBalance(householdId, accountId, newBalance) {
+  await updateDoc(doc(db, 'households', householdId, 'accounts', accountId), {
+    initialBalance: newBalance,
+    initialBalanceDate: new Date().toISOString().slice(0, 10),
+  });
+}
+
 // ── Entries ────────────────────────────────────────────
 
 export async function addEntry(householdId, entry, user) {

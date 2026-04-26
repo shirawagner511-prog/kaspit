@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { LayoutDashboard, ListOrdered, Scale, TrendingUp, Settings } from 'lucide-react';
+import { LayoutDashboard, ListOrdered, Scale, TrendingUp, Landmark, Settings } from 'lucide-react';
 
 export default function BottomNav({ activePage, onNavigate }) {
   const { t } = useTranslation();
@@ -8,6 +8,7 @@ export default function BottomNav({ activePage, onNavigate }) {
     { id: 'entries',   Icon: ListOrdered,     label: t('nav.entries') },
     { id: 'breakeven', Icon: Scale,           label: t('nav.breakeven') },
     { id: 'insights',  Icon: TrendingUp,      label: t('nav.insights') },
+    { id: 'accounts',  Icon: Landmark,        label: t('accounts.nav') },
     { id: 'settings',  Icon: Settings,        label: t('nav.settings') },
   ];
   return (

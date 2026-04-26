@@ -263,6 +263,26 @@
     "import": "Import",
     "success": "Imported {{count}} entries"
   },
+  "accounts": {
+    "nav": "Accounts",
+    "title": "Accounts",
+    "empty": "No accounts yet",
+    "emptyHint": "Add an account to track your real bank balance",
+    "add": "Add account",
+    "addName": "Account name",
+    "addNamePlaceholder": "e.g. Checking, Joint...",
+    "addBalance": "Current balance (₪)",
+    "balance": "Balance",
+    "lastUpdated": "Updated",
+    "resetBalance": "Update balance",
+    "resetHint": "Set to your actual bank balance — future entries will accumulate from here",
+    "total": "Total",
+    "delete": "Delete",
+    "confirmDelete": "Delete this account?",
+    "noAccount": "No account",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
   "misc": {
     "loading": "Loading...",
     "errorDelete": "Error deleting: ",
