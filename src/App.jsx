@@ -132,7 +132,7 @@ export default function App() {
 
       <ScrollToTop />
 
-      {!(modalOpen || !!editEntry) && createPortal(
+      {!(modalOpen || !!editEntry || !!deleteId) && createPortal(
         <button className="fab" onClick={() => setModalOpen(true)}>
           {t('dashboard.addEntry')}
         </button>,
