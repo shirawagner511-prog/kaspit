@@ -8,6 +8,7 @@ import {
   updateDoc,
   query,
   where,
+  limit,
   getDocs,
 } from 'firebase/firestore';
 import { db } from './config';
@@ -85,7 +86,8 @@ export async function createHousehold(user) {
 export async function joinHousehold(user, inviteCode) {
   const q = query(
     collection(db, 'households'),
-    where('inviteCode', '==', inviteCode.trim().toUpperCase())
+    where('inviteCode', '==', inviteCode.trim().toUpperCase()),
+    limit(1)
   );
   const snap = await getDocs(q);
   if (snap.empty) throw new Error('קוד הזמנה לא נמצא');
