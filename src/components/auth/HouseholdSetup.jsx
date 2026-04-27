@@ -4,6 +4,22 @@ import { signOut } from 'firebase/auth';
 import { auth } from '../../firebase/config';
 import { createHousehold, joinHousehold } from '../../firebase/db';
 
+function LangToggle() {
+  const { i18n } = useTranslation();
+  const isHe = i18n.language === 'he';
+  function toggle() {
+    const next = isHe ? 'en' : 'he';
+    i18n.changeLanguage(next);
+    localStorage.setItem('budgi-lang', next);
+    document.documentElement.dir = next === 'he' ? 'rtl' : 'ltr';
+  }
+  return (
+    <button className="login-lang-btn" onClick={toggle}>
+      {isHe ? 'EN' : 'עב'}
+    </button>
+  );
+}
+
 export default function HouseholdSetup({ user, onComplete }) {
   const { t } = useTranslation();
   const [step, setStep] = useState('choose');
@@ -44,6 +60,7 @@ export default function HouseholdSetup({ user, onComplete }) {
   if (step === 'choose') {
     return (
       <div className="household-screen">
+        <LangToggle />
         <div style={{ fontSize: 48 }}>🏠</div>
         <h2>{t('household.welcome')}</h2>
         <p>{t('household.chooseDesc')}</p>
@@ -88,6 +105,7 @@ export default function HouseholdSetup({ user, onComplete }) {
   if (step === 'join') {
     return (
       <div className="household-screen">
+        <LangToggle />
         <div style={{ fontSize: 48 }}>🔑</div>
         <h2>{t('household.joinTitle')}</h2>
         <p>{t('household.joinDesc')}</p>
