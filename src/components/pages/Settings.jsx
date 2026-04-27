@@ -343,7 +343,7 @@ export default function Settings({ entries, householdId, user, customCategories,
           <div className="be-row" style={{ borderBottom: 'none' }}>
             <div>
               <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '.8px' }}>{t('settings.kikiPhoneSaved')}</div>
-              <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 15, color: 'var(--accent)', direction: 'ltr' }}>{savedPhone}</div>
+              <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 15, color: 'var(--accent)', direction: 'ltr' }}>{savedPhone.slice(0, 4) + '•••••' + savedPhone.slice(-3)}</div>
             </div>
             <button onClick={() => setEditingPhone(true)} style={{ background: 'var(--surface2)', border: '0.5px solid var(--border)', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans,Heebo,sans-serif', color: 'var(--text2)' }}>
               {t('settings.edit')}

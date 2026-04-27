@@ -1,10 +1,13 @@
 export function formatAmount(n) {
-  return '₪' + Math.round(Math.abs(n)).toLocaleString('he-IL');
+  const lang = localStorage.getItem('i18nextLng') || 'he';
+  const locale = lang === 'he' ? 'he-IL' : 'en-US';
+  return '₪' + Math.round(Math.abs(n)).toLocaleString(locale);
 }
 
 export function getMonthEntries(entries, month, year) {
   return entries.filter((e) => {
-    const d = new Date(e.date);
-    return d.getMonth() === month && d.getFullYear() === year;
+    if (!e.date) return false;
+    const [y, m] = e.date.split('-').map(Number);
+    return m - 1 === month && y === year;
   });
 }

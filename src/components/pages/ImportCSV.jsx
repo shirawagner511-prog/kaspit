@@ -58,8 +58,14 @@ Rules:
   });
 
   const data = await res.json();
-  const raw = data.content[0].text.trim().replace(/^```json\s*/, '').replace(/```$/, '');
-  return JSON.parse(raw);
+  const text = data.content?.[0]?.text;
+  if (!text) throw new Error('Empty response from AI');
+  const raw = text.trim().replace(/^```json\s*/m, '').replace(/```\s*$/m, '');
+  try {
+    return JSON.parse(raw);
+  } catch {
+    throw new Error('Could not parse AI response as JSON');
+  }
 }
 
 export default function ImportCSV({ entries, householdId, user, customCategories, allCategories }) {

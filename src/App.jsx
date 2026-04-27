@@ -85,7 +85,7 @@ export default function App() {
     { key: 'entries',   Icon: ListOrdered,     label: t('nav.entries') },
     { key: 'breakeven', Icon: Scale,           label: t('nav.breakeven') },
     { key: 'insights',  Icon: TrendingUp,      label: t('nav.insights') },
-    { key: 'import',    Icon: FolderInput,     label: 'CSV' },
+    { key: 'import',    Icon: FolderInput,     label: t('nav.import') },
     { key: 'accounts',  Icon: Landmark,        label: t('accounts.nav') },
     { key: 'settings',  Icon: SettingsIcon,    label: t('nav.settings') },
   ];

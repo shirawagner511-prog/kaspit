@@ -1,4 +1,7 @@
+import { useTranslation } from 'react-i18next';
+
 export default function ConfirmDialog({ open, message, onConfirm, onCancel }) {
+  const { t } = useTranslation();
   if (!open) return null;
   return (
     <div
@@ -18,7 +21,7 @@ export default function ConfirmDialog({ open, message, onConfirm, onCancel }) {
           textAlign: 'center',
         }}
       >
-        <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>למחוק פעולה זו?</p>
+        <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>{t('misc.confirmDelete')}</p>
         <p style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 24 }}>{message}</p>
         <div style={{ display: 'flex', gap: 10 }}>
           <button
@@ -29,7 +32,7 @@ export default function ConfirmDialog({ open, message, onConfirm, onCancel }) {
               fontFamily: 'DM Sans,Heebo,sans-serif', cursor: 'pointer', fontWeight: 500,
             }}
           >
-            ביטול
+            {t('misc.no')}
           </button>
           <button
             onClick={onConfirm}
@@ -39,7 +42,7 @@ export default function ConfirmDialog({ open, message, onConfirm, onCancel }) {
               fontFamily: 'DM Sans,Heebo,sans-serif', cursor: 'pointer', fontWeight: 600,
             }}
           >
-            מחיקה
+            {t('misc.yes')}
           </button>
         </div>
       </div>
