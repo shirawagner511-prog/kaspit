@@ -148,6 +148,7 @@ export default function App() {
         allCategories={allCategories}
         customCategories={customCategories}
         accounts={accounts}
+        onDelete={(id) => { setEditEntry(null); setModalOpen(false); setDeleteId(id); }}
       />
 
       <ConfirmDialog

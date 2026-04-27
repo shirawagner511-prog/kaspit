@@ -27,7 +27,7 @@ function filterCategories(allCategories, type) {
   return allCategories.filter((c) => !['income', 'savings'].includes(c.value));
 }
 
-export default function AddEntryModal({ open, onClose, householdId, user, entry, allCategories = [], customCategories = [], accounts = [] }) {
+export default function AddEntryModal({ open, onClose, householdId, user, entry, allCategories = [], customCategories = [], accounts = [], onDelete }) {
   const { t } = useTranslation();
   const isEdit = !!entry;
 
@@ -134,90 +134,103 @@ export default function AddEntryModal({ open, onClose, householdId, user, entry,
           <button className="modal-close" onClick={handleClose}>✕</button>
         </div>
 
-        <div className="form-group">
-          <label className="form-label">{t('addEntry.type')}</label>
-          <div className="type-toggle">
-            {['expense', 'income', 'saving'].map((tp) => (
-              <button
-                key={tp}
-                className={`type-btn${type === tp ? ` active ${tp}` : ''}`}
-                onClick={() => handleTypeChange(tp)}
-              >
-                {tp === 'expense' ? t('addEntry.expense') : tp === 'income' ? t('addEntry.income') : t('addEntry.saving')}
-              </button>
-            ))}
+        <div className="modal-body">
+          <div className="form-group">
+            <label className="form-label">{t('addEntry.type')}</label>
+            <div className="type-toggle">
+              {['expense', 'income', 'saving'].map((tp) => (
+                <button
+                  key={tp}
+                  className={`type-btn${type === tp ? ` active ${tp}` : ''}`}
+                  onClick={() => handleTypeChange(tp)}
+                >
+                  {tp === 'expense' ? t('addEntry.expense') : tp === 'income' ? t('addEntry.income') : t('addEntry.saving')}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div className="form-group">
-          <label className="form-label">{t('addEntry.name')}</label>
-          <input className="form-input" placeholder={NAME_PLACEHOLDERS[type]} value={name} onChange={(e) => setName(e.target.value)} />
-        </div>
+          <div className="form-group">
+            <label className="form-label">{t('addEntry.name')}</label>
+            <input className="form-input" placeholder={NAME_PLACEHOLDERS[type]} value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
 
-        <div className="form-group">
-          <label className="form-label">{t('addEntry.amount')}</label>
-          <input className="form-input" type="number" inputMode="decimal" placeholder="0" value={amount} onChange={(e) => setAmount(e.target.value)} />
-        </div>
+          <div className="form-group">
+            <label className="form-label">{t('addEntry.amount')}</label>
+            <input className="form-input" type="number" inputMode="decimal" placeholder="0" value={amount} onChange={(e) => setAmount(e.target.value)} />
+          </div>
 
-        <div className="form-group">
-          <label className="form-label">{t('addEntry.category')}</label>
-          <select className="form-input" value={category} onChange={(e) => setCategory(e.target.value)}>
-            {visibleCategories.map((c) => (
-              <option key={c.value} value={c.value}>{c.icon} {c.label}</option>
-            ))}
-          </select>
-          {!addingCat ? (
-            <button
-              type="button"
-              onClick={() => setAddingCat(true)}
-              style={{ marginTop: 6, background: 'none', border: 'none', color: 'var(--accent)', fontSize: 12, cursor: 'pointer', padding: 0 }}
-            >
-              {t('addEntry.addNewCategory')}
-            </button>
-          ) : (
-            <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-              <input className="form-input" placeholder="😀" value={newCatIcon} onChange={(e) => setNewCatIcon(e.target.value)} style={{ width: 52, textAlign: 'center', fontSize: 18 }} maxLength={2} />
-              <input className="form-input" placeholder={t('addEntry.categoryNamePlaceholder')} value={newCatName} onChange={(e) => setNewCatName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()} style={{ flex: 1 }} autoFocus />
-              <button type="button" onClick={handleAddCategory} style={{ background: 'var(--accent)', border: 'none', color: '#fff', borderRadius: 8, padding: '0 12px', cursor: 'pointer', fontSize: 13 }}>✓</button>
-              <button type="button" onClick={() => setAddingCat(false)} style={{ background: 'var(--surface3)', border: 'none', color: 'var(--text2)', borderRadius: 8, padding: '0 10px', cursor: 'pointer', fontSize: 13 }}>✕</button>
+          <div className="form-group">
+            <label className="form-label">{t('addEntry.category')}</label>
+            <select className="form-input" value={category} onChange={(e) => setCategory(e.target.value)}>
+              {visibleCategories.map((c) => (
+                <option key={c.value} value={c.value}>{c.icon} {c.label}</option>
+              ))}
+            </select>
+            {!addingCat ? (
+              <button
+                type="button"
+                onClick={() => setAddingCat(true)}
+                style={{ marginTop: 6, background: 'none', border: 'none', color: 'var(--accent)', fontSize: 12, cursor: 'pointer', padding: 0 }}
+              >
+                {t('addEntry.addNewCategory')}
+              </button>
+            ) : (
+              <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                <input className="form-input" placeholder="😀" value={newCatIcon} onChange={(e) => setNewCatIcon(e.target.value)} style={{ width: 52, textAlign: 'center', fontSize: 18 }} maxLength={2} />
+                <input className="form-input" placeholder={t('addEntry.categoryNamePlaceholder')} value={newCatName} onChange={(e) => setNewCatName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()} style={{ flex: 1 }} autoFocus />
+                <button type="button" onClick={handleAddCategory} style={{ background: 'var(--accent)', border: 'none', color: '#fff', borderRadius: 8, padding: '0 12px', cursor: 'pointer', fontSize: 13 }}>✓</button>
+                <button type="button" onClick={() => setAddingCat(false)} style={{ background: 'var(--surface3)', border: 'none', color: 'var(--text2)', borderRadius: 8, padding: '0 10px', cursor: 'pointer', fontSize: 13 }}>✕</button>
+              </div>
+            )}
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">{t('addEntry.date')}</label>
+            <input className="form-input" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          </div>
+
+          {type !== 'income' && (
+            <div className="form-group">
+              <label className="form-label">{t('addEntry.character')}</label>
+              <select className="form-input" value={fixed} onChange={(e) => setFixed(e.target.value)}>
+                {FIXED_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+          )}
+
+          <div className="form-group">
+            <label className="form-label">{t('addEntry.note')}</label>
+            <input className="form-input" placeholder={t('addEntry.notePlaceholder')} value={note} onChange={(e) => setNote(e.target.value)} />
+          </div>
+
+          {accounts.length > 0 && (
+            <div className="form-group">
+              <label className="form-label">{t('accounts.nav')}</label>
+              <select className="form-input" value={accountId} onChange={(e) => setAccountId(e.target.value)}>
+                <option value="">{t('accounts.noAccount')}</option>
+                {accounts.map((a) => (
+                  <option key={a.id} value={a.id}>{a.name}</option>
+                ))}
+              </select>
             </div>
           )}
         </div>
 
-        <div className="form-group">
-          <label className="form-label">{t('addEntry.date')}</label>
-          <input className="form-input" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        <div className="modal-footer">
+          {isEdit && onDelete && (
+            <button
+              className="submit-btn"
+              onClick={() => { handleClose(); onDelete(entry.id); }}
+              style={{ background: 'var(--expense)', flex: '0 0 auto', padding: '0 20px' }}
+            >
+              {t('addEntry.delete')}
+            </button>
+          )}
+          <button className="submit-btn" onClick={handleSubmit} disabled={loading} style={{ flex: 1 }}>
+            {loading ? t('addEntry.saving2') : isEdit ? t('addEntry.saveChanges') : t('addEntry.addNew')}
+          </button>
         </div>
-
-        {type !== 'income' && (
-          <div className="form-group">
-            <label className="form-label">{t('addEntry.character')}</label>
-            <select className="form-input" value={fixed} onChange={(e) => setFixed(e.target.value)}>
-              {FIXED_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-          </div>
-        )}
-
-        <div className="form-group">
-          <label className="form-label">{t('addEntry.note')}</label>
-          <input className="form-input" placeholder={t('addEntry.notePlaceholder')} value={note} onChange={(e) => setNote(e.target.value)} />
-        </div>
-
-        {accounts.length > 0 && (
-          <div className="form-group">
-            <label className="form-label">{t('accounts.nav')}</label>
-            <select className="form-input" value={accountId} onChange={(e) => setAccountId(e.target.value)}>
-              <option value="">{t('accounts.noAccount')}</option>
-              {accounts.map((a) => (
-                <option key={a.id} value={a.id}>{a.name}</option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        <button className="submit-btn" onClick={handleSubmit} disabled={loading}>
-          {loading ? t('addEntry.saving2') : isEdit ? t('addEntry.saveChanges') : t('addEntry.addNew')}
-        </button>
       </div>
     </div>
   );
