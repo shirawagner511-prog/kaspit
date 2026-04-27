@@ -73,6 +73,7 @@ export default function LoginScreen() {
   const [loading, setLoading]   = useState('');
   const [showManual, setShowManual] = useState(false);
   const [isCreate, setIsCreate] = useState(false);
+  const [showPw, setShowPw] = useState(false);
 
   const [username,    setUsername]    = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -237,29 +238,43 @@ export default function LoginScreen() {
             )}
 
             {/* Password */}
-            <input
-              className={`form-input${touched.password && errs.password ? ' input-error' : ''}`}
-              type="password"
-              placeholder={t('login.passwordLabel')}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onBlur={() => touch('password')}
-              dir="ltr"
-            />
+            <div style={{ position: 'relative' }}>
+              <input
+                className={`form-input${touched.password && errs.password ? ' input-error' : ''}`}
+                type={showPw ? 'text' : 'password'}
+                placeholder={t('login.passwordLabel')}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onBlur={() => touch('password')}
+                dir="ltr"
+                style={{ paddingInlineEnd: 44 }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPw((v) => !v)}
+                style={{ position: 'absolute', insetInlineEnd: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text3)', fontSize: 13, padding: 4 }}
+                tabIndex={-1}
+              >
+                {showPw ? '🙈' : '👁'}
+              </button>
+            </div>
             {isCreate && <StrengthBar password={password} />}
             {touched.password && !isCreate && <FieldError msg={errs.password} />}
 
             {isCreate && (
               <>
-                <input
-                  className={`form-input${touched.confirm && errs.confirm ? ' input-error' : ''}`}
-                  type="password"
-                  placeholder={t('login.passwordConfirmLabel')}
-                  value={confirm}
-                  onChange={(e) => setConfirm(e.target.value)}
-                  onBlur={() => touch('confirm')}
-                  dir="ltr"
-                />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    className={`form-input${touched.confirm && errs.confirm ? ' input-error' : ''}`}
+                    type={showPw ? 'text' : 'password'}
+                    placeholder={t('login.passwordConfirmLabel')}
+                    value={confirm}
+                    onChange={(e) => setConfirm(e.target.value)}
+                    onBlur={() => touch('confirm')}
+                    dir="ltr"
+                    style={{ paddingInlineEnd: 44 }}
+                  />
+                </div>
                 {touched.confirm && <FieldError msg={errs.confirm} />}
               </>
             )}
