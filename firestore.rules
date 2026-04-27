@@ -9,6 +9,12 @@ service cloud.firestore {
       allow write: if request.auth != null && request.auth.uid == userId;
     }
 
+    // Username registry — anyone can read (for login lookup), authenticated users can write
+    match /usernames/{username} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
     // Households: readable/writable by members only
     // Anyone authenticated can query by inviteCode (needed for joining)
     match /households/{householdId} {
