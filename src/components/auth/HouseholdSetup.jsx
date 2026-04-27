@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { signOut } from 'firebase/auth';
+import { auth } from '../../firebase/config';
 import { createHousehold, joinHousehold } from '../../firebase/db';
 
 export default function HouseholdSetup({ user, onComplete }) {
@@ -55,6 +57,12 @@ export default function HouseholdSetup({ user, onComplete }) {
           </button>
         </div>
         {error && <div className="login-error">{error}</div>}
+        <button
+          onClick={() => signOut(auth)}
+          style={{ marginTop: 24, background: 'none', border: 'none', color: 'var(--text3)', fontSize: 13, cursor: 'pointer', textDecoration: 'underline' }}
+        >
+          {t('header.signOut')}
+        </button>
       </div>
     );
   }
