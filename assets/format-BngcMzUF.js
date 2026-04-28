@@ -1,0 +1,1 @@
+function l(t){const e=(localStorage.getItem("i18nextLng")||"he")==="he"?"he-IL":"en-US";return"₪"+Math.round(Math.abs(t)).toLocaleString(e)}function s(t,n,e){return t.filter(a=>{if(!a.date)return!1;const[r,o]=a.date.split("-").map(Number);return o-1===n&&r===e})}export{l as f,s as g};
