@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Clock } from 'lucide-react';
+import CategoryIcon from '../shared/CategoryIcon';
 import { getMonths } from '../../utils/constants';
 import { formatAmount } from '../../utils/format';
+import PremiumGate from '../shared/PremiumGate';
 
 function buildRecurringSummary(entries, currentMonth, currentYear) {
   const byName = {};
@@ -31,12 +33,12 @@ function buildRecurringSummary(entries, currentMonth, currentYear) {
   }));
 }
 
-export default function Breakeven({ entries, currentMonth, currentYear, allCategories = [] }) {
+export default function Breakeven({ entries, currentMonth, currentYear, allCategories = [], isPremium, user }) {
+  if (!isPremium) return <PremiumGate feature="breakeven" user={user} isPremium={isPremium}>{null}</PremiumGate>;
   const { t } = useTranslation();
   const months = getMonths(t);
   const [isSep, setIsSep] = useState(false);
   const catMap = Object.fromEntries(allCategories.map((c) => [c.value, c]));
-  const getIcon = (cat) => catMap[cat]?.icon || '📦';
 
   const summary = buildRecurringSummary(entries, currentMonth, currentYear);
   const fixed = summary.filter((r) => r.fixed === 'fixed' && r.type !== 'income');
@@ -82,7 +84,7 @@ export default function Breakeven({ entries, currentMonth, currentYear, allCateg
           {fixedIncome.map((r) => (
             <div key={r.name} className="be-row">
               <div className="name" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span>{getIcon(r.category)}</span><span>{r.name}</span>
+                <CategoryIcon category={r.category} size={14} /><span>{r.name}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <div className="val" style={{ color: 'var(--accent2)' }}>+{formatAmount(r.avgAmount)}</div>
@@ -103,7 +105,7 @@ export default function Breakeven({ entries, currentMonth, currentYear, allCateg
           {fixed.map((r) => (
             <div key={r.name} className="be-row">
               <div className="name" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span>{getIcon(r.category)}</span><span>{r.name}</span>
+                <CategoryIcon category={r.category} size={14} /><span>{r.name}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <div className="val" style={{ color: 'var(--danger)' }}>−{formatAmount(r.avgAmount)}</div>
@@ -124,7 +126,7 @@ export default function Breakeven({ entries, currentMonth, currentYear, allCateg
           {bimonthly.map((r) => (
             <div key={r.name} className="be-row">
               <div className="name" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span>{getIcon(r.category)}</span><span>{r.name}</span>
+                <CategoryIcon category={r.category} size={14} /><span>{r.name}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <div className="val" style={{ color: 'var(--danger)' }}>−{formatAmount(r.avgAmount / 2)}{t('breakeven.perMonth')}</div>

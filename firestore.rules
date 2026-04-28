@@ -2,39 +2,69 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Users can write only their own profile
-    // Any authenticated user can read other users (needed for household member names)
+    // Returns true if the authenticated user is a member of a household.
+    // Handles households created before the memberUids field was added (migration fallback).
+    function isMember(householdId) {
+      let d = get(/databases/$(database)/documents/households/$(householdId)).data;
+      return !('memberUids' in d) || request.auth.uid in d.memberUids;
+    }
+
+    match /subscriptions/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      // One-time create for trial (server enforces no doc exists); updates are server-only
+      allow create: if request.auth != null && request.auth.uid == uid
+        && !exists(/databases/$(database)/documents/subscriptions/$(uid));
+      allow update, delete: if false;
+    }
+
     match /users/{userId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Username registry — anyone can read (for login lookup), authenticated users can write
+    // Public read needed: checked before login (isUsernameTaken, getEmailByUsername)
     match /usernames/{username} {
       allow read: if true;
       allow write: if request.auth != null;
     }
 
-    // Households: readable/writable by members only
-    // Anyone authenticated can query by inviteCode (needed for joining)
     match /households/{householdId} {
+      // Allow read if memberUids field is missing (old household, pending backfill)
+      // or if the user is listed in memberUids.
       allow read: if request.auth != null && (
-        request.auth.uid in resource.data.members ||
+        !('memberUids' in resource.data) ||
+        request.auth.uid in resource.data.memberUids ||
         request.query.limit <= 1
       );
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && request.auth.uid in resource.data.members;
+      allow create: if request.auth != null &&
+        request.auth.uid in request.resource.data.memberUids;
+      allow update: if request.auth != null && (
+        !('memberUids' in resource.data) ||
+        request.auth.uid in resource.data.memberUids ||
+        request.auth.uid in request.resource.data.memberUids
+      );
 
-      // Entries: only household members can access
       match /entries/{entryId} {
-        allow read, write: if request.auth != null &&
-          request.auth.uid in get(/databases/$(database)/documents/households/$(householdId)).data.members;
+        allow read: if request.auth != null && isMember(householdId);
+        allow create: if request.auth != null &&
+          isMember(householdId) &&
+          request.resource.data.keys().hasAll(['date', 'amount', 'type']) &&
+          request.resource.data.amount is number &&
+          request.resource.data.amount > 0 &&
+          request.resource.data.type in ['expense', 'income', 'saving'];
+        allow update, delete: if request.auth != null && isMember(householdId);
       }
 
-      // Accounts: only household members can access
       match /accounts/{accountId} {
-        allow read, write: if request.auth != null &&
-          request.auth.uid in get(/databases/$(database)/documents/households/$(householdId)).data.members;
+        allow read, write: if request.auth != null && isMember(householdId);
+      }
+
+      match /settings/{settingId} {
+        allow read, write: if request.auth != null && isMember(householdId);
+      }
+
+      match /monthlySummaries/{summaryId} {
+        allow read, write: if request.auth != null && isMember(householdId);
       }
     }
   }

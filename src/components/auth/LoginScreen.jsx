@@ -141,11 +141,12 @@ export default function LoginScreen() {
         const firebaseEmail = `${uname}@budgi.internal`;
         const cred = await createUserWithEmailAndPassword(auth, firebaseEmail, password);
         await updateProfile(cred.user, { displayName: displayName.trim() });
-        await registerUsername(uname, email.trim(), cred.user.uid);
+        await registerUsername(uname, cred.user.uid);
       } else {
-        const foundEmail = await getEmailByUsername(uname);
-        if (!foundEmail) { setError(t('login.errorUsernameNotFound')); return; }
-        await signInWithEmailAndPassword(auth, foundEmail, password);
+        const exists = await getEmailByUsername(uname);
+        if (!exists) { setError(t('login.errorUsernameNotFound')); return; }
+        const firebaseEmail = `${uname}@budgi.internal`;
+        await signInWithEmailAndPassword(auth, firebaseEmail, password);
       }
     } catch (e) {
       if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') setError(t('login.errorWrongPassword'));
@@ -252,7 +253,7 @@ export default function LoginScreen() {
               <button
                 type="button"
                 onClick={() => setShowPw((v) => !v)}
-                style={{ position: 'absolute', insetInlineEnd: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text3)', fontSize: 13, padding: 4 }}
+                style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text3)', fontSize: 13, padding: 4 }}
                 tabIndex={-1}
               >
                 {showPw ? '🙈' : '👁'}

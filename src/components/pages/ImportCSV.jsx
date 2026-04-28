@@ -3,6 +3,7 @@ import { addEntry } from '../../firebase/db';
 import Loader from '../shared/Loader';
 import { formatAmount } from '../../utils/format';
 import { CATEGORY_VALUES } from '../../utils/constants';
+import PremiumGate from '../shared/PremiumGate';
 
 async function parseCSVWithClaude(csvText, apiKey, existingEntries, allCategories) {
   const catList = allCategories.map((c) => `${c.value} = ${c.label}`).join('\n');
@@ -68,7 +69,8 @@ Rules:
   }
 }
 
-export default function ImportCSV({ entries, householdId, user, customCategories, allCategories }) {
+export default function ImportCSV({ entries, householdId, user, customCategories, allCategories, isPremium }) {
+  if (!isPremium) return <PremiumGate feature="import" user={user} isPremium={isPremium}>{null}</PremiumGate>;
   const [step, setStep] = useState('upload'); // upload | parsing | review | done
   const [parsed, setParsed] = useState([]);
   const [selected, setSelected] = useState({});

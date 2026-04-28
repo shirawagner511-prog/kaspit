@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next';
+import CategoryIcon from '../shared/CategoryIcon';
 import { getMonths } from '../../utils/constants';
 import { formatAmount, getMonthEntries } from '../../utils/format';
+import PremiumGate from '../shared/PremiumGate';
 
 function computeTrends(entries, currentMonth, currentYear) {
   const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
@@ -18,11 +20,11 @@ function computeTrends(entries, currentMonth, currentYear) {
     .sort((a, b) => b.curr - a.curr);
 }
 
-export default function Insights({ entries, currentMonth, currentYear, allCategories = [] }) {
+export default function Insights({ entries, currentMonth, currentYear, allCategories = [], isPremium, user }) {
+  if (!isPremium) return <PremiumGate feature="insights" user={user} isPremium={isPremium}>{null}</PremiumGate>;
   const { t } = useTranslation();
   const months = getMonths(t);
   const catMap = Object.fromEntries(allCategories.map((c) => [c.value, c]));
-  const getIcon = (cat) => catMap[cat?.toLowerCase()]?.icon || catMap[cat]?.icon || '📦';
   const getName = (cat) => catMap[cat?.toLowerCase()]?.label || catMap[cat]?.label || cat;
   const trends = computeTrends(entries, currentMonth, currentYear);
   const prevLabel = currentMonth === 0 ? months[11] : months[currentMonth - 1];
@@ -56,7 +58,7 @@ export default function Insights({ entries, currentMonth, currentYear, allCatego
             const pct = t.prev > 0 ? Math.round(Math.abs(t.diff / t.prev) * 100) : null;
             return (
               <div key={t.cat} className="expense-item">
-                <div className={`expense-icon cat-${t.cat}`}>{getIcon(t.cat)}</div>
+                <div className={`expense-icon cat-${t.cat}`}><CategoryIcon category={t.cat} size={16} /></div>
                 <div className="expense-info">
                   <div className="expense-name">{getName(t.cat)}</div>
                   <div className="expense-meta">

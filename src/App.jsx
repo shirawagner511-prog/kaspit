@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { getRedirectResult } from 'firebase/auth';
@@ -6,7 +6,9 @@ import { auth } from './firebase/config';
 import { useAuth } from './hooks/useAuth';
 import { useEntries } from './hooks/useEntries';
 import { useHousehold } from './hooks/useHousehold';
+import { useAccounts } from './hooks/useAccounts';
 import { useAutoRecurring } from './hooks/useAutoRecurring';
+import { useSubscription } from './hooks/useSubscription';
 import { deleteEntry } from './firebase/db';
 import { getDefaultCategories } from './utils/constants';
 
@@ -19,19 +21,22 @@ import Header from './components/layout/Header';
 import BottomNav from './components/layout/BottomNav';
 import AddEntryModal from './components/shared/AddEntryModal';
 import ConfirmDialog from './components/shared/ConfirmDialog';
-import Dashboard from './components/pages/Dashboard';
-import Entries from './components/pages/Entries';
-import Breakeven from './components/pages/Breakeven';
-import Insights from './components/pages/Insights';
-import Settings from './components/pages/Settings';
-import ImportCSV from './components/pages/ImportCSV';
-import Accounts from './components/pages/Accounts';
+
+const Dashboard = lazy(() => import('./components/pages/Dashboard'));
+const Entries   = lazy(() => import('./components/pages/Entries'));
+const Breakeven = lazy(() => import('./components/pages/Breakeven'));
+const Insights  = lazy(() => import('./components/pages/Insights'));
+const Settings  = lazy(() => import('./components/pages/Settings'));
+const ImportCSV = lazy(() => import('./components/pages/ImportCSV'));
+const Accounts  = lazy(() => import('./components/pages/Accounts'));
 
 export default function App() {
   const { t, i18n } = useTranslation();
   const { user, householdId, setHouseholdId, loading } = useAuth();
   const entries = useEntries(householdId);
-  const { budgets, savingsGoal, customCategories, accounts } = useHousehold(householdId);
+  const { budgets, savingsGoal, customCategories, memberUids } = useHousehold(householdId);
+  const accounts = useAccounts(householdId);
+  const { isPremium, status: subStatus, trialDaysLeft, subscription } = useSubscription(user);
 
   const defaultCategories = getDefaultCategories(t);
   const allCategories = [
@@ -66,18 +71,20 @@ export default function App() {
     }
   }
 
-  useAutoRecurring(entries, currentMonth, currentYear, householdId, user);
+  useAutoRecurring(entries, currentMonth, currentYear, householdId, user, isPremium);
 
   if (loading) return <Loader fullscreen />;
   if (!user) return <LoginScreen />;
   if (!householdId) return <HouseholdSetup user={user} onComplete={setHouseholdId} />;
 
   const pageProps = {
-    entries, currentMonth, currentYear, householdId, user,
+    entries, currentMonth, currentYear, householdId, user, memberUids,
     allCategories, customCategories, budgets, savingsGoal, accounts,
+    isPremium, subStatus, trialDaysLeft, subscription,
     onEdit: setEditEntry,
     onDelete: setDeleteId,
     onNavigate: setPage,
+    onJoinHousehold: setHouseholdId,
   };
 
   const navItems = [
@@ -119,13 +126,15 @@ export default function App() {
           onMonthChange={(m, y) => { setCurrentMonth(m); setCurrentYear(y); }}
         />
 
-        {page === 'dashboard' && <Dashboard {...pageProps} />}
-        {page === 'entries'   && <Entries   {...pageProps} />}
-        {page === 'breakeven' && <Breakeven {...pageProps} />}
-        {page === 'insights'  && <Insights  {...pageProps} />}
-        {page === 'import'    && <ImportCSV  {...pageProps} />}
-        {page === 'accounts'  && <Accounts  {...pageProps} />}
-        {page === 'settings'  && <Settings  {...pageProps} />}
+        <Suspense fallback={<Loader />}>
+          {page === 'dashboard' && <Dashboard {...pageProps} />}
+          {page === 'entries'   && <Entries   {...pageProps} />}
+          {page === 'breakeven' && <Breakeven {...pageProps} />}
+          {page === 'insights'  && <Insights  {...pageProps} />}
+          {page === 'import'    && <ImportCSV  {...pageProps} />}
+          {page === 'accounts'  && <Accounts  {...pageProps} />}
+          {page === 'settings'  && <Settings  {...pageProps} />}
+        </Suspense>
 
         <BottomNav activePage={page} onNavigate={setPage} />
       </div>

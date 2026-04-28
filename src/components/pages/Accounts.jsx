@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Landmark, Trash2 } from 'lucide-react';
-import { saveHouseholdAccounts } from '../../firebase/db';
+import { addAccount, updateAccount, deleteAccount } from '../../firebase/db';
 import { formatAmount } from '../../utils/format';
+import PremiumGate from '../shared/PremiumGate';
 
 const COLORS = ['#2D6A4F', '#1A6B8A', '#7C3AED', '#C0392B', '#E67E22', '#78716C'];
 
@@ -22,7 +23,7 @@ function formatDate(isoDate) {
   return `${d}/${m}/${y}`;
 }
 
-export default function Accounts({ accounts = [], entries = [], householdId }) {
+export default function Accounts({ accounts = [], entries = [], householdId, isPremium, user }) {
   const { t } = useTranslation();
   const [resetId, setResetId] = useState(null);
   const [resetVal, setResetVal] = useState('');
@@ -37,15 +38,13 @@ export default function Accounts({ accounts = [], entries = [], householdId }) {
     if (!newName.trim() || newBalance === '') return;
     setSaving(true);
     try {
-      const newAccount = {
-        id: 'acc_' + Date.now(),
+      await addAccount(householdId, {
         name: newName.trim(),
         initialBalance: parseFloat(newBalance) || 0,
         initialBalanceDate: new Date().toISOString().slice(0, 10),
         color: newColor,
         createdAt: new Date().toISOString(),
-      };
-      await saveHouseholdAccounts(householdId, [...accounts, newAccount]);
+      });
       setNewName(''); setNewBalance(''); setNewColor(COLORS[0]); setShowAdd(false);
     } finally {
       setSaving(false);
@@ -55,17 +54,15 @@ export default function Accounts({ accounts = [], entries = [], householdId }) {
   async function handleReset(accountId) {
     const val = parseFloat(resetVal);
     if (isNaN(val)) return;
-    const updated = accounts.map((a) =>
-      a.id === accountId
-        ? { ...a, initialBalance: val, initialBalanceDate: new Date().toISOString().slice(0, 10) }
-        : a
-    );
-    await saveHouseholdAccounts(householdId, updated);
+    await updateAccount(householdId, accountId, {
+      initialBalance: val,
+      initialBalanceDate: new Date().toISOString().slice(0, 10),
+    });
     setResetId(null); setResetVal('');
   }
 
   async function handleDelete(accountId) {
-    await saveHouseholdAccounts(householdId, accounts.filter((a) => a.id !== accountId));
+    await deleteAccount(householdId, accountId);
     setDeleteId(null);
   }
 
@@ -202,6 +199,8 @@ export default function Accounts({ accounts = [], entries = [], householdId }) {
             </button>
           </div>
         </div>
+      ) : accounts.length >= 2 && !isPremium ? (
+        <PremiumGate feature="accounts" user={user} isPremium={isPremium}>{null}</PremiumGate>
       ) : (
         <button
           onClick={() => setShowAdd(true)}

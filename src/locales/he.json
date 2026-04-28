@@ -24,9 +24,11 @@
     "shopping":  "קניות",
     "insurance": "ביטוח",
     "pets":      "חיות מחמד",
-    "savings":   "חיסכון",
-    "income":    "הכנסה",
-    "other":     "אחר"
+    "savings":          "חיסכון",
+    "cosmetics":        "קוסמטיקה וטיפוח",
+    "home_maintenance": "תחזוקת בית",
+    "income":           "הכנסה",
+    "other":            "אחר"
   },
   "login": {
     "tagline": "הכסף שלכם, סוף סוף מסודר.",
@@ -189,6 +191,9 @@
     "exportData": "ייצוא נתונים",
     "exportCsv": "ייצוא ל-CSV",
     "exportCsvSub": "שמירת כל הנתונים",
+    "joinOtherTitle": "הצטרפות לבית אחר",
+    "joinOtherDesc": "יש לך קוד הזמנה? הכנס כאן כדי לעבור לבית אחר.",
+    "joinSuccess": "✓ הצטרפת בהצלחה לבית החדש",
     "kiki": "קיקי — בוט WhatsApp",
     "kikiDesc": "שלחי הודעות בוואטסאפ וכל הוצאה תירשם אוטומטית ✦",
     "kikiExample": "לדוגמה: \"קפה 18 שקל\"",

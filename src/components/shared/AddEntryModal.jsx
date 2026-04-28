@@ -220,14 +220,17 @@ export default function AddEntryModal({ open, onClose, householdId, user, entry,
         <div className="modal-footer">
           {isEdit && onDelete && (
             <button
-              className="submit-btn"
               onClick={() => { handleClose(); onDelete(entry.id); }}
-              style={{ background: 'var(--expense)', flex: '0 0 auto', padding: '0 20px' }}
+              style={{ flex: '0 0 auto', padding: '0 20px', height: 44, background: 'var(--expense)', color: '#fff', border: 'none', borderRadius: 'var(--radius)', fontSize: 14, fontWeight: 600, fontFamily: 'DM Sans,Heebo,sans-serif', cursor: 'pointer' }}
             >
               {t('addEntry.delete')}
             </button>
           )}
-          <button className="submit-btn" onClick={handleSubmit} disabled={loading} style={{ flex: 1 }}>
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            style={{ flex: 1, height: 44, background: loading ? 'var(--surface3)' : 'var(--accent)', color: loading ? 'var(--text3)' : '#fff', border: 'none', borderRadius: 'var(--radius)', fontSize: 15, fontWeight: 600, fontFamily: 'DM Sans,Heebo,sans-serif', cursor: loading ? 'wait' : 'pointer', opacity: loading ? 0.6 : 1 }}
+          >
             {loading ? t('addEntry.saving2') : isEdit ? t('addEntry.saveChanges') : t('addEntry.addNew')}
           </button>
         </div>

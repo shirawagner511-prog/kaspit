@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { addEntry } from '../../firebase/db';
 import EntryItem from '../shared/EntryItem';
+import CategoryIcon from '../shared/CategoryIcon';
 import { getMonths } from '../../utils/constants';
 import { formatAmount, getMonthEntries } from '../../utils/format';
 
@@ -83,12 +84,11 @@ function computeAccountBalance(account, entries) {
   }, 0);
 }
 
-export default function Dashboard({ entries, currentMonth, currentYear, householdId, user, onEdit, onDelete, allCategories = [], budgets = {}, savingsGoal = null, accounts = [], onNavigate }) {
+export default function Dashboard({ entries, currentMonth, currentYear, householdId, user, onEdit, onDelete, allCategories = [], budgets = {}, savingsGoal = null, accounts = [], onNavigate, isPremium }) {
   const { t } = useTranslation();
   const months = getMonths(t);
   const accountsTotal = accounts.reduce((sum, a) => sum + computeAccountBalance(a, entries), 0);
   const catMap = Object.fromEntries(allCategories.map((c) => [c.value, c]));
-  const getIcon = (cat) => catMap[cat?.toLowerCase()]?.icon || catMap[cat]?.icon || '📦';
   const getName = (cat) => catMap[cat?.toLowerCase()]?.label || catMap[cat]?.label || cat;
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [incomeOpen, setIncomeOpen] = useState(false);
@@ -138,14 +138,14 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
           <strong>⚠️ {t('dashboard.overBudget', { count: exceededBudgets.length })}</strong>
           {exceededBudgets.map(([cat, amt]) => (
             <div key={cat} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
-              <span>{getIcon(cat)} {getName(cat)}</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><CategoryIcon category={cat} size={13} /> {getName(cat)}</span>
               <span>{formatAmount(amt)} / {formatAmount(budgets[cat])} ({Math.round((amt/budgets[cat])*100)}%)</span>
             </div>
           ))}
         </div>
       )}
 
-      {suggested.length > 0 && (
+      {isPremium && suggested.length > 0 && (
         <div className="alert info" style={{ cursor: 'pointer' }} onClick={() => setSuggestionsOpen((o) => !o)}>
           💡
           <div>
@@ -333,7 +333,7 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
                   style={{ cursor: 'pointer', borderColor: budgetPct >= 100 ? 'rgba(240,101,128,.4)' : undefined }}
                   onClick={() => setCatDrilldown(isOpen ? null : cat)}
                 >
-                  <div className={`expense-icon cat-${cat}`} style={{ background: `${color}22`, color }}>{getIcon(cat)}</div>
+                  <div className={`expense-icon cat-${cat}`}><CategoryIcon category={cat} size={16} /></div>
                   <div className="expense-info">
                     <div className="expense-name">{getName(cat)} {isOpen ? '▴' : '▾'}</div>
                     <div className="progress-bar" style={{ marginTop: 6, height: 4 }}>

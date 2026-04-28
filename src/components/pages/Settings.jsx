@@ -1,10 +1,103 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getHousehold, getHouseholdMembers, getUserData, saveCustomCategories, saveBudgets, saveSavingsGoal, saveUserPhone, saveHouseholdApiKey, updateEntry } from '../../firebase/db';
+import { getHousehold, getHouseholdMembers, getUserData, saveCustomCategories, saveBudgets, saveSavingsGoal, saveUserPhone, saveHouseholdApiKey, updateEntry, joinHousehold } from '../../firebase/db';
 import { CATEGORY_VALUES } from '../../utils/constants';
 import { formatAmount } from '../../utils/format';
 
-export default function Settings({ entries, householdId, user, customCategories, allCategories, budgets = {}, savingsGoal = null }) {
+const BOT_URL = import.meta.env.VITE_BOT_URL || 'https://kaspit-bot.up.railway.app';
+
+function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, subscription, user, subLoading, setSubLoading }) {
+  const lang = i18n.language === 'he' ? 'he' : 'en';
+
+  async function handleUpgrade() {
+    if (!user?.uid || !user?.email) return;
+    setSubLoading(true);
+    try {
+      const res = await fetch(`${BOT_URL}/stripe/create-checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid: user.uid, email: user.email }),
+      });
+      const { url, error } = await res.json();
+      if (error) throw new Error(error);
+      window.location.href = url;
+    } catch (e) {
+      alert((lang === 'he' ? 'שגיאה: ' : 'Error: ') + e.message);
+      setSubLoading(false);
+    }
+  }
+
+  async function handleManage() {
+    if (!subscription?.stripeCustomerId) return;
+    setSubLoading(true);
+    try {
+      const res = await fetch(`${BOT_URL}/stripe/create-portal`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stripeCustomerId: subscription.stripeCustomerId }),
+      });
+      const { url, error } = await res.json();
+      if (error) throw new Error(error);
+      window.location.href = url;
+    } catch (e) {
+      alert((lang === 'he' ? 'שגיאה: ' : 'Error: ') + e.message);
+      setSubLoading(false);
+    }
+  }
+
+  const statusColor = isPremium ? 'var(--accent)' : 'var(--text3)';
+  const statusLabel = subStatus === 'active'
+    ? (lang === 'he' ? 'פרמיום' : 'Premium')
+    : subStatus === 'trial'
+    ? (lang === 'he' ? `ניסיון חינם — ${trialDaysLeft} ימים נותרו` : `Free trial — ${trialDaysLeft} days left`)
+    : subStatus === 'past_due'
+    ? (lang === 'he' ? 'תשלום נכשל' : 'Payment failed')
+    : subStatus === 'cancelled'
+    ? (lang === 'he' ? 'בוטל' : 'Cancelled')
+    : (lang === 'he' ? 'חינמי' : 'Free');
+
+  return (
+    <div style={{ marginTop: 8, padding: '16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
+      <div style={{ fontWeight: 700, fontSize: 12, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 }}>
+        {lang === 'he' ? 'מנוי' : 'Subscription'}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: statusColor }}>{statusLabel}</div>
+          {subStatus === 'active' && subscription?.currentPeriodEnd && (
+            <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 2 }}>
+              {lang === 'he' ? 'חידוש: ' : 'Renews: '}
+              {new Date(subscription.currentPeriodEnd).toLocaleDateString(lang === 'he' ? 'he-IL' : 'en-US')}
+            </div>
+          )}
+        </div>
+        <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 13, color: 'var(--text2)' }}>
+          {isPremium ? '₪19.90/mo' : (lang === 'he' ? 'חינם' : 'Free')}
+        </div>
+      </div>
+
+      {subStatus === 'active' && subscription?.stripeCustomerId ? (
+        <button
+          onClick={handleManage}
+          disabled={subLoading}
+          style={{ width: '100%', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 0', fontSize: 14, cursor: 'pointer', fontFamily: 'DM Sans,Heebo,sans-serif', color: 'var(--text2)', opacity: subLoading ? 0.7 : 1 }}
+        >
+          {subLoading ? '...' : (lang === 'he' ? 'נהל מנוי / בטל' : 'Manage / Cancel')}
+        </button>
+      ) : subStatus !== 'active' ? (
+        <button
+          onClick={handleUpgrade}
+          disabled={subLoading}
+          style={{ width: '100%', background: 'var(--accent)', border: 'none', borderRadius: 8, padding: '10px 0', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans,Heebo,sans-serif', color: 'white', opacity: subLoading ? 0.7 : 1 }}
+        >
+          {subLoading ? '...' : (lang === 'he' ? 'שדרגי לפרמיום — ₪19.90/חודש' : 'Upgrade to Premium — ₪19.90/mo')}
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+export default function Settings({ entries, householdId, user, customCategories, allCategories, budgets = {}, savingsGoal = null, onJoinHousehold, isPremium, subStatus, trialDaysLeft, subscription }) {
   const { t, i18n } = useTranslation();
   const [household, setHousehold] = useState(null);
   const [members, setMembers] = useState([]);
@@ -24,8 +117,13 @@ export default function Settings({ entries, householdId, user, customCategories,
   const [savedApiKey, setSavedApiKey] = useState('');
   const [editingApiKey, setEditingApiKey] = useState(false);
   const [apiKeySaved, setApiKeySaved] = useState(false);
-  const [deletingCat, setDeletingCat] = useState(null); // { value, label, count }
+  const [deletingCat, setDeletingCat] = useState(null);
   const [transferTo, setTransferTo] = useState('');
+  const [joinCode, setJoinCode] = useState('');
+  const [joinError, setJoinError] = useState('');
+  const [joinLoading, setJoinLoading] = useState(false);
+  const [joinSuccess, setJoinSuccess] = useState(false);
+  const [subLoading, setSubLoading] = useState(false);
 
   useEffect(() => {
     if (!householdId) return;
@@ -51,6 +149,18 @@ export default function Settings({ entries, householdId, user, customCategories,
       setGoalSaved(savingsGoal.saved?.toString() || '');
     }
   }, [savingsGoal]);
+
+  async function handleJoinHousehold() {
+    if (!joinCode.trim()) return;
+    setJoinLoading(true); setJoinError('');
+    try {
+      const newHouseholdId = await joinHousehold(user, joinCode.trim());
+      setJoinSuccess(true);
+      onJoinHousehold(newHouseholdId);
+    } catch (e) {
+      setJoinError(e.message || t('household.errorJoin'));
+    } finally { setJoinLoading(false); }
+  }
 
   async function handleAddCategory() {
     if (!newCatName.trim()) return;
@@ -237,6 +347,29 @@ export default function Settings({ entries, householdId, user, customCategories,
               </div>
               <div className="si-arrow">›</div>
             </button>
+            <div style={{ height: 1, background: 'var(--border)', margin: '12px 0' }} />
+            <div style={{ fontWeight: 700, fontSize: 12, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>{t('settings.joinOtherTitle')}</div>
+            <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 10 }}>{t('settings.joinOtherDesc')}</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input
+                className="form-input"
+                placeholder={t('household.joinPlaceholder')}
+                value={joinCode}
+                onChange={(e) => { setJoinCode(e.target.value.toUpperCase()); setJoinError(''); setJoinSuccess(false); }}
+                maxLength={6}
+                style={{ flex: 1, textAlign: 'center', letterSpacing: 4, fontSize: 18, direction: 'ltr' }}
+              />
+              <button
+                className="btn-primary"
+                onClick={handleJoinHousehold}
+                disabled={joinLoading || !joinCode.trim()}
+                style={{ padding: '0 16px', fontSize: 13, width: 'auto', flexShrink: 0 }}
+              >
+                {joinLoading ? '...' : t('household.joinBtn')}
+              </button>
+            </div>
+            {joinError && <div style={{ fontSize: 12, color: 'var(--expense)', marginTop: 6 }}>{joinError}</div>}
+            {joinSuccess && <div style={{ fontSize: 12, color: 'var(--accent)', marginTop: 6 }}>{t('settings.joinSuccess')}</div>}
           </>
         ) : <div style={{ color: 'var(--text3)', fontSize: 13 }}>...</div>}
       </AccordionBody>
@@ -395,6 +528,19 @@ export default function Settings({ entries, householdId, user, customCategories,
           </>
         )}
       </AccordionBody>
+
+      {/* ── Subscription ── */}
+      <SubscriptionSection
+        t={t}
+        i18n={i18n}
+        isPremium={isPremium}
+        subStatus={subStatus}
+        trialDaysLeft={trialDaysLeft}
+        subscription={subscription}
+        user={user}
+        subLoading={subLoading}
+        setSubLoading={setSubLoading}
+      />
 
       {deletingCat && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>

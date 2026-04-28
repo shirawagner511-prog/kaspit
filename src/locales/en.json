@@ -24,9 +24,11 @@
     "shopping":  "Shopping",
     "insurance": "Insurance",
     "pets":      "Pets",
-    "savings":   "Savings",
-    "income":    "Income",
-    "other":     "Other"
+    "savings":          "Savings",
+    "cosmetics":        "Cosmetics & Care",
+    "home_maintenance": "Home Maintenance",
+    "income":           "Income",
+    "other":            "Other"
   },
   "login": {
     "tagline": "Your family's finances,\nclear and under control.",
@@ -189,6 +191,9 @@
     "exportData": "Export data",
     "exportCsv": "Export to CSV",
     "exportCsvSub": "Save all data",
+    "joinOtherTitle": "Join another household",
+    "joinOtherDesc": "Have an invite code? Enter it here to switch to another household.",
+    "joinSuccess": "✓ Successfully joined the new household",
     "kiki": "Kiki — WhatsApp bot",
     "kikiDesc": "Send WhatsApp messages and every expense is recorded automatically ✦",
     "kikiExample": "e.g: \"coffee 18 shekel\"",

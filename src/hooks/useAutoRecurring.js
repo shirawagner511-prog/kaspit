@@ -29,11 +29,11 @@ function buildRecurring(entries) {
   return Object.values(byName);
 }
 
-export function useAutoRecurring(entries, currentMonth, currentYear, householdId, user) {
+export function useAutoRecurring(entries, currentMonth, currentYear, householdId, user, isPremium) {
   const processed = useRef(new Set());
 
   useEffect(() => {
-    if (!householdId || !user || entries.length === 0) return;
+    if (!householdId || !user || entries.length === 0 || !isPremium) return;
     const key = `${currentYear}-${currentMonth}`;
     if (processed.current.has(key)) return;
     processed.current.add(key);

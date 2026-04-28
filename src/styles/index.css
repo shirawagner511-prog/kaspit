@@ -1638,6 +1638,14 @@ svg {
   background: linear-gradient(180deg, #fef6e0, #fcefc4);
   color: #92400e;
 }
+.cat-cosmetics {
+  background: linear-gradient(180deg, #fdf2f8, #fce7f3);
+  color: #be185d;
+}
+.cat-home_maintenance {
+  background: linear-gradient(180deg, #f0f4ff, #dde6fb);
+  color: #3730a3;
+}
 
 /* ── Modal ─────────────────────────────────────────── */
 .modal-overlay {
