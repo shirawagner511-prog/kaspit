@@ -131,13 +131,13 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
       ) : null}
 
       {showUpgrade && (
-        <div className="modal-overlay open" style={{ alignItems: 'center', padding: '16px' }} onClick={(e) => e.target === e.currentTarget && setShowUpgrade(false)}>
-          <div className="modal" style={{ borderRadius: 'var(--radius-lg)', maxHeight: '90vh' }}>
+        <div className="modal-overlay open" style={{ alignItems: 'center', padding: '16px', overflowY: 'auto' }} onClick={(e) => e.target === e.currentTarget && setShowUpgrade(false)}>
+          <div className="modal" style={{ borderRadius: 'var(--radius-lg)', maxHeight: 'none', position: 'relative', margin: 'auto' }}>
             <div className="modal-title">
               {lang === 'he' ? '✦ שדרג לפרמיום' : '✦ Upgrade to Premium'}
               <button className="modal-close" onClick={() => setShowUpgrade(false)}>✕</button>
             </div>
-            <div className="modal-body" style={{ paddingTop: 16 }}>
+            <div className="modal-body" style={{ paddingTop: 16, overflow: 'visible' }}>
               {/* Plan comparison */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
                 {[
