@@ -28,7 +28,10 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
       const res = await fetch(`${BOT_URL}/braintree/client-token`);
       const { clientToken } = await res.json();
       if (cancelled) return;
-      instanceRef.current = await window.braintree.dropin.create({ authorization: clientToken, container: dropinRef.current });
+      instanceRef.current = await window.braintree.dropin.create({
+        authorization: clientToken, container: dropinRef.current,
+        locale: lang === 'he' ? 'he_IL' : 'en_US',
+      });
       if (!cancelled) setDropinReady(true);
     }
     init().catch(console.error);
@@ -131,12 +134,31 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
         <div className="modal-overlay open" onClick={(e) => e.target === e.currentTarget && setShowUpgrade(false)}>
           <div className="modal">
             <div className="modal-title">
-              {lang === 'he' ? 'שדרג לפרמיום' : 'Upgrade to Premium'}
+              {lang === 'he' ? '✦ שדרג לפרמיום' : '✦ Upgrade to Premium'}
               <button className="modal-close" onClick={() => setShowUpgrade(false)}>✕</button>
             </div>
-            <div className="modal-body">
-              <p style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 12 }}>
-                {lang === 'he' ? '$5.50/חודש — בטל בכל עת.' : '$5.50/month — cancel anytime.'}
+            <div className="modal-body" style={{ paddingTop: 16 }}>
+              {/* Plan comparison */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
+                {[
+                  { label: lang === 'he' ? 'ניסיון' : 'Trial', price: lang === 'he' ? 'חינם' : 'Free', color: 'var(--surface2)', border: 'var(--border)', features: lang === 'he'
+                    ? ['✓ פעולות הכנסה/הוצאה', '✓ דשבורד ותרשימים', '✓ עד 2 חשבונות בנק', '✗ שיתוף בית משותף', '✗ תובנות ומגמות', '✗ נקודת איזון', '✗ קטגוריות מותאמות', '✗ קיקי — בוט וואטסאפ']
+                    : ['✓ Income & expenses', '✓ Dashboard & charts', '✓ Up to 2 accounts', '✗ Household sharing', '✗ Insights & trends', '✗ Break-even analysis', '✗ Custom categories', '✗ Kiki WhatsApp bot'] },
+                  { label: lang === 'he' ? 'פרמיום' : 'Premium', price: '$5.50/mo', color: '#f0fdf4', border: 'var(--accent)', features: lang === 'he'
+                    ? ['✓ פעולות הכנסה/הוצאה', '✓ דשבורד ותרשימים', '✓ חשבונות בנק ללא הגבלה', '✓ שיתוף בית משותף', '✓ תובנות ומגמות', '✓ נקודת איזון', '✓ קטגוריות מותאמות', '✓ קיקי — בוט וואטסאפ']
+                    : ['✓ Income & expenses', '✓ Dashboard & charts', '✓ Unlimited accounts', '✓ Household sharing', '✓ Insights & trends', '✓ Break-even analysis', '✓ Custom categories', '✓ Kiki WhatsApp bot'] },
+                ].map((plan) => (
+                  <div key={plan.label} style={{ background: plan.color, border: `1.5px solid ${plan.border}`, borderRadius: 10, padding: '12px 10px' }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, fontFamily: 'Heebo,sans-serif', color: plan.border === 'var(--accent)' ? 'var(--accent)' : 'var(--text)', marginBottom: 4 }}>{plan.label}</div>
+                    <div style={{ fontFamily: 'DM Mono,monospace', fontSize: 12, color: 'var(--text2)', marginBottom: 10 }}>{plan.price}</div>
+                    {plan.features.map((f, i) => (
+                      <div key={i} style={{ fontSize: 11, color: f.startsWith('✗') ? 'var(--text3)' : 'var(--text)', lineHeight: 1.8, fontFamily: 'Heebo,sans-serif' }}>{f}</div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+              <p style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 12, textAlign: 'center' }}>
+                {lang === 'he' ? 'בטל בכל עת · ללא התחייבות' : 'Cancel anytime · No commitment'}
               </p>
               <div ref={dropinRef} />
             </div>
@@ -144,9 +166,9 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
               <button
                 onClick={handlePay}
                 disabled={subLoading || !dropinReady}
-                style={{ flex: 1, height: 44, background: (subLoading || !dropinReady) ? 'var(--surface3)' : 'var(--accent)', color: (subLoading || !dropinReady) ? 'var(--text3)' : '#fff', border: 'none', borderRadius: 'var(--radius)', fontSize: 15, fontWeight: 600, fontFamily: 'DM Sans,Heebo,sans-serif', cursor: (subLoading || !dropinReady) ? 'wait' : 'pointer' }}
+                style={{ flex: 1, height: 44, background: (subLoading || !dropinReady) ? 'var(--surface3)' : 'var(--accent)', color: (subLoading || !dropinReady) ? 'var(--text3)' : '#fff', border: 'none', borderRadius: 'var(--radius)', fontSize: 15, fontWeight: 700, fontFamily: 'Heebo,sans-serif', cursor: (subLoading || !dropinReady) ? 'wait' : 'pointer' }}
               >
-                {subLoading ? (lang === 'he' ? 'מעבד...' : 'Processing...') : (lang === 'he' ? 'שלם $5.50/חודש' : 'Pay $5.50/month')}
+                {subLoading ? (lang === 'he' ? 'מעבד...' : 'Processing...') : (lang === 'he' ? 'שלם $5.50 לחודש' : 'Pay $5.50/month')}
               </button>
             </div>
           </div>
