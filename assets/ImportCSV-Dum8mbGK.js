@@ -1,4 +1,4 @@
-import{j as e,L as V,a as A}from"./index-Blo2U4r3.js";import{r as d}from"./i18n-DHnzMtDv.js";import{f as B}from"./format-BngcMzUF.js";import{P as R}from"./PremiumGate-CSGSp8jY.js";import"./react-vendor-ByMXOXG8.js";import"./firebase-DTdi6wg3.js";async function T(f,h,l,y){var r,c;const m=y.map(o=>`${o.value} = ${o.label}`).join(`
+import{j as e,L as V,a as A}from"./index-CKaqoyqF.js";import{r as d}from"./i18n-DHnzMtDv.js";import{f as B}from"./format-BngcMzUF.js";import{P as R}from"./PremiumGate-DEngfUZ4.js";import"./react-vendor-ByMXOXG8.js";import"./firebase-DTdi6wg3.js";async function T(f,h,l,y){var r,c;const m=y.map(o=>`${o.value} = ${o.label}`).join(`
 `),u=l.slice(0,200).map(o=>`${o.date}|${o.amount}|${o.name}`).join(`
 `),n=(c=(r=(await(await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"x-api-key":h,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true","content-type":"application/json"},body:JSON.stringify({model:"claude-haiku-4-5-20251001",max_tokens:4096,messages:[{role:"user",content:`You are a bank CSV parser. Parse this bank statement CSV and return JSON only.
 
