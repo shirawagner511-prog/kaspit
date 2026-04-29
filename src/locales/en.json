@@ -234,6 +234,7 @@
     "errorPhone": "Invalid number format. Use international format: +1234567890",
     "errorApiKey": "Key must start with sk-ant-",
     "user": "User",
+    "profile": "Profile",
     "inviteCodeLocked": "Upgrade to Premium to invite a partner"
   },
   "addEntry": {

@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { updateProfile, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
+import { auth } from '../../firebase/config';
 import { getHousehold, getHouseholdMembers, getUserData, saveCustomCategories, saveBudgets, saveSavingsGoal, saveUserPhone, saveHouseholdApiKey, updateEntry, joinHousehold } from '../../firebase/db';
 import { CATEGORY_VALUES } from '../../utils/constants';
 import { formatAmount } from '../../utils/format';
@@ -140,7 +142,7 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
         </div>
       </div>
 
-      {subStatus === 'active' && subscription?.braintreeSubscriptionId ? (
+      {subStatus === 'active' ? (
         <button onClick={handleCancel} disabled={subLoading} style={{ width: '100%', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 0', fontSize: 14, cursor: 'pointer', fontFamily: 'Heebo,sans-serif', color: 'var(--text2)', opacity: subLoading ? 0.7 : 1 }}>
           {subLoading ? '...' : (lang === 'he' ? 'ביטול מנוי' : 'Cancel subscription')}
         </button>
@@ -219,6 +221,70 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function ProfileSection({ user, t, i18n }) {
+  const lang = i18n.language === 'he' ? 'he' : 'en';
+  const isGoogle = user?.providerData?.[0]?.providerId === 'google.com';
+  const [displayName, setDisplayName] = useState(user?.displayName || '');
+  const [currentPw, setCurrentPw] = useState('');
+  const [newPw, setNewPw] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState('');
+
+  async function handleSave() {
+    setSaving(true);
+    setMsg('');
+    try {
+      if (displayName.trim() && displayName.trim() !== user.displayName) {
+        await updateProfile(auth.currentUser, { displayName: displayName.trim() });
+      }
+      if (!isGoogle && newPw) {
+        if (newPw.length < 6) throw new Error(lang === 'he' ? 'סיסמה חייבת להכיל לפחות 6 תווים' : 'Password must be at least 6 characters');
+        const cred = EmailAuthProvider.credential(auth.currentUser.email, currentPw);
+        await reauthenticateWithCredential(auth.currentUser, cred);
+        await updatePassword(auth.currentUser, newPw);
+        setCurrentPw(''); setNewPw('');
+      }
+      setMsg(lang === 'he' ? '✓ נשמר' : '✓ Saved');
+    } catch (e) {
+      setMsg(e.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div>
+        <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 4 }}>{lang === 'he' ? 'שם תצוגה' : 'Display name'}</div>
+        <input className="form-input" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+      </div>
+      {!isGoogle && (
+        <>
+          <div>
+            <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 4 }}>{lang === 'he' ? 'סיסמה נוכחית' : 'Current password'}</div>
+            <input className="form-input" type="password" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} placeholder="••••••" />
+          </div>
+          <div>
+            <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 4 }}>{lang === 'he' ? 'סיסמה חדשה' : 'New password'}</div>
+            <input className="form-input" type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} placeholder="••••••" />
+          </div>
+        </>
+      )}
+      {isGoogle && (
+        <div style={{ fontSize: 12, color: 'var(--text3)' }}>
+          {lang === 'he' ? 'חשבון Google — ניהול הסיסמה דרך Google' : 'Google account — password managed by Google'}
+        </div>
+      )}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <button onClick={handleSave} disabled={saving} style={{ background: 'var(--accent)', border: 'none', color: '#fff', borderRadius: 8, padding: '8px 18px', fontSize: 14, fontFamily: 'Heebo,sans-serif', fontWeight: 600, cursor: 'pointer' }}>
+          {saving ? (lang === 'he' ? 'שומר...' : 'Saving...') : t('settings.save')}
+        </button>
+        {msg && <span style={{ fontSize: 13, color: msg.startsWith('✓') ? 'var(--accent)' : 'var(--expense)' }}>{msg}</span>}
+      </div>
     </div>
   );
 }
@@ -446,6 +512,12 @@ export default function Settings({ entries, householdId, user, customCategories,
         subLoading={subLoading}
         setSubLoading={setSubLoading}
       />
+
+      {/* ── Profile ── */}
+      <AccordionHeader skey="profile" icon="👤" label={t('settings.profile')} />
+      <AccordionBody skey="profile">
+        <ProfileSection user={user} t={t} i18n={i18n} />
+      </AccordionBody>
 
       {/* ── Household ── */}
       <AccordionHeader skey="household" icon="🏠" label={t('settings.household')} />
