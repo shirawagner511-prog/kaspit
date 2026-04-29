@@ -115,8 +115,8 @@ export default function PremiumGate({ feature, user, isPremium, children }) {
       </div>
 
       {showModal && (
-        <div className="modal-overlay open" onClick={(e) => e.target === e.currentTarget && setShowModal(false)}>
-          <div className="modal">
+        <div className="modal-overlay open" style={{ alignItems: 'center', padding: '16px' }} onClick={(e) => e.target === e.currentTarget && setShowModal(false)}>
+          <div className="modal" style={{ borderRadius: 'var(--radius-lg)', maxHeight: '90vh' }}>
             <div className="modal-title">
               {lang === 'he' ? 'שדרג לפרמיום' : 'Upgrade to Premium'}
               <button className="modal-close" onClick={() => setShowModal(false)}>✕</button>
