@@ -456,7 +456,13 @@ export default function Settings({ entries, householdId, user, customCategories,
               <div className="be-title">🏠 {household.name}</div>
               <div className="be-row">
                 <div className="name">{t('settings.inviteCode')}</div>
-                <div className="val" style={{ color: 'var(--accent)', letterSpacing: 3 }}>{household.inviteCode}</div>
+                {isPremium ? (
+                  <div className="val" style={{ color: 'var(--accent)', letterSpacing: 3 }}>{household.inviteCode}</div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text3)', fontSize: 12 }}>
+                    🔒 {t('settings.inviteCodeLocked')}
+                  </div>
+                )}
               </div>
               <div className="be-row" style={{ borderBottom: 'none' }}>
                 <div className="name" style={{ fontWeight: 600 }}>{t('settings.members')}</div>

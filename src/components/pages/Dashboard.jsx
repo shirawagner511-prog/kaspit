@@ -85,7 +85,7 @@ function computeAccountBalance(account, entries) {
   }, 0);
 }
 
-export default function Dashboard({ entries, currentMonth, currentYear, householdId, user, onEdit, onDelete, allCategories = [], budgets = {}, savingsGoal = null, accounts = [], onNavigate, isPremium }) {
+export default function Dashboard({ entries, currentMonth, currentYear, householdId, user, onEdit, onDelete, allCategories = [], budgets = {}, savingsGoal = null, accounts = [], onNavigate, isPremium, subStatus, trialDaysLeft }) {
   const { t } = useTranslation();
   const months = getMonths(t);
   const accountsTotal = accounts.reduce((sum, a) => sum + computeAccountBalance(a, entries), 0);
@@ -95,6 +95,12 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
   const [incomeOpen, setIncomeOpen] = useState(false);
   const [drilldown, setDrilldown] = useState(null);
   const [catDrilldown, setCatDrilldown] = useState(null);
+  const [trialNudgeDismissed, setTrialNudgeDismissed] = useState(() => localStorage.getItem('budgi-trial-nudge-dismissed') === '1');
+
+  function dismissTrialNudge() {
+    localStorage.setItem('budgi-trial-nudge-dismissed', '1');
+    setTrialNudgeDismissed(true);
+  }
 
   const me = getMonthEntries(entries, currentMonth, currentYear);
   const totalIn = me.filter((e) => e.type === 'income').reduce((s, e) => s + e.amount, 0);
@@ -150,6 +156,34 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
               <span>{formatAmount(amt)} / {formatAmount(budgets[cat])} ({Math.round((amt/budgets[cat])*100)}%)</span>
             </div>
           ))}
+        </div>
+      )}
+
+      {subStatus === 'trial' && trialDaysLeft !== null && trialDaysLeft <= 7 && !trialNudgeDismissed && (
+        <div style={{ background: trialDaysLeft <= 3 ? '#fef2f2' : '#fffbeb', border: `1.5px solid ${trialDaysLeft <= 3 ? 'var(--expense)' : '#fbbf24'}`, borderRadius: 14, padding: '12px 16px', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: 'Heebo,sans-serif', fontWeight: 700, fontSize: 14, color: trialDaysLeft <= 3 ? 'var(--expense)' : '#92400e', marginBottom: 2 }}>
+              {t('dashboard.trialEndingSoon', { days: trialDaysLeft })}
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text3)' }}>{t('dashboard.trialEndingHint')}</div>
+          </div>
+          <button onClick={() => onNavigate?.('settings')} style={{ background: trialDaysLeft <= 3 ? 'var(--expense)' : '#d97706', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 14px', fontSize: 13, fontFamily: 'Heebo,sans-serif', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            {t('dashboard.trialUpgradeBtn')}
+          </button>
+          <button onClick={dismissTrialNudge} style={{ background: 'none', border: 'none', color: 'var(--text3)', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: 4 }}>×</button>
+        </div>
+      )}
+
+      {!isPremium && (
+        <div style={{ background: 'var(--surface)', border: '1.5px solid var(--accent)', borderRadius: 14, padding: '14px 16px', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 20 }}>💬</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: 'Heebo,sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--accent)', marginBottom: 2 }}>{t('dashboard.kikiPromoTitle')}</div>
+            <div style={{ fontSize: 12, color: 'var(--text3)', lineHeight: 1.4 }}>{t('dashboard.kikiPromoSub')}</div>
+          </div>
+          <button onClick={() => onNavigate?.('settings')} style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 14px', fontSize: 13, fontFamily: 'Heebo,sans-serif', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            {t('dashboard.kikiPromoBtn')}
+          </button>
         </div>
       )}
 

@@ -98,7 +98,7 @@ export default function Accounts({ accounts = [], entries = [], householdId, isP
                       </div>
                     </div>
                     <div style={{ textAlign: 'left', minWidth: 80 }}>
-                      <div style={{ color: balance >= 0 ? 'var(--accent)' : 'var(--danger)', fontFamily: 'DM Mono, monospace', fontWeight: 600 }}>
+                      <div style={{ color: balance >= 0 ? 'var(--accent)' : 'var(--expense)', fontFamily: 'DM Mono, monospace', fontWeight: 600 }}>
                         {formatAmount(Math.abs(balance))}
                       </div>
                     </div>
@@ -139,7 +139,7 @@ export default function Accounts({ accounts = [], entries = [], householdId, isP
                   {isDeleting && (
                     <div style={{ display: 'flex', gap: 8, paddingRight: 24, alignItems: 'center', fontSize: 13, color: 'var(--text2)' }}>
                       <span style={{ flex: 1 }}>{t('accounts.confirmDelete')}</span>
-                      <button onClick={() => handleDelete(account.id)} style={{ background: 'var(--danger)', border: 'none', color: '#fff', borderRadius: 8, padding: '4px 14px', cursor: 'pointer', fontSize: 13 }}>
+                      <button onClick={() => handleDelete(account.id)} style={{ background: 'var(--expense)', border: 'none', color: '#fff', borderRadius: 8, padding: '4px 14px', cursor: 'pointer', fontSize: 13 }}>
                         {t('accounts.delete')}
                       </button>
                       <button onClick={() => setDeleteId(null)} style={{ background: 'var(--surface3)', border: 'none', color: 'var(--text2)', borderRadius: 8, padding: '4px 10px', cursor: 'pointer', fontSize: 13 }}>
@@ -154,7 +154,7 @@ export default function Accounts({ accounts = [], entries = [], householdId, isP
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderTop: '1px solid var(--border)', marginTop: 4 }}>
             <span style={{ fontWeight: 600, color: 'var(--text)' }}>{t('accounts.total')}</span>
-            <span style={{ fontFamily: 'DM Mono, monospace', fontWeight: 600, fontSize: 18, color: total >= 0 ? 'var(--accent)' : 'var(--danger)' }}>
+            <span style={{ fontFamily: 'DM Mono, monospace', fontWeight: 600, fontSize: 18, color: total >= 0 ? 'var(--accent)' : 'var(--expense)' }}>
               {formatAmount(Math.abs(total))}
             </span>
           </div>

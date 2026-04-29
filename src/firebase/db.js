@@ -98,6 +98,18 @@ export async function joinHousehold(user, inviteCode) {
 
   const householdDoc = snap.docs[0];
   const memberUids = householdDoc.data().memberUids || [];
+
+  if (memberUids.length >= 1 && !memberUids.includes(user.uid)) {
+    const creatorUid = memberUids[0];
+    const subSnap = await getDoc(doc(db, 'subscriptions', creatorUid));
+    const sub = subSnap.exists() ? subSnap.data() : null;
+    const isCreatorPremium = sub?.status === 'active' ||
+      (sub?.status === 'trial' && new Date(sub.trialEndsAt) > new Date());
+    if (!isCreatorPremium) {
+      throw new Error('REQUIRES_PREMIUM');
+    }
+  }
+
   if (!memberUids.includes(user.uid)) {
     const members = householdDoc.data().members || [];
     await updateDoc(doc(db, 'households', householdDoc.id), {

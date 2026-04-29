@@ -89,7 +89,8 @@
     "joining": "מצטרפת...",
     "back": "חזרה",
     "errorCreate": "שגיאה ביצירת הבית: ",
-    "errorJoin": "שגיאה בהצטרפות"
+    "errorJoin": "שגיאה בהצטרפות",
+    "errorJoinPremium": "צירוף שותף/ה לבית משותף דורש מנוי פרמיום פעיל אצל יוצר הבית"
   },
   "header": {
     "switchUser": "החלף משתמש",
@@ -118,7 +119,13 @@
     "suggestedAvg": "ממוצע",
     "suggestedAdd": "+ הוסיפי",
     "noEntries": "עוד אין פעולות לחודש זה",
-    "noEntriesHint": "לחצי + להוסיף"
+    "noEntriesHint": "לחצי + להוסיף",
+    "kikiPromoTitle": "הוסיפי הוצאות בוואטסאפ תוך שניות",
+    "kikiPromoSub": "שלחי הודעה לקיקי — היא תרשום הכל אוטומטית",
+    "kikiPromoBtn": "שדרג",
+    "trialEndingSoon": "הניסיון שלך מסתיים בעוד {{days}} ימים",
+    "trialEndingHint": "שמור גישה לקיקי, בית משותף וכל הכלים המתקדמים",
+    "trialUpgradeBtn": "שדרג עכשיו"
   },
   "entryItem": {
     "fixed": "קבועה",
@@ -226,7 +233,8 @@
     "deleteCatConfirm": "מחקי והעבירי",
     "errorPhone": "פורמט מספר לא תקין. השתמשי בפורמט בינלאומי: +972501234567",
     "errorApiKey": "המפתח חייב להתחיל ב-sk-ant-",
-    "user": "משתמש"
+    "user": "משתמש",
+    "inviteCodeLocked": "שדרג לפרמיום כדי להזמין שותף/ה"
   },
   "addEntry": {
     "title": "הוספת פעולה",

@@ -1,18 +1,22 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Crown } from 'lucide-react';
+import { Crown, MessageCircle, Users } from 'lucide-react';
 
 const BOT_URL = import.meta.env.VITE_BOT_URL || 'https://kaspit-production.up.railway.app';
 
 const FEATURE_LABELS = {
+  kiki:       { he: 'קיקי — הוספת הוצאות בוואטסאפ', en: 'Kiki — add expenses via WhatsApp' },
+  sharing:    { he: 'בית משותף עם שותף/ה', en: 'Household sharing with partner' },
   breakeven:  { he: 'ניתוח נקודת איזון', en: 'Break-Even Analysis' },
   insights:   { he: 'תובנות ומגמות', en: 'Insights & Trends' },
   import:     { he: 'ייבוא CSV חכם', en: 'Smart CSV Import' },
   accounts:   { he: 'חשבונות בנק נוספים', en: 'More Bank Accounts' },
-  sharing:    { he: 'בית משותף', en: 'Household Sharing' },
   recurring:  { he: 'חיובים קבועים אוטומטיים', en: 'Auto-Recurring Entries' },
   categories: { he: 'קטגוריות מותאמות', en: 'Custom Categories' },
 };
+
+const FEATURE_ICONS = { kiki: MessageCircle, sharing: Users };
+const TOP_FEATURES = ['kiki', 'sharing', 'breakeven', 'insights'];
 
 export default function PremiumGate({ feature, user, isPremium, children }) {
   const { i18n } = useTranslation();
@@ -101,6 +105,21 @@ export default function PremiumGate({ feature, user, isPremium, children }) {
             {lang === 'he'
               ? "שדרג לפרמיום כדי לגשת לפיצ'ר הזה ולכל שאר הכלים המתקדמים."
               : 'Upgrade to Premium to access this feature and all advanced tools.'}
+          </div>
+        </div>
+        <div style={{ width: '100%', maxWidth: 300, background: 'var(--surface2)', borderRadius: 10, padding: '10px 14px', marginTop: 4 }}>
+          {TOP_FEATURES.map((key) => {
+            const Icon = FEATURE_ICONS[key];
+            return (
+              <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', borderBottom: '0.5px solid var(--border)' }}>
+                {Icon ? <Icon size={15} color="var(--accent)" strokeWidth={1.8} /> : <span style={{ color: 'var(--accent)', fontSize: 13 }}>✓</span>}
+                <span style={{ fontSize: 13, color: 'var(--text2)' }}>{FEATURE_LABELS[key][lang]}</span>
+              </div>
+            );
+          })}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0' }}>
+            <span style={{ color: 'var(--accent)', fontSize: 13 }}>···</span>
+            <span style={{ fontSize: 12, color: 'var(--text3)' }}>{lang === 'he' ? 'ועוד' : 'and more'}</span>
           </div>
         </div>
         <div style={{ fontSize: 13, color: 'var(--text2)', fontFamily: 'DM Mono, monospace', background: 'var(--surface2)', padding: '4px 12px', borderRadius: 6 }}>

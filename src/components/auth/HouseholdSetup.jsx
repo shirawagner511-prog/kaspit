@@ -51,7 +51,7 @@ export default function HouseholdSetup({ user, onComplete }) {
       const householdId = await joinHousehold(user, joinCode);
       onComplete(householdId);
     } catch (e) {
-      setError(e.message || t('household.errorJoin'));
+      setError(e.message === 'REQUIRES_PREMIUM' ? t('household.errorJoinPremium') : (e.message || t('household.errorJoin')));
     } finally {
       setLoading(false);
     }
