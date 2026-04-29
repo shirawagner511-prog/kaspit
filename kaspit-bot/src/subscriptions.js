@@ -45,7 +45,7 @@ export async function upsertSubscription(uid, data) {
   });
 }
 
-export async function getUidByCustomerId(stripeCustomerId) {
+export async function getUidByCustomerId(braintreeCustomerId) {
   const token = await getAccessToken();
   const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents:runQuery`;
   const res = await fetch(url, {
@@ -56,9 +56,9 @@ export async function getUidByCustomerId(stripeCustomerId) {
         from: [{ collectionId: 'subscriptions' }],
         where: {
           fieldFilter: {
-            field: { fieldPath: 'stripeCustomerId' },
+            field: { fieldPath: 'braintreeCustomerId' },
             op: 'EQUAL',
-            value: { stringValue: stripeCustomerId },
+            value: { stringValue: braintreeCustomerId },
           },
         },
         limit: 1,
@@ -68,5 +68,5 @@ export async function getUidByCustomerId(stripeCustomerId) {
   const data = await res.json();
   if (!data[0]?.document) return null;
   const name = data[0].document.name;
-  return name.split('/').pop(); // last segment is the uid
+  return name.split('/').pop();
 }

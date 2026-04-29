@@ -1,84 +1,146 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Crown } from 'lucide-react';
 
 const BOT_URL = import.meta.env.VITE_BOT_URL || 'https://kaspit-bot.up.railway.app';
 
 const FEATURE_LABELS = {
-  breakeven: { he: 'ניתוח נקודת איזון', en: 'Break-Even Analysis' },
-  insights:  { he: 'תובנות ומגמות', en: 'Insights & Trends' },
-  import:    { he: 'ייבוא CSV חכם', en: 'Smart CSV Import' },
-  accounts:  { he: 'חשבונות בנק נוספים', en: 'More Bank Accounts' },
-  sharing:   { he: 'בית משותף', en: 'Household Sharing' },
-  recurring: { he: 'חיובים קבועים אוטומטיים', en: 'Auto-Recurring Entries' },
-  categories:{ he: 'קטגוריות מותאמות', en: 'Custom Categories' },
+  breakeven:  { he: 'ניתוח נקודת איזון', en: 'Break-Even Analysis' },
+  insights:   { he: 'תובנות ומגמות', en: 'Insights & Trends' },
+  import:     { he: 'ייבוא CSV חכם', en: 'Smart CSV Import' },
+  accounts:   { he: 'חשבונות בנק נוספים', en: 'More Bank Accounts' },
+  sharing:    { he: 'בית משותף', en: 'Household Sharing' },
+  recurring:  { he: 'חיובים קבועים אוטומטיים', en: 'Auto-Recurring Entries' },
+  categories: { he: 'קטגוריות מותאמות', en: 'Custom Categories' },
 };
 
 export default function PremiumGate({ feature, user, isPremium, children }) {
-  const { t, i18n } = useTranslation();
-  const [loading, setLoading] = useState(false);
+  const { i18n } = useTranslation();
   const lang = i18n.language === 'he' ? 'he' : 'en';
+
+  const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [dropinReady, setDropinReady] = useState(false);
+  const dropinRef = useRef(null);
+  const instanceRef = useRef(null);
 
   if (isPremium) return children;
 
   const featureLabel = FEATURE_LABELS[feature]?.[lang] || feature;
 
-  async function handleUpgrade() {
-    if (!user?.uid || !user?.email) return;
+  useEffect(() => {
+    if (!showModal) return;
+    let cancelled = false;
+
+    async function init() {
+      if (!window.braintree) {
+        await new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = 'https://js.braintreegateway.com/web/dropin/1.43.0/js/dropin.min.js';
+          s.onload = resolve;
+          s.onerror = reject;
+          document.head.appendChild(s);
+        });
+      }
+
+      const res = await fetch(`${BOT_URL}/braintree/client-token`);
+      const { clientToken } = await res.json();
+      if (cancelled) return;
+
+      instanceRef.current = await window.braintree.dropin.create({
+        authorization: clientToken,
+        container: dropinRef.current,
+        locale: lang === 'he' ? 'he_IL' : 'en_US',
+      });
+      if (!cancelled) setDropinReady(true);
+    }
+
+    init().catch(console.error);
+
+    return () => {
+      cancelled = true;
+      if (instanceRef.current) {
+        instanceRef.current.teardown().catch(() => {});
+        instanceRef.current = null;
+      }
+      setDropinReady(false);
+    };
+  }, [showModal]);
+
+  async function handleSubmit() {
+    if (!instanceRef.current) return;
     setLoading(true);
     try {
-      const res = await fetch(`${BOT_URL}/stripe/create-checkout`, {
+      const { nonce } = await instanceRef.current.requestPaymentMethod();
+      const res = await fetch(`${BOT_URL}/braintree/subscribe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid: user.uid, email: user.email }),
+        body: JSON.stringify({ uid: user.uid, email: user.email, nonce }),
       });
-      const { url, error } = await res.json();
-      if (error) throw new Error(error);
-      window.location.href = url;
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setShowModal(false);
+      window.location.reload();
     } catch (e) {
-      alert(t('premium.errorCheckout') + e.message);
+      alert(e.message);
       setLoading(false);
     }
   }
 
   return (
-    <div className="page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 320, gap: 16, textAlign: 'center' }}>
-      <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--surface2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Crown size={24} color="var(--accent)" strokeWidth={1.5} />
-      </div>
-      <div>
-        <div style={{ fontFamily: 'Lora, serif', fontSize: 20, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>
-          {lang === 'he' ? `${featureLabel} — תכונה פרמיום` : `${featureLabel} — Premium Feature`}
+    <>
+      <div className="page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 320, gap: 16, textAlign: 'center' }}>
+        <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--surface2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Crown size={24} color="var(--accent)" strokeWidth={1.5} />
         </div>
-        <div style={{ fontSize: 14, color: 'var(--text3)', maxWidth: 280, lineHeight: 1.6 }}>
-          {lang === 'he'
-            ? 'שדרגי לפרמיום כדי לגשת לפיצ\'ר הזה ולכל שאר הכלים המתקדמים.'
-            : 'Upgrade to Premium to access this feature and all advanced tools.'}
+        <div>
+          <div style={{ fontFamily: 'Lora, serif', fontSize: 20, fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>
+            {lang === 'he' ? `${featureLabel} — תכונה פרמיום` : `${featureLabel} — Premium Feature`}
+          </div>
+          <div style={{ fontSize: 14, color: 'var(--text3)', maxWidth: 280, lineHeight: 1.6 }}>
+            {lang === 'he'
+              ? "שדרגי לפרמיום כדי לגשת לפיצ'ר הזה ולכל שאר הכלים המתקדמים."
+              : 'Upgrade to Premium to access this feature and all advanced tools.'}
+          </div>
         </div>
+        <div style={{ fontSize: 13, color: 'var(--text2)', fontFamily: 'DM Mono, monospace', background: 'var(--surface2)', padding: '4px 12px', borderRadius: 6 }}>
+          {lang === 'he' ? '$5.50 לחודש' : '$5.50 / month'}
+        </div>
+        <button
+          onClick={() => setShowModal(true)}
+          style={{ background: 'var(--accent)', color: 'white', border: 'none', borderRadius: 8, padding: '10px 24px', fontSize: 15, fontFamily: 'DM Sans, Heebo, sans-serif', fontWeight: 600, cursor: 'pointer' }}
+        >
+          {lang === 'he' ? 'שדרגי לפרמיום' : 'Upgrade to Premium'}
+        </button>
       </div>
-      <div style={{ fontSize: 13, color: 'var(--text2)', fontFamily: 'DM Mono, monospace', background: 'var(--surface2)', padding: '4px 12px', borderRadius: 6 }}>
-        {lang === 'he' ? '₪19.90 לחודש' : '₪19.90 / month'}
-      </div>
-      <button
-        onClick={handleUpgrade}
-        disabled={loading}
-        style={{
-          background: 'var(--accent)',
-          color: 'white',
-          border: 'none',
-          borderRadius: 8,
-          padding: '10px 24px',
-          fontSize: 15,
-          fontFamily: 'DM Sans, Heebo, sans-serif',
-          fontWeight: 600,
-          cursor: loading ? 'wait' : 'pointer',
-          opacity: loading ? 0.7 : 1,
-        }}
-      >
-        {loading
-          ? (lang === 'he' ? 'מעבירה...' : 'Redirecting...')
-          : (lang === 'he' ? 'שדרגי לפרמיום' : 'Upgrade to Premium')}
-      </button>
-    </div>
+
+      {showModal && (
+        <div className="modal-overlay open" onClick={(e) => e.target === e.currentTarget && setShowModal(false)}>
+          <div className="modal">
+            <div className="modal-title">
+              {lang === 'he' ? 'שדרגי לפרמיום' : 'Upgrade to Premium'}
+              <button className="modal-close" onClick={() => setShowModal(false)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <p style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 12 }}>
+                {lang === 'he' ? 'הכנס פרטי כרטיס אשראי — $5.50/חודש, בטל בכל עת.' : 'Enter card details — $5.50/month, cancel anytime.'}
+              </p>
+              <div ref={dropinRef} />
+            </div>
+            <div className="modal-footer">
+              <button
+                onClick={handleSubmit}
+                disabled={loading || !dropinReady}
+                style={{ flex: 1, height: 44, background: (loading || !dropinReady) ? 'var(--surface3)' : 'var(--accent)', color: (loading || !dropinReady) ? 'var(--text3)' : '#fff', border: 'none', borderRadius: 'var(--radius)', fontSize: 15, fontWeight: 600, fontFamily: 'DM Sans, Heebo, sans-serif', cursor: (loading || !dropinReady) ? 'wait' : 'pointer' }}
+              >
+                {loading
+                  ? (lang === 'he' ? 'מעבד...' : 'Processing...')
+                  : (lang === 'he' ? 'שלם $5.50/חודש' : 'Pay $5.50/month')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
