@@ -1,18 +1,60 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { signOut, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { signOut, signInWithPopup, GoogleAuthProvider, updateProfile, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import { auth, googleProvider } from '../../firebase/config';
 import { getMonths } from '../../utils/constants';
-import { RefreshCw, LogOut, Languages } from 'lucide-react';
+import { RefreshCw, LogOut, Languages, UserPen } from 'lucide-react';
 
 export default function Header({ user, currentMonth, currentYear, onMonthChange, isPremium, subStatus, trialDaysLeft, onNavigate }) {
   const { t, i18n } = useTranslation();
+  const lang = i18n.language === 'he' ? 'he' : 'en';
   function toggleLang() {
     const next = i18n.language === 'he' ? 'en' : 'he';
     i18n.changeLanguage(next);
     localStorage.setItem('budgi-lang', next);
   }
   const [menuOpen, setMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [displayName, setDisplayName] = useState('');
+  const [currentPw, setCurrentPw] = useState('');
+  const [newPw, setNewPw] = useState('');
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileMsg, setProfileMsg] = useState('');
+
+  const isGoogle = user?.providerData?.[0]?.providerId === 'google.com';
+
+  function openProfile() {
+    setMenuOpen(false);
+    setDisplayName(user?.displayName || '');
+    setCurrentPw(''); setNewPw(''); setProfileMsg('');
+    setProfileOpen(true);
+  }
+
+  async function handleProfileSave() {
+    setProfileSaving(true);
+    setProfileMsg('');
+    try {
+      if (displayName.trim() && displayName.trim() !== user.displayName) {
+        await updateProfile(auth.currentUser, { displayName: displayName.trim() });
+      }
+      if (!isGoogle && newPw) {
+        if (newPw.length < 6) throw new Error(lang === 'he' ? 'סיסמה חייבת להכיל לפחות 6 תווים' : 'Password must be at least 6 characters');
+        if (!currentPw) throw new Error(lang === 'he' ? 'יש להזין סיסמה נוכחית' : 'Current password required');
+        const cred = EmailAuthProvider.credential(auth.currentUser.email, currentPw);
+        await reauthenticateWithCredential(auth.currentUser, cred);
+        await updatePassword(auth.currentUser, newPw);
+        setCurrentPw(''); setNewPw('');
+      }
+      setProfileMsg(lang === 'he' ? '✓ הפרטים עודכנו' : '✓ Details updated');
+    } catch (e) {
+      const msg = e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential'
+        ? (lang === 'he' ? 'סיסמה נוכחית שגויה' : 'Incorrect current password')
+        : e.message;
+      setProfileMsg(msg);
+    } finally {
+      setProfileSaving(false);
+    }
+  }
   const months = getMonths(t);
   const MONTH_OPTIONS = useMemo(() => {
     const options = [];
@@ -54,6 +96,7 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
   }
 
   return (
+    <>
     <div className="app-header">
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
         <div className="app-logo" dir="ltr" style={{ gap: 0, cursor: 'pointer' }} onClick={() => onNavigate('dashboard')}>
@@ -121,6 +164,18 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
                 <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 2 }}>{user?.email}</div>
               </div>
               <button
+                onClick={openProfile}
+                style={{
+                  width: '100%', padding: '11px 14px', background: 'none',
+                  border: 'none', borderBottom: '0.5px solid var(--border)',
+                  color: 'var(--text2)', fontSize: 13,
+                  fontWeight: 500, cursor: 'pointer', textAlign: 'right',
+                  fontFamily: 'DM Sans,Heebo,sans-serif', display: 'flex', alignItems: 'center', gap: 8,
+                }}
+              >
+                <UserPen size={14} /> {lang === 'he' ? 'עדכון פרטים' : 'Edit profile'}
+              </button>
+              <button
                 onClick={handleSwitchUser}
                 style={{
                   width: '100%', padding: '11px 14px', background: 'none',
@@ -148,5 +203,62 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
         </div>
       </div>
     </div>
+    {profileOpen && (
+      <div className="modal-overlay open" style={{ alignItems: 'center', padding: 16 }} onClick={(e) => e.target === e.currentTarget && setProfileOpen(false)}>
+        <div className="modal" style={{ borderRadius: 12, maxWidth: 400, width: '100%' }}>
+          <div className="modal-title">
+            {lang === 'he' ? 'עדכון פרטים' : 'Edit profile'}
+            <button className="modal-close" onClick={() => setProfileOpen(false)}>✕</button>
+          </div>
+          <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 14, paddingTop: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 4 }}>
+              <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
+                {(user?.displayName || '?').charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 600 }}>{user?.displayName}</div>
+                <div style={{ fontSize: 12, color: 'var(--text3)' }}>{user?.email}</div>
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 4 }}>{lang === 'he' ? 'שם תצוגה' : 'Display name'}</div>
+              <input className="form-input" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+            </div>
+            {isGoogle ? (
+              <div style={{ fontSize: 12, color: 'var(--text3)', background: 'var(--surface2)', borderRadius: 8, padding: '10px 12px' }}>
+                {lang === 'he' ? '🔒 חשבון Google — שינוי סיסמה מתבצע דרך Google' : '🔒 Google account — change password via Google'}
+              </div>
+            ) : (
+              <>
+                <div style={{ height: 1, background: 'var(--border)' }} />
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text2)' }}>{lang === 'he' ? 'שינוי סיסמה' : 'Change password'}</div>
+                <div>
+                  <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 4 }}>{lang === 'he' ? 'סיסמה נוכחית (לאימות)' : 'Current password (verification)'}</div>
+                  <input className="form-input" type="password" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} placeholder="••••••" autoComplete="current-password" />
+                </div>
+                <div>
+                  <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 4 }}>{lang === 'he' ? 'סיסמה חדשה (אופציונלי)' : 'New password (optional)'}</div>
+                  <input className="form-input" type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} placeholder="••••••" autoComplete="new-password" />
+                </div>
+              </>
+            )}
+            {profileMsg && (
+              <div style={{ fontSize: 13, color: profileMsg.startsWith('✓') ? 'var(--accent)' : 'var(--expense)', fontWeight: 500 }}>
+                {profileMsg}
+              </div>
+            )}
+          </div>
+          <div className="modal-footer">
+            <button onClick={() => setProfileOpen(false)} style={{ flex: 1, height: 44, background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: 14, cursor: 'pointer', fontFamily: 'Heebo,sans-serif', color: 'var(--text2)' }}>
+              {lang === 'he' ? 'ביטול' : 'Cancel'}
+            </button>
+            <button onClick={handleProfileSave} disabled={profileSaving} style={{ flex: 2, height: 44, background: 'var(--accent)', border: 'none', borderRadius: 'var(--radius)', fontSize: 15, fontWeight: 700, fontFamily: 'Heebo,sans-serif', color: '#fff', cursor: profileSaving ? 'wait' : 'pointer', opacity: profileSaving ? 0.7 : 1 }}>
+              {profileSaving ? (lang === 'he' ? 'שומר...' : 'Saving...') : (lang === 'he' ? 'שמור שינויים' : 'Save changes')}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
