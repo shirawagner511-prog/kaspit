@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getHousehold, getHouseholdMembers, getUserData, saveCustomCategories, saveBudgets, saveSavingsGoal, saveUserPhone, saveHouseholdApiKey, updateEntry, joinHousehold } from '../../firebase/db';
 import { CATEGORY_VALUES } from '../../utils/constants';
@@ -8,37 +8,70 @@ const BOT_URL = import.meta.env.VITE_BOT_URL || 'https://kaspit-bot.up.railway.a
 
 function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, subscription, user, subLoading, setSubLoading }) {
   const lang = i18n.language === 'he' ? 'he' : 'en';
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const [dropinReady, setDropinReady] = useState(false);
+  const dropinRef = useRef(null);
+  const instanceRef = useRef(null);
 
-  async function handleUpgrade() {
-    if (!user?.uid || !user?.email) return;
+  useEffect(() => {
+    if (!showUpgrade) return;
+    let cancelled = false;
+    async function init() {
+      if (!window.braintree) {
+        await new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = 'https://js.braintreegateway.com/web/dropin/1.43.0/js/dropin.min.js';
+          s.onload = resolve; s.onerror = reject;
+          document.head.appendChild(s);
+        });
+      }
+      const res = await fetch(`${BOT_URL}/braintree/client-token`);
+      const { clientToken } = await res.json();
+      if (cancelled) return;
+      instanceRef.current = await window.braintree.dropin.create({ authorization: clientToken, container: dropinRef.current });
+      if (!cancelled) setDropinReady(true);
+    }
+    init().catch(console.error);
+    return () => {
+      cancelled = true;
+      if (instanceRef.current) { instanceRef.current.teardown().catch(() => {}); instanceRef.current = null; }
+      setDropinReady(false);
+    };
+  }, [showUpgrade]);
+
+  async function handlePay() {
+    if (!instanceRef.current) return;
     setSubLoading(true);
     try {
-      const res = await fetch(`${BOT_URL}/stripe/create-checkout`, {
+      const { nonce } = await instanceRef.current.requestPaymentMethod();
+      const res = await fetch(`${BOT_URL}/braintree/subscribe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid: user.uid, email: user.email }),
+        body: JSON.stringify({ uid: user.uid, email: user.email, nonce }),
       });
-      const { url, error } = await res.json();
-      if (error) throw new Error(error);
-      window.location.href = url;
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setShowUpgrade(false);
+      window.location.reload();
     } catch (e) {
-      alert((lang === 'he' ? 'שגיאה: ' : 'Error: ') + e.message);
+      alert(e.message);
       setSubLoading(false);
     }
   }
 
-  async function handleManage() {
-    if (!subscription?.stripeCustomerId) return;
+  async function handleCancel() {
+    if (!subscription?.braintreeSubscriptionId) return;
+    if (!window.confirm(lang === 'he' ? 'לבטל את המנוי?' : 'Cancel subscription?')) return;
     setSubLoading(true);
     try {
-      const res = await fetch(`${BOT_URL}/stripe/create-portal`, {
+      const res = await fetch(`${BOT_URL}/braintree/cancel`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ stripeCustomerId: subscription.stripeCustomerId }),
+        body: JSON.stringify({ uid: user.uid, subscriptionId: subscription.braintreeSubscriptionId }),
       });
-      const { url, error } = await res.json();
-      if (error) throw new Error(error);
-      window.location.href = url;
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      window.location.reload();
     } catch (e) {
       alert((lang === 'he' ? 'שגיאה: ' : 'Error: ') + e.message);
       setSubLoading(false);
@@ -76,23 +109,49 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
         </div>
       </div>
 
-      {subStatus === 'active' && subscription?.stripeCustomerId ? (
+      {subStatus === 'active' && subscription?.braintreeSubscriptionId ? (
         <button
-          onClick={handleManage}
+          onClick={handleCancel}
           disabled={subLoading}
           style={{ width: '100%', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 0', fontSize: 14, cursor: 'pointer', fontFamily: 'DM Sans,Heebo,sans-serif', color: 'var(--text2)', opacity: subLoading ? 0.7 : 1 }}
         >
-          {subLoading ? '...' : (lang === 'he' ? 'נהל מנוי / בטל' : 'Manage / Cancel')}
+          {subLoading ? '...' : (lang === 'he' ? 'ביטול מנוי' : 'Cancel subscription')}
         </button>
       ) : subStatus !== 'active' ? (
         <button
-          onClick={handleUpgrade}
+          onClick={() => setShowUpgrade(true)}
           disabled={subLoading}
           style={{ width: '100%', background: 'var(--accent)', border: 'none', borderRadius: 8, padding: '10px 0', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans,Heebo,sans-serif', color: 'white', opacity: subLoading ? 0.7 : 1 }}
         >
-          {subLoading ? '...' : (lang === 'he' ? 'שדרגי לפרמיום — ₪19.90/חודש' : 'Upgrade to Premium — ₪19.90/mo')}
+          {lang === 'he' ? 'שדרגי לפרמיום — $5.50/חודש' : 'Upgrade to Premium — $5.50/mo'}
         </button>
       ) : null}
+
+      {showUpgrade && (
+        <div className="modal-overlay open" onClick={(e) => e.target === e.currentTarget && setShowUpgrade(false)}>
+          <div className="modal">
+            <div className="modal-title">
+              {lang === 'he' ? 'שדרגי לפרמיום' : 'Upgrade to Premium'}
+              <button className="modal-close" onClick={() => setShowUpgrade(false)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <p style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 12 }}>
+                {lang === 'he' ? '$5.50/חודש — בטל בכל עת.' : '$5.50/month — cancel anytime.'}
+              </p>
+              <div ref={dropinRef} />
+            </div>
+            <div className="modal-footer">
+              <button
+                onClick={handlePay}
+                disabled={subLoading || !dropinReady}
+                style={{ flex: 1, height: 44, background: (subLoading || !dropinReady) ? 'var(--surface3)' : 'var(--accent)', color: (subLoading || !dropinReady) ? 'var(--text3)' : '#fff', border: 'none', borderRadius: 'var(--radius)', fontSize: 15, fontWeight: 600, fontFamily: 'DM Sans,Heebo,sans-serif', cursor: (subLoading || !dropinReady) ? 'wait' : 'pointer' }}
+              >
+                {subLoading ? (lang === 'he' ? 'מעבד...' : 'Processing...') : (lang === 'he' ? 'שלם $5.50/חודש' : 'Pay $5.50/month')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -308,6 +367,18 @@ export default function Settings({ entries, householdId, user, customCategories,
 
   return (
     <div className="page">
+
+      <SubscriptionSection
+        t={t}
+        i18n={i18n}
+        isPremium={isPremium}
+        subStatus={subStatus}
+        trialDaysLeft={trialDaysLeft}
+        subscription={subscription}
+        user={user}
+        subLoading={subLoading}
+        setSubLoading={setSubLoading}
+      />
 
       {/* ── Household ── */}
       <AccordionHeader skey="household" icon="🏠" label={t('settings.household')} />
@@ -528,19 +599,6 @@ export default function Settings({ entries, householdId, user, customCategories,
           </>
         )}
       </AccordionBody>
-
-      {/* ── Subscription ── */}
-      <SubscriptionSection
-        t={t}
-        i18n={i18n}
-        isPremium={isPremium}
-        subStatus={subStatus}
-        trialDaysLeft={trialDaysLeft}
-        subscription={subscription}
-        user={user}
-        subLoading={subLoading}
-        setSubLoading={setSubLoading}
-      />
 
       {deletingCat && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>

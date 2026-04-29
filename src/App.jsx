@@ -124,6 +124,9 @@ export default function App() {
           currentMonth={currentMonth}
           currentYear={currentYear}
           onMonthChange={(m, y) => { setCurrentMonth(m); setCurrentYear(y); }}
+          isPremium={isPremium}
+          subStatus={subStatus}
+          trialDaysLeft={trialDaysLeft}
         />
 
         <Suspense fallback={<Loader />}>
@@ -136,7 +139,7 @@ export default function App() {
           {page === 'settings'  && <Settings  {...pageProps} />}
         </Suspense>
 
-        <BottomNav activePage={page} onNavigate={setPage} />
+        <BottomNav activePage={page} onNavigate={setPage} isPremium={isPremium} subStatus={subStatus} />
       </div>
 
       <ScrollToTop />
