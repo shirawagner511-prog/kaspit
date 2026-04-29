@@ -33,14 +33,20 @@ export function useSubscription(user) {
     );
   }, [user?.uid]);
 
-  const isPremium = subscription === undefined
-    ? true // show premium while loading to avoid flash of locked content
-    : subscription?.status === 'active' ||
-      (subscription?.status === 'trial' && new Date(subscription.trialEndsAt) > new Date());
+  const forceFree = typeof window !== 'undefined' && localStorage.getItem('budgi-force-free') === '1';
 
-  const trialDaysLeft = subscription?.status === 'trial'
-    ? Math.max(0, Math.ceil((new Date(subscription.trialEndsAt) - Date.now()) / 86400000))
-    : null;
+  const isPremium = forceFree ? false
+    : subscription === undefined
+      ? true
+      : subscription?.status === 'active' ||
+        (subscription?.status === 'trial' && new Date(subscription.trialEndsAt) > new Date());
 
-  return { isPremium, status: subscription?.status ?? null, trialDaysLeft, subscription };
+  const trialDaysLeft = forceFree ? 3
+    : subscription?.status === 'trial'
+      ? Math.max(0, Math.ceil((new Date(subscription.trialEndsAt) - Date.now()) / 86400000))
+      : null;
+
+  const status = forceFree ? 'trial' : (subscription?.status ?? null);
+
+  return { isPremium, status, trialDaysLeft, subscription };
 }
