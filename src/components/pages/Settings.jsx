@@ -123,7 +123,7 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
           disabled={subLoading}
           style={{ width: '100%', background: 'var(--accent)', border: 'none', borderRadius: 8, padding: '10px 0', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans,Heebo,sans-serif', color: 'white', opacity: subLoading ? 0.7 : 1 }}
         >
-          {lang === 'he' ? 'שדרגי לפרמיום — $5.50/חודש' : 'Upgrade to Premium — $5.50/mo'}
+          {lang === 'he' ? 'שדרג לפרמיום — $5.50/חודש' : 'Upgrade to Premium — $5.50/mo'}
         </button>
       ) : null}
 
@@ -131,7 +131,7 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
         <div className="modal-overlay open" onClick={(e) => e.target === e.currentTarget && setShowUpgrade(false)}>
           <div className="modal">
             <div className="modal-title">
-              {lang === 'he' ? 'שדרגי לפרמיום' : 'Upgrade to Premium'}
+              {lang === 'he' ? 'שדרג לפרמיום' : 'Upgrade to Premium'}
               <button className="modal-close" onClick={() => setShowUpgrade(false)}>✕</button>
             </div>
             <div className="modal-body">

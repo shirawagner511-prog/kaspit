@@ -99,7 +99,7 @@ export default function PremiumGate({ feature, user, isPremium, children }) {
           </div>
           <div style={{ fontSize: 14, color: 'var(--text3)', maxWidth: 280, lineHeight: 1.6 }}>
             {lang === 'he'
-              ? "שדרגי לפרמיום כדי לגשת לפיצ'ר הזה ולכל שאר הכלים המתקדמים."
+              ? "שדרג לפרמיום כדי לגשת לפיצ'ר הזה ולכל שאר הכלים המתקדמים."
               : 'Upgrade to Premium to access this feature and all advanced tools.'}
           </div>
         </div>
@@ -110,7 +110,7 @@ export default function PremiumGate({ feature, user, isPremium, children }) {
           onClick={() => setShowModal(true)}
           style={{ background: 'var(--accent)', color: 'white', border: 'none', borderRadius: 8, padding: '10px 24px', fontSize: 15, fontFamily: 'DM Sans, Heebo, sans-serif', fontWeight: 600, cursor: 'pointer' }}
         >
-          {lang === 'he' ? 'שדרגי לפרמיום' : 'Upgrade to Premium'}
+          {lang === 'he' ? 'שדרג לפרמיום' : 'Upgrade to Premium'}
         </button>
       </div>
 
@@ -118,7 +118,7 @@ export default function PremiumGate({ feature, user, isPremium, children }) {
         <div className="modal-overlay open" onClick={(e) => e.target === e.currentTarget && setShowModal(false)}>
           <div className="modal">
             <div className="modal-title">
-              {lang === 'he' ? 'שדרגי לפרמיום' : 'Upgrade to Premium'}
+              {lang === 'he' ? 'שדרג לפרמיום' : 'Upgrade to Premium'}
               <button className="modal-close" onClick={() => setShowModal(false)}>✕</button>
             </div>
             <div className="modal-body">
