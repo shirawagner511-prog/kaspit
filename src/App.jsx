@@ -12,7 +12,7 @@ import { useSubscription } from './hooks/useSubscription';
 import { deleteEntry } from './firebase/db';
 import { getDefaultCategories } from './utils/constants';
 
-import { LayoutDashboard, ListOrdered, Scale, TrendingUp, FolderInput, Landmark, Settings as SettingsIcon } from 'lucide-react';
+import { LayoutDashboard, ListOrdered, Scale, TrendingUp, Landmark, Settings as SettingsIcon, MessageCircle } from 'lucide-react';
 import LoginScreen from './components/auth/LoginScreen';
 import HouseholdSetup from './components/auth/HouseholdSetup';
 import Loader from './components/shared/Loader';
@@ -29,6 +29,7 @@ const Insights  = lazy(() => import('./components/pages/Insights'));
 const Settings  = lazy(() => import('./components/pages/Settings'));
 const ImportCSV = lazy(() => import('./components/pages/ImportCSV'));
 const Accounts  = lazy(() => import('./components/pages/Accounts'));
+const BudgiBot  = lazy(() => import('./components/pages/BudgiBot'));
 
 export default function App() {
   const { t, i18n } = useTranslation();
@@ -92,7 +93,7 @@ export default function App() {
     { key: 'entries',   Icon: ListOrdered,     label: t('nav.entries') },
     { key: 'breakeven', Icon: Scale,           label: t('nav.breakeven') },
     { key: 'insights',  Icon: TrendingUp,      label: t('nav.insights') },
-    { key: 'import',    Icon: FolderInput,     label: t('nav.import') },
+    { key: 'bot',       Icon: MessageCircle,   label: 'Budgi Bot' },
     { key: 'accounts',  Icon: Landmark,        label: t('accounts.nav') },
     { key: 'settings',  Icon: SettingsIcon,    label: t('nav.settings') },
   ];
@@ -135,6 +136,7 @@ export default function App() {
           {page === 'entries'   && <Entries   {...pageProps} />}
           {page === 'breakeven' && <Breakeven {...pageProps} />}
           {page === 'insights'  && <Insights  {...pageProps} />}
+          {page === 'bot'       && <BudgiBot user={user} />}
           {page === 'import'    && <ImportCSV  {...pageProps} />}
           {page === 'accounts'  && <Accounts  {...pageProps} />}
           {page === 'settings'  && <Settings  {...pageProps} />}
@@ -145,7 +147,7 @@ export default function App() {
 
       <ScrollToTop />
 
-      {!(modalOpen || !!editEntry || !!deleteId) && createPortal(
+      {!(modalOpen || !!editEntry || !!deleteId) && ['dashboard','entries'].includes(page) && createPortal(
         <button className="fab" onClick={() => setModalOpen(true)}>
           {t('dashboard.addEntry')}
         </button>,

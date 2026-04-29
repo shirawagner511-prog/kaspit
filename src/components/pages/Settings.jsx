@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { onSnapshot, doc } from 'firebase/firestore';
-import { db } from '../../firebase/config';
-import { getHousehold, getHouseholdMembers, getUserData, saveCustomCategories, saveBudgets, saveSavingsGoal, savePendingWhatsappPhone, disconnectWhatsapp, updateEntry, joinHousehold } from '../../firebase/db';
+import { getHousehold, getHouseholdMembers, saveCustomCategories, saveBudgets, saveSavingsGoal, updateEntry, joinHousehold } from '../../firebase/db';
 import { CATEGORY_VALUES } from '../../utils/constants';
 import { formatAmount } from '../../utils/format';
 
@@ -225,7 +223,7 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
   );
 }
 
-export default function Settings({ entries, householdId, user, customCategories, allCategories, budgets = {}, savingsGoal = null, onJoinHousehold, isPremium, subStatus, trialDaysLeft, subscription }) {
+export default function Settings({ entries, householdId, user, customCategories, allCategories, budgets = {}, savingsGoal = null, onJoinHousehold, onNavigate, isPremium, subStatus, trialDaysLeft, subscription }) {
   const { t, i18n } = useTranslation();
   const [household, setHousehold] = useState(null);
   const [members, setMembers] = useState([]);
@@ -237,10 +235,6 @@ export default function Settings({ entries, householdId, user, customCategories,
   const [goalTarget, setGoalTarget] = useState('');
   const [goalSaved, setGoalSaved] = useState('');
   const [section, setSection] = useState('household');
-  const [botPhoneInput, setBotPhoneInput] = useState('');
-  const [botPhoneError, setBotPhoneError] = useState('');
-  const [botConnected, setBotConnected] = useState('');
-  const [botPending, setBotPending] = useState('');
   const [deletingCat, setDeletingCat] = useState(null);
   const [transferTo, setTransferTo] = useState('');
   const [joinCode, setJoinCode] = useState('');
@@ -256,15 +250,6 @@ export default function Settings({ entries, householdId, user, customCategories,
       if (h?.members?.length) getHouseholdMembers(h.members).then(setMembers).catch(console.error);
     }).catch(console.error);
   }, [householdId]);
-
-  useEffect(() => {
-    if (!user?.uid) return;
-    return onSnapshot(doc(db, 'users', user.uid), (snap) => {
-      const d = snap.data() || {};
-      setBotConnected(d.whatsappNumber || '');
-      setBotPending(d.pendingWhatsappPhone || '');
-    });
-  }, [user?.uid]);
 
   useEffect(() => { setLocalBudgets(budgets); }, [budgets]);
   useEffect(() => {
@@ -357,33 +342,11 @@ export default function Settings({ entries, householdId, user, customCategories,
 
   const expenseCategories = allCategories.filter((c) => !['income', 'savings'].includes(c.value));
 
-  async function handleConnectBot() {
-    const phone = botPhoneInput.trim();
-    if (!/^\+[1-9]\d{7,14}$/.test(phone)) {
-      setBotPhoneError('המספר חייב להתחיל ב-+ ולכלול קידומת מדינה, למשל +972501234567');
-      return;
-    }
-    setBotPhoneError('');
-    setSaving(true);
-    try {
-      await savePendingWhatsappPhone(user.uid, phone);
-    } finally { setSaving(false); }
-  }
-
-  async function handleDisconnectBot() {
-    setSaving(true);
-    try {
-      await disconnectWhatsapp(user.uid);
-      setBotPhoneInput('');
-    } finally { setSaving(false); }
-  }
-
   const sections = [
     { key: 'household', icon: '🏠', label: t('settings.household') },
     { key: 'budgets',   icon: '📊', label: t('settings.budgets') },
     { key: 'goals',     icon: '🎯', label: t('settings.savingsGoal') },
     { key: 'cats',      icon: '🏷️', label: t('settings.categories') },
-    { key: 'budgi-bot', icon: '🤖', label: 'Budgi Bot' },
   ];
 
   function AccordionHeader({ skey, icon, label }) {
@@ -474,10 +437,17 @@ export default function Settings({ entries, householdId, user, customCategories,
               ))}
             </div>
             <div style={{ height: 1, background: 'var(--border)', margin: '12px 0' }} />
-            <button className="settings-item" onClick={exportCSV} style={{ borderRadius: 'var(--radius-sm)', marginBottom: 0 }}>
+            <button className="settings-item" onClick={exportCSV} style={{ borderRadius: 'var(--radius-sm)', marginBottom: 4 }}>
               <div className="si-left">
                 <div className="si-icon" style={{ background: 'rgba(93,211,179,.15)' }}>📤</div>
                 <div><div className="si-title">{t('settings.exportCsv')}</div><div className="si-sub">{t('settings.exportCsvSub')}</div></div>
+              </div>
+              <div className="si-arrow">›</div>
+            </button>
+            <button className="settings-item" onClick={() => onNavigate?.('import')} style={{ borderRadius: 'var(--radius-sm)', marginBottom: 0 }}>
+              <div className="si-left">
+                <div className="si-icon" style={{ background: 'rgba(93,211,179,.15)' }}>📥</div>
+                <div><div className="si-title">{t('settings.importCsv') || 'ייבוא CSV'}</div><div className="si-sub">{t('settings.importCsvSub') || 'ייבא פעולות מקובץ'}</div></div>
               </div>
               <div className="si-arrow">›</div>
             </button>
@@ -599,88 +569,6 @@ export default function Settings({ entries, householdId, user, customCategories,
         ))}
       </AccordionBody>
 
-      {/* ── Budgi Bot ── */}
-      <AccordionHeader skey="budgi-bot" icon="🤖" label="Budgi Bot" />
-      <AccordionBody skey="budgi-bot">
-        {botConnected ? (
-          /* State C — connected */
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--accent-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🤖</div>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--accent)' }}>✓ Budgi Bot מחובר</div>
-                <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 12, color: 'var(--text3)', direction: 'ltr' }}>
-                  {botConnected.slice(0, 4) + '•••••' + botConnected.slice(-3)}
-                </div>
-              </div>
-            </div>
-            <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 14, lineHeight: 1.7 }}>
-              שלח הוצאות כמו <span style={{ color: 'var(--accent)', fontWeight: 600 }}>"קפה 18"</span> או צלם קבלה 📸
-            </div>
-            <button
-              onClick={handleDisconnectBot}
-              disabled={saving}
-              style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 0', width: '100%', fontSize: 14, cursor: 'pointer', fontFamily: 'Heebo,sans-serif', color: 'var(--expense)', fontWeight: 600 }}
-            >
-              {saving ? '...' : 'ניתוק'}
-            </button>
-          </div>
-        ) : botPending ? (
-          /* State B — pending */
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-              <div style={{ fontSize: 22 }}>⏳</div>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>ממתין לאישור</div>
-                <div style={{ fontSize: 12, color: 'var(--text3)' }}>הבוט יתחבר ברגע שתשלח לו הודעה</div>
-              </div>
-            </div>
-            <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 14px', fontSize: 13, marginBottom: 14, lineHeight: 1.8 }}>
-              <div style={{ fontWeight: 600, marginBottom: 4 }}>כדי להתחבר:</div>
-              <div>1. שמור את המספר <span style={{ fontFamily: 'DM Mono,monospace', direction: 'ltr', display: 'inline-block' }}>+1 415 523 8886</span> בוואטסאפ</div>
-              <div>2. שלח לו: <span style={{ fontFamily: 'DM Mono,monospace', color: 'var(--accent)', fontWeight: 700 }}>join method-strike</span></div>
-              <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4 }}>פעם אחת בלבד — פותח את הצ׳אט</div>
-            </div>
-            <button
-              onClick={handleDisconnectBot}
-              disabled={saving}
-              style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 0', width: '100%', fontSize: 14, cursor: 'pointer', fontFamily: 'Heebo,sans-serif', color: 'var(--text2)' }}
-            >
-              {saving ? '...' : 'ביטול'}
-            </button>
-          </div>
-        ) : (
-          /* State A — not connected */
-          <div>
-            <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 14, lineHeight: 1.7 }}>
-              חבר את Budgi Bot לוואטסאפ ושלח הוצאות בהודעה 💬
-            </div>
-            <div className="form-group">
-              <label className="form-label">מספר הוואטסאפ שלך</label>
-              <input
-                className="form-input"
-                dir="ltr"
-                placeholder="+972501234567"
-                value={botPhoneInput}
-                onChange={(e) => { setBotPhoneInput(e.target.value); setBotPhoneError(''); }}
-                type="tel"
-              />
-              {botPhoneError
-                ? <div style={{ fontSize: 11, color: 'var(--expense)', marginTop: 4 }}>{botPhoneError}</div>
-                : <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4 }}>כולל קידומת מדינה, למשל +972501234567</div>
-              }
-            </div>
-            <button
-              className="submit-btn"
-              onClick={handleConnectBot}
-              disabled={saving || !botPhoneInput.trim()}
-              style={{ margin: 0, width: '100%' }}
-            >
-              {saving ? 'שומר...' : 'חבר'}
-            </button>
-          </div>
-        )}
-      </AccordionBody>
 
       {deletingCat && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
