@@ -22,6 +22,7 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
   const [newPw, setNewPw] = useState('');
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMsg, setProfileMsg] = useState('');
+  const [successToast, setSuccessToast] = useState(false);
 
   const isGoogle = user?.providerData?.[0]?.providerId === 'google.com';
 
@@ -56,8 +57,9 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
         await updatePassword(auth.currentUser, newPw);
         setCurrentPw(''); setNewPw('');
       }
-      setProfileMsg(lang === 'he' ? '✓ הפרטים עודכנו' : '✓ Details updated');
-      setTimeout(() => setProfileOpen(false), 1500);
+      setProfileOpen(false);
+      setSuccessToast(true);
+      setTimeout(() => setSuccessToast(false), 2500);
     } catch (e) {
       const msg = e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential'
         ? (lang === 'he' ? 'סיסמה נוכחית שגויה' : 'Incorrect current password')
@@ -261,9 +263,7 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
               </>
             )}
             {profileMsg && (
-              <div style={{ fontSize: 13, color: profileMsg.startsWith('✓') ? 'var(--accent)' : 'var(--expense)', fontWeight: 500 }}>
-                {profileMsg}
-              </div>
+              <div style={{ fontSize: 13, color: 'var(--expense)', fontWeight: 500 }}>{profileMsg}</div>
             )}
           </div>
           <div className="modal-footer">
@@ -274,6 +274,23 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
               {profileSaving ? (lang === 'he' ? 'שומר...' : 'Saving...') : (lang === 'he' ? 'שמור שינויים' : 'Save changes')}
             </button>
           </div>
+        </div>
+      </div>
+    )}
+
+    {successToast && (
+      <div style={{
+        position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, pointerEvents: 'none',
+      }}>
+        <div style={{
+          background: 'var(--accent)', color: '#fff', borderRadius: 14,
+          padding: '16px 28px', fontSize: 16, fontFamily: 'Heebo,sans-serif', fontWeight: 700,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+          display: 'flex', alignItems: 'center', gap: 10,
+          animation: 'fadeInScale .2s ease',
+        }}>
+          <span style={{ fontSize: 20 }}>✓</span>
+          {lang === 'he' ? 'הפרטים עודכנו בהצלחה' : 'Details updated successfully'}
         </div>
       </div>
     )}
