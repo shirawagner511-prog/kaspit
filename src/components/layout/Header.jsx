@@ -57,6 +57,7 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
         setCurrentPw(''); setNewPw('');
       }
       setProfileMsg(lang === 'he' ? '✓ הפרטים עודכנו' : '✓ Details updated');
+      setTimeout(() => setProfileOpen(false), 1500);
     } catch (e) {
       const msg = e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential'
         ? (lang === 'he' ? 'סיסמה נוכחית שגויה' : 'Incorrect current password')
