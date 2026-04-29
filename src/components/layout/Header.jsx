@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { signOut, signInWithPopup, GoogleAuthProvider, updateProfile, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import { auth, googleProvider } from '../../firebase/config';
 import { getMonths } from '../../utils/constants';
+import { getUserData, saveUserEmail } from '../../firebase/db';
 import { RefreshCw, LogOut, Languages, UserPen } from 'lucide-react';
 
 export default function Header({ user, currentMonth, currentYear, onMonthChange, isPremium, subStatus, trialDaysLeft, onNavigate }) {
@@ -16,6 +17,7 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [displayName, setDisplayName] = useState('');
+  const [recoveryEmail, setRecoveryEmail] = useState('');
   const [currentPw, setCurrentPw] = useState('');
   const [newPw, setNewPw] = useState('');
   const [profileSaving, setProfileSaving] = useState(false);
@@ -23,10 +25,14 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
 
   const isGoogle = user?.providerData?.[0]?.providerId === 'google.com';
 
-  function openProfile() {
+  async function openProfile() {
     setMenuOpen(false);
     setDisplayName(user?.displayName || '');
     setCurrentPw(''); setNewPw(''); setProfileMsg('');
+    if (!isGoogle && user?.uid) {
+      const data = await getUserData(user.uid);
+      setRecoveryEmail(data?.email || '');
+    }
     setProfileOpen(true);
   }
 
@@ -37,9 +43,14 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
       if (displayName.trim() && displayName.trim() !== user.displayName) {
         await updateProfile(auth.currentUser, { displayName: displayName.trim() });
       }
+      if (!isGoogle && recoveryEmail.trim()) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(recoveryEmail.trim())) throw new Error(lang === 'he' ? 'כתובת מייל לא תקינה' : 'Invalid email address');
+        await saveUserEmail(user.uid, recoveryEmail.trim());
+      }
       if (!isGoogle && newPw) {
         if (newPw.length < 6) throw new Error(lang === 'he' ? 'סיסמה חייבת להכיל לפחות 6 תווים' : 'Password must be at least 6 characters');
-        if (!currentPw) throw new Error(lang === 'he' ? 'יש להזין סיסמה נוכחית' : 'Current password required');
+        if (!currentPw) throw new Error(lang === 'he' ? 'יש להזין סיסמה נוכחית לאימות' : 'Current password required to change password');
         const cred = EmailAuthProvider.credential(auth.currentUser.email, currentPw);
         await reauthenticateWithCredential(auth.currentUser, cred);
         await updatePassword(auth.currentUser, newPw);
@@ -226,14 +237,20 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
             </div>
             {isGoogle ? (
               <div style={{ fontSize: 12, color: 'var(--text3)', background: 'var(--surface2)', borderRadius: 8, padding: '10px 12px' }}>
-                {lang === 'he' ? '🔒 חשבון Google — שינוי סיסמה מתבצע דרך Google' : '🔒 Google account — change password via Google'}
+                {lang === 'he' ? '🔒 חשבון Google — המייל מנוהל דרך Google' : '🔒 Google account — email managed by Google'}
               </div>
             ) : (
+              <div>
+                <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 4 }}>{lang === 'he' ? 'מייל לשחזור חשבון' : 'Recovery email'}</div>
+                <input className="form-input" type="email" value={recoveryEmail} onChange={(e) => setRecoveryEmail(e.target.value)} placeholder="email@example.com" inputMode="email" autoComplete="email" />
+              </div>
+            )}
+            {!isGoogle && (
               <>
                 <div style={{ height: 1, background: 'var(--border)' }} />
                 <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text2)' }}>{lang === 'he' ? 'שינוי סיסמה' : 'Change password'}</div>
                 <div>
-                  <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 4 }}>{lang === 'he' ? 'סיסמה נוכחית (לאימות)' : 'Current password (verification)'}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 4 }}>{lang === 'he' ? 'סיסמה נוכחית (נדרש לשינוי סיסמה)' : 'Current password (required to change password)'}</div>
                   <input className="form-input" type="password" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} placeholder="••••••" autoComplete="current-password" />
                 </div>
                 <div>

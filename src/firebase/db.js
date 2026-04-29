@@ -52,6 +52,10 @@ export async function getUserData(uid) {
   return snap.exists() ? snap.data() : {};
 }
 
+export async function saveUserEmail(uid, email) {
+  await updateDoc(doc(db, 'users', uid), { email });
+}
+
 export async function setUserHousehold(uid, householdId) {
   await setDoc(doc(db, 'users', uid), { householdId }, { merge: true });
 }
