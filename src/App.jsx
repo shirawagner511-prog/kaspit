@@ -127,6 +127,7 @@ export default function App() {
           isPremium={isPremium}
           subStatus={subStatus}
           trialDaysLeft={trialDaysLeft}
+          onNavigate={setPage}
         />
 
         <Suspense fallback={<Loader />}>

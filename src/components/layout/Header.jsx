@@ -5,7 +5,7 @@ import { auth, googleProvider } from '../../firebase/config';
 import { getMonths } from '../../utils/constants';
 import { RefreshCw, LogOut, Languages } from 'lucide-react';
 
-export default function Header({ user, currentMonth, currentYear, onMonthChange, isPremium, subStatus, trialDaysLeft }) {
+export default function Header({ user, currentMonth, currentYear, onMonthChange, isPremium, subStatus, trialDaysLeft, onNavigate }) {
   const { t, i18n } = useTranslation();
   function toggleLang() {
     const next = i18n.language === 'he' ? 'en' : 'he';
@@ -55,17 +55,31 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
 
   return (
     <div className="app-header">
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
         <div className="app-logo" dir="ltr" style={{ gap: 0 }}>
           <span style={{ fontWeight: 700, color: 'var(--accent)' }}>B</span><span style={{ fontWeight: 400, color: 'var(--text)' }}>udgi</span>
         </div>
         {subStatus === 'active' && (
-          <span style={{ fontSize: 10, fontWeight: 700, background: 'var(--accent)', color: '#fff', borderRadius: 5, padding: '2px 6px', fontFamily: 'DM Sans,sans-serif', letterSpacing: 0.5 }}>PRO</span>
+          <button onClick={() => onNavigate('settings')} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 20, padding: '5px 12px', fontSize: 12, fontWeight: 700, fontFamily: 'DM Sans,sans-serif', cursor: 'pointer', letterSpacing: 0.3 }}>
+            ✦ Pro
+          </button>
         )}
         {subStatus === 'trial' && (
-          <span style={{ fontSize: 10, fontWeight: 600, background: trialDaysLeft <= 7 ? '#fee2e2' : '#fef9c3', color: trialDaysLeft <= 7 ? 'var(--expense)' : '#854d0e', borderRadius: 5, padding: '2px 6px', fontFamily: 'DM Sans,sans-serif', border: `1px solid ${trialDaysLeft <= 7 ? '#fca5a5' : '#fde68a'}`, whiteSpace: 'nowrap' }}>
-            {i18n.language === 'he' ? `ניסיון · ${trialDaysLeft}י` : `Trial · ${trialDaysLeft}d`}
-          </span>
+          <button
+            onClick={() => onNavigate('settings')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 5,
+              background: trialDaysLeft <= 7 ? '#fff1f2' : '#fffbeb',
+              color: trialDaysLeft <= 7 ? 'var(--expense)' : '#92400e',
+              border: `1.5px solid ${trialDaysLeft <= 7 ? '#fca5a5' : '#fcd34d'}`,
+              borderRadius: 20, padding: '5px 12px',
+              fontSize: 12, fontWeight: 600, fontFamily: 'DM Sans,sans-serif',
+              cursor: 'pointer', whiteSpace: 'nowrap',
+            }}
+          >
+            {trialDaysLeft <= 7 ? '⚠ ' : '⏳ '}
+            {i18n.language === 'he' ? `ניסיון · ${trialDaysLeft} ימים` : `Trial · ${trialDaysLeft}d`}
+          </button>
         )}
       </div>
       <div className="header-right">
