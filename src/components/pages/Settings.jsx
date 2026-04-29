@@ -199,10 +199,16 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
               {lang === 'he' ? 'פרטי תשלום' : 'Payment details'}
               <button className="modal-close" onClick={() => setUpgradeStep(null)}>✕</button>
             </div>
-            <div className="modal-body" style={{ paddingTop: 16 }}>
+            <div className="modal-body" style={{ paddingTop: 16, minHeight: 180 }}>
               <p style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 14, textAlign: 'center' }}>
                 {lang === 'he' ? '$5.50/חודש · בטל בכל עת' : '$5.50/month · Cancel anytime'}
               </p>
+              {!dropinReady && (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '24px 0', color: 'var(--text3)', fontSize: 13, fontFamily: 'Heebo,sans-serif' }}>
+                  <div style={{ width: 28, height: 28, border: '3px solid var(--border)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                  {lang === 'he' ? 'טוען טופס תשלום...' : 'Loading payment form...'}
+                </div>
+              )}
               <div ref={dropinRef} />
             </div>
             <div className="modal-footer">

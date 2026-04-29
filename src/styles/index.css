@@ -177,6 +177,10 @@ svg {
   animation: app-fade-in var(--d-slow) var(--ease-out) both;
 }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 @keyframes app-fade-in {
   from {
     opacity: 0;
