@@ -16,6 +16,7 @@
     "health":    "Health",
     "education": "Education",
     "clothing":  "Clothing",
+    "coffee":    "Coffee",
     "dining":    "Dining Out",
     "leisure":   "Leisure",
     "sport":     "Sport",
@@ -121,10 +122,10 @@
     "noEntries": "No entries for this month yet",
     "noEntriesHint": "Tap + to add",
     "kikiPromoTitle": "Add expenses on WhatsApp in seconds",
-    "kikiPromoSub": "Message Kiki — she records everything automatically",
+    "kikiPromoSub": "Message Budgi Bot — it records everything automatically",
     "kikiPromoBtn": "Upgrade",
     "trialEndingSoon": "Your trial ends in {{days}} days",
-    "trialEndingHint": "Keep access to Kiki, household sharing & all advanced tools",
+    "trialEndingHint": "Keep access to Budgi Bot, household sharing & all advanced tools",
     "trialUpgradeBtn": "Upgrade now"
   },
   "entryItem": {

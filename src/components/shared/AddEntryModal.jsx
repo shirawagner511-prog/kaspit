@@ -36,7 +36,7 @@ export default function AddEntryModal({ open, onClose, householdId, user, entry,
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('housing');
   const [date, setDate] = useState(today());
-  const [fixed, setFixed] = useState('fixed');
+  const [fixed, setFixed] = useState('variable');
   const [note, setNote] = useState('');
   const [accountId, setAccountId] = useState('');
   const [loading, setLoading] = useState(false);

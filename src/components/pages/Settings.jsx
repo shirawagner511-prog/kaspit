@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getHousehold, getHouseholdMembers, getUserData, saveCustomCategories, saveBudgets, saveSavingsGoal, saveUserPhone, saveHouseholdApiKey, updateEntry, joinHousehold } from '../../firebase/db';
+import { onSnapshot, doc } from 'firebase/firestore';
+import { db } from '../../firebase/config';
+import { getHousehold, getHouseholdMembers, getUserData, saveCustomCategories, saveBudgets, saveSavingsGoal, savePendingWhatsappPhone, disconnectWhatsapp, updateEntry, joinHousehold } from '../../firebase/db';
 import { CATEGORY_VALUES } from '../../utils/constants';
 import { formatAmount } from '../../utils/format';
 
@@ -235,14 +237,10 @@ export default function Settings({ entries, householdId, user, customCategories,
   const [goalTarget, setGoalTarget] = useState('');
   const [goalSaved, setGoalSaved] = useState('');
   const [section, setSection] = useState('household');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [phoneError, setPhoneError] = useState('');
-  const [savedPhone, setSavedPhone] = useState('');
-  const [editingPhone, setEditingPhone] = useState(false);
-  const [apiKey, setApiKey] = useState('');
-  const [savedApiKey, setSavedApiKey] = useState('');
-  const [editingApiKey, setEditingApiKey] = useState(false);
-  const [apiKeySaved, setApiKeySaved] = useState(false);
+  const [botPhoneInput, setBotPhoneInput] = useState('');
+  const [botPhoneError, setBotPhoneError] = useState('');
+  const [botConnected, setBotConnected] = useState('');
+  const [botPending, setBotPending] = useState('');
   const [deletingCat, setDeletingCat] = useState(null);
   const [transferTo, setTransferTo] = useState('');
   const [joinCode, setJoinCode] = useState('');
@@ -255,16 +253,17 @@ export default function Settings({ entries, householdId, user, customCategories,
     if (!householdId) return;
     getHousehold(householdId).then((h) => {
       setHousehold(h);
-      if (h?.anthropicApiKey) { setApiKey(h.anthropicApiKey); setSavedApiKey(h.anthropicApiKey); }
       if (h?.members?.length) getHouseholdMembers(h.members).then(setMembers).catch(console.error);
     }).catch(console.error);
   }, [householdId]);
 
   useEffect(() => {
     if (!user?.uid) return;
-    getUserData(user.uid).then((d) => {
-      if (d?.phoneNumber) { setPhoneNumber(d.phoneNumber); setSavedPhone(d.phoneNumber); }
-    }).catch(console.error);
+    return onSnapshot(doc(db, 'users', user.uid), (snap) => {
+      const d = snap.data() || {};
+      setBotConnected(d.whatsappNumber || '');
+      setBotPending(d.pendingWhatsappPhone || '');
+    });
   }, [user?.uid]);
 
   useEffect(() => { setLocalBudgets(budgets); }, [budgets]);
@@ -358,33 +357,24 @@ export default function Settings({ entries, householdId, user, customCategories,
 
   const expenseCategories = allCategories.filter((c) => !['income', 'savings'].includes(c.value));
 
-  async function handleSavePhone() {
-    const phone = phoneNumber.trim();
+  async function handleConnectBot() {
+    const phone = botPhoneInput.trim();
     if (!/^\+[1-9]\d{7,14}$/.test(phone)) {
-      setPhoneError('המספר חייב להתחיל ב-+ ולכלול קידומת מדינה, למשל +972501234567');
+      setBotPhoneError('המספר חייב להתחיל ב-+ ולכלול קידומת מדינה, למשל +972501234567');
       return;
     }
-    setPhoneError('');
+    setBotPhoneError('');
     setSaving(true);
     try {
-      await saveUserPhone(user.uid, phone);
-      setSavedPhone(phone);
-      setEditingPhone(false);
+      await savePendingWhatsappPhone(user.uid, phone);
     } finally { setSaving(false); }
   }
 
-  async function handleSaveApiKey() {
-    const key = apiKey.trim();
-    if (!key.startsWith('sk-ant-')) {
-      return;
-    }
+  async function handleDisconnectBot() {
     setSaving(true);
     try {
-      await saveHouseholdApiKey(householdId, key);
-      setSavedApiKey(key);
-      setEditingApiKey(false);
-      setApiKeySaved(true);
-      setTimeout(() => setApiKeySaved(false), 3000);
+      await disconnectWhatsapp(user.uid);
+      setBotPhoneInput('');
     } finally { setSaving(false); }
   }
 
@@ -393,7 +383,7 @@ export default function Settings({ entries, householdId, user, customCategories,
     { key: 'budgets',   icon: '📊', label: t('settings.budgets') },
     { key: 'goals',     icon: '🎯', label: t('settings.savingsGoal') },
     { key: 'cats',      icon: '🏷️', label: t('settings.categories') },
-    { key: 'kiki',      icon: '🤖', label: 'Kiki' },
+    { key: 'budgi-bot', icon: '🤖', label: 'Budgi Bot' },
   ];
 
   function AccordionHeader({ skey, icon, label }) {
@@ -609,67 +599,86 @@ export default function Settings({ entries, householdId, user, customCategories,
         ))}
       </AccordionBody>
 
-      {/* ── Kiki ── */}
-      <AccordionHeader skey="kiki" icon="🤖" label="Kiki" />
-      <AccordionBody skey="kiki">
-        <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 16, lineHeight: 1.7 }}>
-          {t('settings.kikiDesc')}<br/>
-          <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{t('settings.kikiExample')}</span>
-        </div>
-        {savedPhone && !editingPhone ? (
-          <div className="be-row" style={{ borderBottom: 'none' }}>
-            <div>
-              <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '.8px' }}>{t('settings.kikiPhoneSaved')}</div>
-              <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 15, color: 'var(--accent)', direction: 'ltr' }}>{savedPhone.slice(0, 4) + '•••••' + savedPhone.slice(-3)}</div>
+      {/* ── Budgi Bot ── */}
+      <AccordionHeader skey="budgi-bot" icon="🤖" label="Budgi Bot" />
+      <AccordionBody skey="budgi-bot">
+        {botConnected ? (
+          /* State C — connected */
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--accent-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🤖</div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--accent)' }}>✓ Budgi Bot מחובר</div>
+                <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 12, color: 'var(--text3)', direction: 'ltr' }}>
+                  {botConnected.slice(0, 4) + '•••••' + botConnected.slice(-3)}
+                </div>
+              </div>
             </div>
-            <button onClick={() => setEditingPhone(true)} style={{ background: 'var(--surface2)', border: '0.5px solid var(--border)', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans,Heebo,sans-serif', color: 'var(--text2)' }}>
-              {t('settings.edit')}
+            <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 14, lineHeight: 1.7 }}>
+              שלח הוצאות כמו <span style={{ color: 'var(--accent)', fontWeight: 600 }}>"קפה 18"</span> או צלם קבלה 📸
+            </div>
+            <button
+              onClick={handleDisconnectBot}
+              disabled={saving}
+              style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 0', width: '100%', fontSize: 14, cursor: 'pointer', fontFamily: 'Heebo,sans-serif', color: 'var(--expense)', fontWeight: 600 }}
+            >
+              {saving ? '...' : 'ניתוק'}
+            </button>
+          </div>
+        ) : botPending ? (
+          /* State B — pending */
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+              <div style={{ fontSize: 22 }}>⏳</div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>ממתין לאישור</div>
+                <div style={{ fontSize: 12, color: 'var(--text3)' }}>הבוט יתחבר ברגע שתשלח לו הודעה</div>
+              </div>
+            </div>
+            <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 14px', fontSize: 13, marginBottom: 14, lineHeight: 1.8 }}>
+              <div style={{ fontWeight: 600, marginBottom: 4 }}>כדי להתחבר:</div>
+              <div>1. שמור את המספר <span style={{ fontFamily: 'DM Mono,monospace', direction: 'ltr', display: 'inline-block' }}>+1 415 523 8886</span> בוואטסאפ</div>
+              <div>2. שלח לו: <span style={{ fontFamily: 'DM Mono,monospace', color: 'var(--accent)', fontWeight: 700 }}>join method-strike</span></div>
+              <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4 }}>פעם אחת בלבד — פותח את הצ׳אט</div>
+            </div>
+            <button
+              onClick={handleDisconnectBot}
+              disabled={saving}
+              style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 0', width: '100%', fontSize: 14, cursor: 'pointer', fontFamily: 'Heebo,sans-serif', color: 'var(--text2)' }}
+            >
+              {saving ? '...' : 'ביטול'}
             </button>
           </div>
         ) : (
-          <>
+          /* State A — not connected */
+          <div>
+            <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 14, lineHeight: 1.7 }}>
+              חבר את Budgi Bot לוואטסאפ ושלח הוצאות בהודעה 💬
+            </div>
             <div className="form-group">
-              <label className="form-label">{t('settings.kikiPhone')}</label>
-              <input className="form-input" dir="ltr" placeholder="+972501234567" value={phoneNumber} onChange={(e) => { setPhoneNumber(e.target.value); setPhoneError(''); }} type="tel" />
-              {phoneError
-                ? <div style={{ fontSize: 11, color: 'var(--expense)', marginTop: 4 }}>{phoneError}</div>
-                : <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4 }}>{t('settings.kikiPhoneFormat')}</div>
+              <label className="form-label">מספר הוואטסאפ שלך</label>
+              <input
+                className="form-input"
+                dir="ltr"
+                placeholder="+972501234567"
+                value={botPhoneInput}
+                onChange={(e) => { setBotPhoneInput(e.target.value); setBotPhoneError(''); }}
+                type="tel"
+              />
+              {botPhoneError
+                ? <div style={{ fontSize: 11, color: 'var(--expense)', marginTop: 4 }}>{botPhoneError}</div>
+                : <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4 }}>כולל קידומת מדינה, למשל +972501234567</div>
               }
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button className="submit-btn" onClick={handleSavePhone} disabled={saving || !phoneNumber.trim()} style={{ margin: 0, flex: 1 }}>
-                {saving ? t('settings.saving') : t('settings.savePhone')}
-              </button>
-              {savedPhone && <button onClick={() => { setEditingPhone(false); setPhoneNumber(savedPhone); setPhoneError(''); }} style={{ background: 'var(--surface2)', border: '0.5px solid var(--border)', borderRadius: 8, padding: '0 16px', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans,Heebo,sans-serif', color: 'var(--text2)' }}>{t('settings.cancel')}</button>}
-            </div>
-          </>
-        )}
-        <div style={{ height: 1, background: 'var(--border)', margin: '16px 0' }} />
-        <div style={{ fontWeight: 700, fontSize: 12, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>{t('settings.kikiApiKey')}</div>
-        {savedApiKey && !editingApiKey ? (
-          <div className="be-row" style={{ borderBottom: 'none' }}>
-            <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 13, color: 'var(--accent)', direction: 'ltr' }}>
-              {savedApiKey.slice(0, 12)}{'•'.repeat(12)}{savedApiKey.slice(-4)}
-            </div>
-            <button onClick={() => setEditingApiKey(true)} style={{ background: 'var(--surface2)', border: '0.5px solid var(--border)', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans,Heebo,sans-serif', color: 'var(--text2)' }}>
-              {t('settings.edit')}
+            <button
+              className="submit-btn"
+              onClick={handleConnectBot}
+              disabled={saving || !botPhoneInput.trim()}
+              style={{ margin: 0, width: '100%' }}
+            >
+              {saving ? 'שומר...' : 'חבר'}
             </button>
           </div>
-        ) : (
-          <>
-            <div className="form-group">
-              <input className="form-input" dir="ltr" placeholder="sk-ant-..." value={apiKey} onChange={(e) => setApiKey(e.target.value)} type="password" />
-              {apiKey && !apiKey.startsWith('sk-ant-') && (
-                <div style={{ fontSize: 11, color: 'var(--expense)', marginTop: 4 }}>{t('settings.errorApiKey')}</div>
-              )}
-            </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button className="submit-btn" onClick={handleSaveApiKey} disabled={saving || !apiKey.trim() || !apiKey.startsWith('sk-ant-')} style={{ margin: 0, flex: 1 }}>
-                {apiKeySaved ? t('settings.saved') : saving ? t('settings.saving') : t('settings.saveKey')}
-              </button>
-              {savedApiKey && <button onClick={() => { setEditingApiKey(false); setApiKey(savedApiKey); }} style={{ background: 'var(--surface2)', border: '0.5px solid var(--border)', borderRadius: 8, padding: '0 16px', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans,Heebo,sans-serif', color: 'var(--text2)' }}>{t('settings.cancel')}</button>}
-            </div>
-          </>
         )}
       </AccordionBody>
 

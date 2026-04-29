@@ -1,6 +1,6 @@
 export const CATEGORY_VALUES = [
   'housing','food','transport','kids','health','education',
-  'clothing','dining','leisure','sport','telecom','travel',
+  'clothing','coffee','dining','leisure','sport','telecom','travel',
   'shopping','insurance','pets','savings','cosmetics','home_maintenance','income','other',
 ];
 

@@ -5,7 +5,7 @@ import { Crown, MessageCircle, Users } from 'lucide-react';
 const BOT_URL = import.meta.env.VITE_BOT_URL || 'https://kaspit-production.up.railway.app';
 
 const FEATURE_LABELS = {
-  kiki:       { he: 'קיקי — הוספת הוצאות בוואטסאפ', en: 'Kiki — add expenses via WhatsApp' },
+  kiki:       { he: 'Budgi Bot — הוספת הוצאות בוואטסאפ', en: 'Budgi Bot — add expenses via WhatsApp' },
   sharing:    { he: 'בית משותף עם שותף/ה', en: 'Household sharing with partner' },
   breakeven:  { he: 'ניתוח נקודת איזון', en: 'Break-Even Analysis' },
   insights:   { he: 'תובנות ומגמות', en: 'Insights & Trends' },

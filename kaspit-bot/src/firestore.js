@@ -39,7 +39,7 @@ function fromFields(fields = {}) {
   return result;
 }
 
-export async function getHouseholdByPhone(phone) {
+async function queryUsers(fieldPath, value) {
   const token = await getAccessToken();
   const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents:runQuery`;
   const res = await fetch(url, {
@@ -48,31 +48,41 @@ export async function getHouseholdByPhone(phone) {
     body: JSON.stringify({
       structuredQuery: {
         from: [{ collectionId: 'users' }],
-        where: {
-          fieldFilter: {
-            field: { fieldPath: 'phoneNumber' },
-            op: 'EQUAL',
-            value: { stringValue: phone },
-          },
-        },
+        where: { fieldFilter: { field: { fieldPath }, op: 'EQUAL', value: { stringValue: value } } },
         limit: 1,
       },
     }),
   });
   const data = await res.json();
-  console.log('query result:', JSON.stringify(data?.[0]));
   if (!data[0]?.document) return null;
-  const fields = fromFields(data[0].document.fields);
-  if (!fields.householdId) return null;
+  const docName = data[0].document.name;
+  const uid = docName.split('/').pop();
+  return { uid, ...fromFields(data[0].document.fields) };
+}
 
-  // Read anthropicApiKey from the household doc (per-household key)
-  const token2 = await getAccessToken();
-  const hRes = await fetch(`${BASE}/households/${fields.householdId}`, {
-    headers: { Authorization: `Bearer ${token2}` },
+async function patchUser(uid, fields) {
+  const token = await getAccessToken();
+  const updateMask = Object.keys(fields).map((k) => `updateMask.fieldPaths=${k}`).join('&');
+  const body = { fields: Object.fromEntries(Object.entries(fields).map(([k, v]) => [k, toValue(v)])) };
+  await fetch(`${BASE}/users/${uid}?${updateMask}`, {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
   });
-  const hData = await hRes.json();
-  const hFields = fromFields(hData.fields || {});
-  return { householdId: fields.householdId, anthropicApiKey: hFields.anthropicApiKey || null };
+}
+
+export async function getHouseholdByPhone(phone) {
+  const user = await queryUsers('whatsappNumber', phone);
+  if (!user?.householdId) return null;
+  return { householdId: user.householdId, uid: user.uid };
+}
+
+export async function getUserByPendingPhone(phone) {
+  return queryUsers('pendingWhatsappPhone', phone);
+}
+
+export async function confirmWhatsappLink(uid, phone) {
+  await patchUser(uid, { whatsappNumber: phone, pendingWhatsappPhone: '' });
 }
 
 export async function addEntryToFirestore(householdId, entry, addedBy) {

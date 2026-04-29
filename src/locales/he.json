@@ -16,6 +16,7 @@
     "health":    "בריאות",
     "education": "חינוך",
     "clothing":  "ביגוד",
+    "coffee":    "קפה",
     "dining":    "מסעדות",
     "leisure":   "פנאי ובילויים",
     "sport":     "ספורט",
@@ -121,10 +122,10 @@
     "noEntries": "עוד אין פעולות לחודש זה",
     "noEntriesHint": "לחצי + להוסיף",
     "kikiPromoTitle": "הוסיפי הוצאות בוואטסאפ תוך שניות",
-    "kikiPromoSub": "שלחי הודעה לקיקי — היא תרשום הכל אוטומטית",
+    "kikiPromoSub": "שלחי הודעה ל-Budgi Bot — הוא יירשום הכל אוטומטית",
     "kikiPromoBtn": "שדרג",
     "trialEndingSoon": "הניסיון שלך מסתיים בעוד {{days}} ימים",
-    "trialEndingHint": "שמור גישה לקיקי, בית משותף וכל הכלים המתקדמים",
+    "trialEndingHint": "שמור גישה ל-Budgi Bot, בית משותף וכל הכלים המתקדמים",
     "trialUpgradeBtn": "שדרג עכשיו"
   },
   "entryItem": {

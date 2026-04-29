@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
-import { getHouseholdByPhone, addEntryToFirestore, getHouseholdCategories } from './firestore.js';
+import { getHouseholdByPhone, getUserByPendingPhone, confirmWhatsappLink, addEntryToFirestore, getHouseholdCategories } from './firestore.js';
 import { parseMessage, parseReceiptImage } from './claude.js';
 import { sendReply } from './whatsapp.js';
 import { generateClientToken, createSubscription, cancelSubscription, parseWebhook } from './braintree.js';
@@ -24,7 +24,7 @@ app.use((req, res, next) => {
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-app.get('/health', (_req, res) => res.json({ ok: true, bot: 'קיקי' }));
+app.get('/health', (_req, res) => res.json({ ok: true, bot: 'Budgi Bot' }));
 
 app.get('/braintree/client-token', async (_req, res) => {
   try {
@@ -115,46 +115,44 @@ app.post('/webhook', async (req, res) => {
   console.log('from:', from, 'phone:', phone);
 
   try {
-    console.log('looking up household for phone:', phone);
+    // Auto-link: if this number is pending connection, complete the link
+    const pending = await getUserByPendingPhone(phone);
+    if (pending) {
+      await confirmWhatsappLink(pending.uid, phone);
+      await sendReply(from, '✅ Budgi Bot מחובר בהצלחה!\n\nעכשיו שלח לי הוצאות כמו:\n• "קפה 18"\n• "סופר 340 שקל"\n• תמונת קבלה 📸');
+      return;
+    }
+
     const userData = await getHouseholdByPhone(phone);
-    console.log('userData:', userData);
     if (!userData) {
-      await sendReply(from, 'היי! לא מצאתי חשבון מקושר למספר הזה 🤔\nפתחי את כספית ← הגדרות ← 🤖 קיקי, ורשמי את מספר הטלפון שלך.');
+      await sendReply(from, 'היי! לא מצאתי חשבון מקושר למספר הזה.\nפתח את Budgi ← הגדרות ← Budgi Bot ורשום את המספר שלך.');
       return;
     }
 
-    const { householdId, anthropicApiKey } = userData;
-
-    if (!anthropicApiKey) {
-      await sendReply(from, 'היי! כדי שקיקי תעבוד צריך מפתח API אישי 🔑\nפתחי את כספית ← הגדרות ← 🤖 קיקי ← עקבי אחרי ההוראות.');
-      return;
-    }
-
+    const { householdId } = userData;
     const customCategories = await getHouseholdCategories(householdId);
     const today = new Date().toISOString().split('T')[0];
 
     let parsed;
     if (numMedia > 0 && mediaUrl && mediaType?.startsWith('image/')) {
-      parsed = await parseReceiptImage(mediaUrl, mediaType, customCategories, today, anthropicApiKey);
+      parsed = await parseReceiptImage(mediaUrl, mediaType, customCategories, today);
     } else if (body) {
-      console.log('parsing message:', body);
-      parsed = await parseMessage(body, customCategories, today, anthropicApiKey);
-      console.log('parsed:', JSON.stringify(parsed));
+      parsed = await parseMessage(body, customCategories, today);
     } else {
-      await sendReply(from, 'שלחי לי הודעת טקסט או תמונה של קבלה 📸');
+      await sendReply(from, 'שלח לי הודעת טקסט או תמונה של קבלה 📸');
       return;
     }
 
     const { entries = [], reply } = parsed;
 
     if (entries.length === 0) {
-      await sendReply(from, reply || 'לא הצלחתי להבין 🤔 נסי שוב בצורה כמו: "קפה 18 שקל"');
+      await sendReply(from, reply || 'לא הצלחתי להבין 🤔 נסה שוב בצורה כמו: "קפה 18"');
       return;
     }
 
     for (const entry of entries) {
       if (entry.category) entry.category = entry.category.toLowerCase();
-      await addEntryToFirestore(householdId, entry, 'קיקי 🤖');
+      await addEntryToFirestore(householdId, entry, 'Budgi Bot 🤖');
     }
 
     await sendReply(from, reply || `✦ נרשם! ${entries.length > 1 ? `${entries.length} פעולות` : entries[0].name}`);

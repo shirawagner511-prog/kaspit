@@ -10,6 +10,7 @@ const DEFAULT_CATEGORIES = [
   { value: 'health',    label: 'בריאות' },
   { value: 'education', label: 'חינוך' },
   { value: 'clothing',  label: 'ביגוד' },
+  { value: 'coffee',    label: 'קפה' },
   { value: 'dining',    label: 'מסעדות' },
   { value: 'leisure',   label: 'פנאי ובילויים' },
   { value: 'sport',     label: 'ספורט' },
@@ -63,7 +64,8 @@ ${catList}
 מיפוי קטגוריות — חובה לעקוב:
 - סופר / מכולת / שוק / רמי לוי / שופרסל / ויקטורי / מגה / יינות ביתן / אושר עד → food
 - מוצר מזון כלשהו: חלב / קוטג' / גבינה / לחם / ביצים / עוף / בשר / ירקות / פירות / שוקולד / חטיף / שתייה / קפה (מוצר) / תה / דגנים / פסטה / אורז / שמן / רוטב / יוגורט / גלידה / כל מוצר אוכל → food, variable
-- מסעדה / קפה (בית קפה לשבת) / פיצה / סושי / מזון מהיר / וולט / טוויגי / wolt / deliveroo → dining
+- קפה / בית קפה / אספרסו / קפוצ'ינו / לאטה / פרדוסו / נס קפה / קפה שחור / ג'ו / ארומה / קפה ג'ו / coffee / café → coffee, variable
+- מסעדה / פיצה / סושי / מזון מהיר / וולט / טוויגי / wolt / deliveroo → dining
 - רכבת / אוטובוס / מונית / אובר / גט / תחבורה ציבורית / דלק / סונול / פז / רב-קו → transport
 - רופא / קופת חולים / תרופה / בית חולים / פיזיו / אופטיקה / בית מרקחת / סופר פארם / super-pharm → health
 - בגד / נעל / זארה / H&M / פוקס / אדידס / נייקי / ביגוד / אופנה → clothing
@@ -84,9 +86,9 @@ ${catList}
 - כל קנייה שאינה ברורה לקטגוריה → other, variable — לא housing`;
 }
 
-export async function parseMessage(text, customCategories = [], today = null, apiKey = null) {
+export async function parseMessage(text, customCategories = [], today = null) {
   const todayStr = today || new Date().toISOString().split('T')[0];
-  const claude = apiKey ? new Anthropic({ apiKey }) : client;
+  const claude = client;
 
   const response = await claude.messages.create({
     model: 'claude-haiku-4-5-20251001',
@@ -104,9 +106,9 @@ export async function parseMessage(text, customCategories = [], today = null, ap
   return JSON.parse(raw);
 }
 
-export async function parseReceiptImage(imageUrl, mediaType, customCategories = [], today = null, apiKey = null) {
+export async function parseReceiptImage(imageUrl, mediaType, customCategories = [], today = null) {
   const todayStr = today || new Date().toISOString().split('T')[0];
-  const claude = apiKey ? new Anthropic({ apiKey }) : client;
+  const claude = client;
 
   // Fetch image and convert to base64
   const imgResponse = await fetch(imageUrl, {

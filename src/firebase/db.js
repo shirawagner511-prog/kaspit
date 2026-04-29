@@ -60,15 +60,12 @@ export async function setUserHousehold(uid, householdId) {
   await setDoc(doc(db, 'users', uid), { householdId }, { merge: true });
 }
 
-export async function saveUserPhone(uid, phoneNumber) {
-  await setDoc(doc(db, 'users', uid), { phoneNumber }, { merge: true });
+export async function savePendingWhatsappPhone(uid, phone) {
+  await updateDoc(doc(db, 'users', uid), { pendingWhatsappPhone: phone, whatsappNumber: '' });
 }
 
-export async function saveHouseholdApiKey(householdId, anthropicApiKey) {
-  await Promise.all([
-    setDoc(doc(db, 'households', householdId), { anthropicApiKey }, { merge: true }),
-    saveSettings(householdId, { anthropicApiKey }),
-  ]);
+export async function disconnectWhatsapp(uid) {
+  await updateDoc(doc(db, 'users', uid), { whatsappNumber: '', pendingWhatsappPhone: '' });
 }
 
 // ── Households ─────────────────────────────────────────
