@@ -55,9 +55,9 @@ export default function PremiumGate({ feature, user, isPremium, children }) {
       if (!cancelled) setDropinReady(true);
     }
 
-    init().catch(console.error);
+    const t = setTimeout(() => init().catch(console.error), 50);
 
-    return () => {
+    return () => { clearTimeout(t);
       cancelled = true;
       if (instanceRef.current) {
         instanceRef.current.teardown().catch(() => {});

@@ -40,15 +40,32 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
     if (!showUpgrade) return;
     let cancelled = false;
     async function init() {
-      const token = clientTokenRef.current;
-      if (!token || !window.braintree) return;
+      // Ensure script is loaded
+      if (!window.braintree) {
+        await new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = 'https://js.braintreegateway.com/web/dropin/1.43.0/js/dropin.min.js';
+          s.onload = resolve; s.onerror = reject;
+          document.head.appendChild(s);
+        });
+      }
+      // Ensure token is available
+      if (!clientTokenRef.current) {
+        const res = await fetch(`${BOT_URL}/braintree/client-token`);
+        const { clientToken } = await res.json();
+        clientTokenRef.current = clientToken;
+      }
+      if (cancelled || !dropinRef.current) return;
       instanceRef.current = await window.braintree.dropin.create({
-        authorization: token, container: dropinRef.current,
+        authorization: clientTokenRef.current,
+        container: dropinRef.current,
         locale: lang === 'he' ? 'he_IL' : 'en_US',
       });
       if (!cancelled) setDropinReady(true);
     }
-    init().catch(console.error);
+    // Small delay to ensure modal DOM is painted
+    const t = setTimeout(() => init().catch(console.error), 50);
+    return () => clearTimeout(t);
     return () => {
       cancelled = true;
       if (instanceRef.current) { instanceRef.current.teardown().catch(() => {}); instanceRef.current = null; }
