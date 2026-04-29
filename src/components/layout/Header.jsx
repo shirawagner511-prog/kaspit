@@ -60,7 +60,7 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
           <span style={{ fontWeight: 700, color: 'var(--accent)' }}>B</span><span style={{ fontWeight: 400, color: 'var(--text)' }}>udgi</span>
         </div>
         {subStatus === 'active' && (
-          <button onClick={() => onNavigate('settings')} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 20, padding: '5px 12px', fontSize: 12, fontWeight: 700, fontFamily: 'DM Sans,sans-serif', cursor: 'pointer', letterSpacing: 0.3 }}>
+          <button onClick={() => onNavigate('settings')} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 20, padding: '5px 14px', fontSize: 14, fontWeight: 700, fontFamily: 'Heebo,sans-serif', cursor: 'pointer', letterSpacing: 0.3 }}>
             ✦ Pro
           </button>
         )}
@@ -72,8 +72,8 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
               background: trialDaysLeft <= 7 ? '#fff1f2' : '#fffbeb',
               color: trialDaysLeft <= 7 ? 'var(--expense)' : '#92400e',
               border: `1.5px solid ${trialDaysLeft <= 7 ? '#fca5a5' : '#fcd34d'}`,
-              borderRadius: 20, padding: '5px 12px',
-              fontSize: 12, fontWeight: 600, fontFamily: 'DM Sans,sans-serif',
+              borderRadius: 20, padding: '5px 14px',
+              fontSize: 14, fontWeight: 700, fontFamily: 'Heebo,sans-serif',
               cursor: 'pointer', whiteSpace: 'nowrap',
             }}
           >
