@@ -152,8 +152,8 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
 
       {/* Step 1: Plan comparison */}
       {upgradeStep === 'compare' && (
-        <div className="modal-overlay open" onClick={(e) => e.target === e.currentTarget && setUpgradeStep(null)}>
-          <div className="modal" style={{ borderRadius: 'var(--radius-lg)' }}>
+        <div className="modal-overlay open" style={{ alignItems: 'center', padding: 16 }} onClick={(e) => e.target === e.currentTarget && setUpgradeStep(null)}>
+          <div className="modal" style={{ borderRadius: 12 }}>
             <div className="modal-title">
               {lang === 'he' ? '✦ בחר מסלול' : '✦ Choose a plan'}
               <button className="modal-close" onClick={() => setUpgradeStep(null)}>✕</button>
@@ -192,8 +192,8 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
 
       {/* Step 2: Card form */}
       {upgradeStep === 'pay' && (
-        <div className="modal-overlay open" onClick={(e) => e.target === e.currentTarget && setUpgradeStep(null)}>
-          <div className="modal" style={{ borderRadius: 'var(--radius-lg)' }}>
+        <div className="modal-overlay open" style={{ alignItems: 'center', padding: 16 }} onClick={(e) => e.target === e.currentTarget && setUpgradeStep(null)}>
+          <div className="modal" style={{ borderRadius: 12 }}>
             <div className="modal-title">
               <button onClick={() => setUpgradeStep('compare')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: 'var(--text2)', padding: '0 4px' }}>←</button>
               {lang === 'he' ? 'פרטי תשלום' : 'Payment details'}
