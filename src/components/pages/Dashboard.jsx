@@ -11,7 +11,7 @@ const PIE_COLORS = [
   '#34d399','#fb923c','#f472b6','#60a5fa','#facc15',
 ];
 
-function DonutChart({ slices, onSliceClick, labelExpenses, labelByCategory }) {
+function DonutChart({ slices, onSliceClick, total }) {
   const [hovered, setHovered] = useState(null);
   const r = 54, cx = 64, cy = 64, baseStroke = 28;
   const circ = 2 * Math.PI * r;
@@ -50,8 +50,9 @@ function DonutChart({ slices, onSliceClick, labelExpenses, labelByCategory }) {
         </>
       ) : (
         <>
-          <text x={74} y={70} textAnchor="middle" fill="var(--text3)" fontSize={11} fontFamily="DM Sans,Heebo,sans-serif">{labelExpenses}</text>
-          <text x={74} y={85} textAnchor="middle" fill="var(--text3)" fontSize={11} fontFamily="DM Sans,Heebo,sans-serif">{labelByCategory}</text>
+          <text x={74} y={72} textAnchor="middle" fill="var(--expense)" fontSize={15} fontFamily="DM Mono,monospace" fontWeight="600">
+            {total != null ? `₪${Math.round(total).toLocaleString()}` : ''}
+          </text>
         </>
       )}
     </svg>
@@ -304,8 +305,7 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
           <div className="section-title">{t('dashboard.byCategory')}</div>
           <div style={{ display: 'flex', justifyContent: 'center', margin: '8px 0 4px' }}>
             <DonutChart
-              labelExpenses={t('dashboard.donutExpenses')}
-              labelByCategory={t('dashboard.donutByCategory')}
+              total={totalOut}
               slices={sortedCats.map(([cat, amt], i) => ({
                 pct: totalOut > 0 ? (amt / totalOut) * 100 : 0,
                 color: PIE_COLORS[i % PIE_COLORS.length],
