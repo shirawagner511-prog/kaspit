@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Crown } from 'lucide-react';
 
-const BOT_URL = import.meta.env.VITE_BOT_URL || 'https://kaspit-bot.up.railway.app';
+const BOT_URL = import.meta.env.VITE_BOT_URL || 'https://kaspit-production.up.railway.app';
 
 const FEATURE_LABELS = {
   breakeven:  { he: 'ניתוח נקודת איזון', en: 'Break-Even Analysis' },
