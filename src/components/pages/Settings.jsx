@@ -8,7 +8,7 @@ const BOT_URL = import.meta.env.VITE_BOT_URL || 'https://kaspit-production.up.ra
 
 function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, subscription, user, subLoading, setSubLoading }) {
   const lang = i18n.language === 'he' ? 'he' : 'en';
-  const [showUpgrade, setShowUpgrade] = useState(false);
+  const [upgradeStep, setUpgradeStep] = useState(null); // null | 'compare' | 'pay'
   const [dropinReady, setDropinReady] = useState(false);
   const dropinRef = useRef(null);
   const instanceRef = useRef(null);
@@ -37,10 +37,9 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
   }, [isPremium]);
 
   useEffect(() => {
-    if (!showUpgrade) return;
+    if (upgradeStep !== 'pay') return;
     let cancelled = false;
     async function init() {
-      // Ensure script is loaded
       if (!window.braintree) {
         await new Promise((resolve, reject) => {
           const s = document.createElement('script');
@@ -49,7 +48,6 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
           document.head.appendChild(s);
         });
       }
-      // Ensure token is available
       if (!clientTokenRef.current) {
         const res = await fetch(`${BOT_URL}/braintree/client-token`);
         const { clientToken } = await res.json();
@@ -63,7 +61,6 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
       });
       if (!cancelled) setDropinReady(true);
     }
-    // Small delay to ensure modal DOM is painted
     const t = setTimeout(() => init().catch(console.error), 50);
     return () => clearTimeout(t);
     return () => {
@@ -71,7 +68,7 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
       if (instanceRef.current) { instanceRef.current.teardown().catch(() => {}); instanceRef.current = null; }
       setDropinReady(false);
     };
-  }, [showUpgrade]);
+  }, [upgradeStep]);
 
   async function handlePay() {
     if (!instanceRef.current) return;
@@ -85,7 +82,7 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      setShowUpgrade(false);
+      setUpgradeStep(null);
       window.location.reload();
     } catch (e) {
       alert(e.message);
@@ -143,48 +140,68 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
         </div>
       </div>
 
-      {/* Plan comparison — always visible when not premium */}
-      {subStatus !== 'active' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
-          {[
-            { label: lang === 'he' ? 'ניסיון' : 'Trial', price: lang === 'he' ? 'חינם' : 'Free', color: 'var(--surface2)', border: 'var(--border)', features: lang === 'he'
-              ? ['✓ פעולות הכנסה/הוצאה', '✓ דשבורד ותרשימים', '✓ עד 2 חשבונות', '✗ שיתוף בית משותף', '✗ תובנות ומגמות', '✗ נקודת איזון', '✗ קטגוריות מותאמות', '✗ קיקי WhatsApp']
-              : ['✓ Income & expenses', '✓ Dashboard & charts', '✓ Up to 2 accounts', '✗ Household sharing', '✗ Insights & trends', '✗ Break-even', '✗ Custom categories', '✗ Kiki WhatsApp'] },
-            { label: lang === 'he' ? 'פרמיום' : 'Premium', price: '$5.50/mo', color: '#f0fdf4', border: 'var(--accent)', features: lang === 'he'
-              ? ['✓ פעולות הכנסה/הוצאה', '✓ דשבורד ותרשימים', '✓ חשבונות ללא הגבלה', '✓ שיתוף בית משותף', '✓ תובנות ומגמות', '✓ נקודת איזון', '✓ קטגוריות מותאמות', '✓ קיקי WhatsApp']
-              : ['✓ Income & expenses', '✓ Dashboard & charts', '✓ Unlimited accounts', '✓ Household sharing', '✓ Insights & trends', '✓ Break-even', '✓ Custom categories', '✓ Kiki WhatsApp'] },
-          ].map((plan) => (
-            <div key={plan.label} style={{ background: plan.color, border: `1.5px solid ${plan.border}`, borderRadius: 10, padding: '10px 8px' }}>
-              <div style={{ fontWeight: 700, fontSize: 13, fontFamily: 'Heebo,sans-serif', color: plan.border === 'var(--accent)' ? 'var(--accent)' : 'var(--text)', marginBottom: 2 }}>{plan.label}</div>
-              <div style={{ fontFamily: 'DM Mono,monospace', fontSize: 11, color: 'var(--text2)', marginBottom: 8 }}>{plan.price}</div>
-              {plan.features.map((f, i) => (
-                <div key={i} style={{ fontSize: 11, color: f.startsWith('✗') ? 'var(--text3)' : 'var(--text)', lineHeight: 1.7, fontFamily: 'Heebo,sans-serif' }}>{f}</div>
-              ))}
-            </div>
-          ))}
-        </div>
-      )}
-
       {subStatus === 'active' && subscription?.braintreeSubscriptionId ? (
         <button onClick={handleCancel} disabled={subLoading} style={{ width: '100%', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 0', fontSize: 14, cursor: 'pointer', fontFamily: 'Heebo,sans-serif', color: 'var(--text2)', opacity: subLoading ? 0.7 : 1 }}>
           {subLoading ? '...' : (lang === 'he' ? 'ביטול מנוי' : 'Cancel subscription')}
         </button>
       ) : subStatus !== 'active' ? (
-        <button onClick={() => setShowUpgrade(true)} disabled={subLoading} style={{ width: '100%', background: 'var(--accent)', border: 'none', borderRadius: 8, padding: '10px 0', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'Heebo,sans-serif', color: 'white' }}>
+        <button onClick={() => setUpgradeStep('compare')} style={{ width: '100%', background: 'var(--accent)', border: 'none', borderRadius: 8, padding: '10px 0', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'Heebo,sans-serif', color: 'white' }}>
           {lang === 'he' ? 'שדרג לפרמיום — $5.50/חודש' : 'Upgrade to Premium — $5.50/mo'}
         </button>
       ) : null}
 
-      {showUpgrade && (
-        <div className="modal-overlay open" style={{ alignItems: 'center', padding: '16px' }} onClick={(e) => e.target === e.currentTarget && setShowUpgrade(false)}>
+      {/* Step 1: Plan comparison */}
+      {upgradeStep === 'compare' && (
+        <div className="modal-overlay open" onClick={(e) => e.target === e.currentTarget && setUpgradeStep(null)}>
           <div className="modal" style={{ borderRadius: 'var(--radius-lg)' }}>
             <div className="modal-title">
-              {lang === 'he' ? '✦ שדרג לפרמיום' : '✦ Upgrade to Premium'}
-              <button className="modal-close" onClick={() => setShowUpgrade(false)}>✕</button>
+              {lang === 'he' ? '✦ בחר מסלול' : '✦ Choose a plan'}
+              <button className="modal-close" onClick={() => setUpgradeStep(null)}>✕</button>
+            </div>
+            <div className="modal-body" style={{ paddingTop: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+                {[
+                  { label: lang === 'he' ? 'ניסיון' : 'Trial', price: lang === 'he' ? 'חינם' : 'Free', color: 'var(--surface2)', border: 'var(--border)', accent: false, features: lang === 'he'
+                    ? ['✓ הכנסות והוצאות', '✓ דשבורד ותרשימים', '✓ עד 2 חשבונות', '✗ שיתוף בית משותף', '✗ תובנות ומגמות', '✗ נקודת איזון', '✗ קטגוריות מותאמות', '✗ קיקי WhatsApp']
+                    : ['✓ Income & expenses', '✓ Dashboard & charts', '✓ Up to 2 accounts', '✗ Household sharing', '✗ Insights & trends', '✗ Break-even', '✗ Custom categories', '✗ Kiki WhatsApp'] },
+                  { label: lang === 'he' ? 'פרמיום' : 'Premium', price: '$5.50/mo', color: '#f0fdf4', border: 'var(--accent)', accent: true, features: lang === 'he'
+                    ? ['✓ הכנסות והוצאות', '✓ דשבורד ותרשימים', '✓ חשבונות ללא הגבלה', '✓ שיתוף בית משותף', '✓ תובנות ומגמות', '✓ נקודת איזון', '✓ קטגוריות מותאמות', '✓ קיקי WhatsApp']
+                    : ['✓ Income & expenses', '✓ Dashboard & charts', '✓ Unlimited accounts', '✓ Household sharing', '✓ Insights & trends', '✓ Break-even', '✓ Custom categories', '✓ Kiki WhatsApp'] },
+                ].map((plan) => (
+                  <div key={plan.label} style={{ background: plan.color, border: `1.5px solid ${plan.border}`, borderRadius: 12, padding: '14px 12px' }}>
+                    <div style={{ fontWeight: 700, fontSize: 15, fontFamily: 'Heebo,sans-serif', color: plan.accent ? 'var(--accent)' : 'var(--text)', marginBottom: 2 }}>{plan.label}</div>
+                    <div style={{ fontFamily: 'DM Mono,monospace', fontSize: 12, color: 'var(--text2)', marginBottom: 10 }}>{plan.price}</div>
+                    {plan.features.map((f, i) => (
+                      <div key={i} style={{ fontSize: 12, color: f.startsWith('✗') ? 'var(--text3)' : 'var(--text)', lineHeight: 1.8, fontFamily: 'Heebo,sans-serif' }}>{f}</div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+              <p style={{ fontSize: 12, color: 'var(--text3)', textAlign: 'center' }}>
+                {lang === 'he' ? 'בטל בכל עת · ללא התחייבות' : 'Cancel anytime · No commitment'}
+              </p>
+            </div>
+            <div className="modal-footer">
+              <button onClick={() => setUpgradeStep('pay')} style={{ flex: 1, height: 44, background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 'var(--radius)', fontSize: 15, fontWeight: 700, fontFamily: 'Heebo,sans-serif', cursor: 'pointer' }}>
+                {lang === 'he' ? 'המשך לתשלום →' : 'Continue to payment →'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Step 2: Card form */}
+      {upgradeStep === 'pay' && (
+        <div className="modal-overlay open" onClick={(e) => e.target === e.currentTarget && setUpgradeStep(null)}>
+          <div className="modal" style={{ borderRadius: 'var(--radius-lg)' }}>
+            <div className="modal-title">
+              <button onClick={() => setUpgradeStep('compare')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: 'var(--text2)', padding: '0 4px' }}>←</button>
+              {lang === 'he' ? 'פרטי תשלום' : 'Payment details'}
+              <button className="modal-close" onClick={() => setUpgradeStep(null)}>✕</button>
             </div>
             <div className="modal-body" style={{ paddingTop: 16 }}>
               <p style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 14, textAlign: 'center' }}>
-                {lang === 'he' ? '$5.50/חודש · בטל בכל עת · ללא התחייבות' : '$5.50/month · Cancel anytime · No commitment'}
+                {lang === 'he' ? '$5.50/חודש · בטל בכל עת' : '$5.50/month · Cancel anytime'}
               </p>
               <div ref={dropinRef} />
             </div>
