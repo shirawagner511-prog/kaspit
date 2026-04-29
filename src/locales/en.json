@@ -101,6 +101,7 @@
     "expenses": "Expenses",
     "incomeUtil": "Income utilization",
     "budgetUtil": "Budget utilization",
+    "vsLastMonth": "vs last month",
     "fixed": "Fixed",
     "variable": "Variable",
     "savingsLabel": "Savings",

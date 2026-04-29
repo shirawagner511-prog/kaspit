@@ -100,6 +100,13 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
   const totalIn = me.filter((e) => e.type === 'income').reduce((s, e) => s + e.amount, 0);
   const totalOut = me.filter((e) => e.type !== 'income').reduce((s, e) => s + e.amount, 0);
   const balance = totalIn - totalOut;
+
+  const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+  const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+  const prevMe = getMonthEntries(entries, prevMonth, prevYear);
+  const prevBalance = prevMe.filter((e) => e.type === 'income').reduce((s, e) => s + e.amount, 0)
+                   - prevMe.filter((e) => e.type !== 'income').reduce((s, e) => s + e.amount, 0);
+  const balanceDiff = prevBalance !== 0 ? Math.round(((balance - prevBalance) / Math.abs(prevBalance)) * 100) : null;
   const pct = totalIn > 0 ? Math.min((totalOut / totalIn) * 100, 100) : totalOut > 0 ? 100 : 0;
   const fixedTotal = me.filter((e) => e.type !== 'income' && e.fixed === 'fixed').reduce((s, e) => s + e.amount, 0);
   const variableTotal = me.filter((e) => e.type !== 'income' && e.fixed === 'variable').reduce((s, e) => s + e.amount, 0);
@@ -173,15 +180,18 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
         <div className={`amount ${balance >= 0 ? 'green' : 'red'}`}>
           {balance < 0 ? '−' : ''}{formatAmount(balance)}
         </div>
-        <div className="sub">
-          <span
-            style={{ cursor: totalIn > 0 ? 'pointer' : 'default', textDecoration: totalIn > 0 ? 'underline dotted' : 'none' }}
-            onClick={() => totalIn > 0 && setIncomeOpen((o) => !o)}
-          >
-            {t('dashboard.income')} {formatAmount(totalIn)} {totalIn > 0 ? (incomeOpen ? '▴' : '▾') : ''}
-          </span>
-          {' · '}{t('dashboard.expenses')} {formatAmount(totalOut)}
-        </div>
+        {balanceDiff !== null && (
+          <div style={{ marginTop: 8 }}>
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              background: 'rgba(255,255,255,0.15)', borderRadius: 20,
+              padding: '4px 12px', fontSize: 13, fontFamily: 'Heebo,sans-serif', fontWeight: 600,
+              color: balanceDiff >= 0 ? '#a7f3d0' : '#fca5a5',
+            }}>
+              {balanceDiff >= 0 ? '▲' : '▼'} {Math.abs(balanceDiff)}% {t('dashboard.vsLastMonth')}
+            </span>
+          </div>
+        )}
         {incomeOpen && (
           <div style={{ marginTop: 12, borderTop: '1px solid rgba(255,255,255,.1)', paddingTop: 10, textAlign: 'right' }}>
             {me.filter((e) => e.type === 'income').map((e) => (
@@ -194,16 +204,20 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
         )}
       </div>
 
-      {(totalIn > 0 || totalOut > 0) && (
-        <div className="progress-section">
-          <div className="progress-label">
-            <span>{t('dashboard.incomeUtil')}</span><span>{Math.round(pct)}%</span>
-          </div>
-          <div className="progress-bar">
-            <div className={`progress-fill ${bc}`} style={{ width: `${pct}%` }} />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 16px' }}>
+          <div style={{ fontSize: 12, color: 'var(--text3)', fontFamily: 'Heebo,sans-serif', marginBottom: 6 }}>{t('dashboard.expenses')}</div>
+          <div style={{ fontSize: 22, fontFamily: 'DM Mono,monospace', fontWeight: 600, color: 'var(--expense)', direction: 'ltr', textAlign: 'right' }}>
+            ₪ {totalOut.toLocaleString('he-IL', { maximumFractionDigits: 0 })}
           </div>
         </div>
-      )}
+        <div style={{ background: 'var(--accent)', border: 'none', borderRadius: 14, padding: '14px 16px' }}>
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', fontFamily: 'Heebo,sans-serif', marginBottom: 6 }}>{t('dashboard.income')}</div>
+          <div style={{ fontSize: 22, fontFamily: 'DM Mono,monospace', fontWeight: 600, color: '#fff', direction: 'ltr', textAlign: 'right' }}>
+            ₪ {totalIn.toLocaleString('he-IL', { maximumFractionDigits: 0 })}
+          </div>
+        </div>
+      </div>
 
       {totalBudget > 0 && (
         <div className="progress-section">
