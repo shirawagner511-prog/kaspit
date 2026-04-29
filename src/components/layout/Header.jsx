@@ -56,7 +56,7 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
   return (
     <div className="app-header">
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-        <div className="app-logo" dir="ltr" style={{ gap: 0 }}>
+        <div className="app-logo" dir="ltr" style={{ gap: 0, cursor: 'pointer' }} onClick={() => onNavigate('dashboard')}>
           <span style={{ fontWeight: 700, color: 'var(--accent)' }}>B</span><span style={{ fontWeight: 400, color: 'var(--text)' }}>udgi</span>
         </div>
         {subStatus === 'active' && (
