@@ -153,31 +153,31 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
       {/* Step 1: Plan comparison */}
       {upgradeStep === 'compare' && (
         <div className="modal-overlay open" style={{ alignItems: 'center', padding: 16 }} onClick={(e) => e.target === e.currentTarget && setUpgradeStep(null)}>
-          <div className="modal" style={{ borderRadius: 12 }}>
+          <div className="modal" style={{ borderRadius: 12, maxHeight: '85vh' }}>
             <div className="modal-title">
               {lang === 'he' ? '✦ בחר מסלול' : '✦ Choose a plan'}
               <button className="modal-close" onClick={() => setUpgradeStep(null)}>✕</button>
             </div>
-            <div className="modal-body" style={{ paddingTop: 16 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
+            <div className="modal-body" style={{ paddingTop: 12, overflowY: 'auto' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
                 {[
                   { label: lang === 'he' ? 'ניסיון' : 'Trial', price: lang === 'he' ? 'חינם' : 'Free', color: 'var(--surface2)', border: 'var(--border)', accent: false, features: lang === 'he'
-                    ? ['✓ הכנסות והוצאות', '✓ דשבורד ותרשימים', '✓ עד 2 חשבונות', '✗ שיתוף בית משותף', '✗ תובנות ומגמות', '✗ נקודת איזון', '✗ קטגוריות מותאמות', '✗ קיקי WhatsApp']
-                    : ['✓ Income & expenses', '✓ Dashboard & charts', '✓ Up to 2 accounts', '✗ Household sharing', '✗ Insights & trends', '✗ Break-even', '✗ Custom categories', '✗ Kiki WhatsApp'] },
+                    ? ['✓ הכנסות והוצאות', '✓ דשבורד ותרשימים', '✓ עד 2 חשבונות', '✗ שיתוף משותף', '✗ תובנות', '✗ נקודת איזון', '✗ קטגוריות מותאמות', '✗ קיקי WhatsApp']
+                    : ['✓ Income & expenses', '✓ Dashboard & charts', '✓ Up to 2 accounts', '✗ Household sharing', '✗ Insights', '✗ Break-even', '✗ Custom categories', '✗ Kiki WhatsApp'] },
                   { label: lang === 'he' ? 'פרמיום' : 'Premium', price: '$5.50/mo', color: '#f0fdf4', border: 'var(--accent)', accent: true, features: lang === 'he'
-                    ? ['✓ הכנסות והוצאות', '✓ דשבורד ותרשימים', '✓ חשבונות ללא הגבלה', '✓ שיתוף בית משותף', '✓ תובנות ומגמות', '✓ נקודת איזון', '✓ קטגוריות מותאמות', '✓ קיקי WhatsApp']
-                    : ['✓ Income & expenses', '✓ Dashboard & charts', '✓ Unlimited accounts', '✓ Household sharing', '✓ Insights & trends', '✓ Break-even', '✓ Custom categories', '✓ Kiki WhatsApp'] },
+                    ? ['✓ הכנסות והוצאות', '✓ דשבורד ותרשימים', '✓ חשבונות ללא הגבלה', '✓ שיתוף משותף', '✓ תובנות', '✓ נקודת איזון', '✓ קטגוריות מותאמות', '✓ קיקי WhatsApp']
+                    : ['✓ Income & expenses', '✓ Dashboard & charts', '✓ Unlimited accounts', '✓ Household sharing', '✓ Insights', '✓ Break-even', '✓ Custom categories', '✓ Kiki WhatsApp'] },
                 ].map((plan) => (
-                  <div key={plan.label} style={{ background: plan.color, border: `1.5px solid ${plan.border}`, borderRadius: 12, padding: '14px 12px' }}>
-                    <div style={{ fontWeight: 700, fontSize: 15, fontFamily: 'Heebo,sans-serif', color: plan.accent ? 'var(--accent)' : 'var(--text)', marginBottom: 2 }}>{plan.label}</div>
-                    <div style={{ fontFamily: 'DM Mono,monospace', fontSize: 12, color: 'var(--text2)', marginBottom: 10 }}>{plan.price}</div>
+                  <div key={plan.label} style={{ background: plan.color, border: `1.5px solid ${plan.border}`, borderRadius: 10, padding: '10px 8px' }}>
+                    <div style={{ fontWeight: 700, fontSize: 13, fontFamily: 'Heebo,sans-serif', color: plan.accent ? 'var(--accent)' : 'var(--text)', marginBottom: 1 }}>{plan.label}</div>
+                    <div style={{ fontFamily: 'DM Mono,monospace', fontSize: 11, color: 'var(--text2)', marginBottom: 7 }}>{plan.price}</div>
                     {plan.features.map((f, i) => (
-                      <div key={i} style={{ fontSize: 12, color: f.startsWith('✗') ? 'var(--text3)' : 'var(--text)', lineHeight: 1.8, fontFamily: 'Heebo,sans-serif' }}>{f}</div>
+                      <div key={i} style={{ fontSize: 11, color: f.startsWith('✗') ? 'var(--text3)' : 'var(--text)', lineHeight: 1.65, fontFamily: 'Heebo,sans-serif' }}>{f}</div>
                     ))}
                   </div>
                 ))}
               </div>
-              <p style={{ fontSize: 12, color: 'var(--text3)', textAlign: 'center' }}>
+              <p style={{ fontSize: 11, color: 'var(--text3)', textAlign: 'center', marginBottom: 4 }}>
                 {lang === 'he' ? 'בטל בכל עת · ללא התחייבות' : 'Cancel anytime · No commitment'}
               </p>
             </div>
