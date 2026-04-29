@@ -7,7 +7,19 @@ import { generateClientToken, createSubscription, cancelSubscription, parseWebho
 import { upsertSubscription, getUidByCustomerId } from './subscriptions.js';
 
 const app = express();
-app.use((req, res, next) => { res.setHeader('ngrok-skip-browser-warning', '1'); next(); });
+const ALLOWED_ORIGINS = [
+  'https://shirawagner511-prog.github.io',
+  'http://localhost:5173',
+];
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (ALLOWED_ORIGINS.includes(origin)) res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('ngrok-skip-browser-warning', '1');
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
