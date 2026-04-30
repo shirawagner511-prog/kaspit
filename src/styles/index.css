@@ -326,7 +326,7 @@ svg {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   min-height: 100vh;
   width: 100%;
   max-width: 480px;
@@ -334,6 +334,7 @@ svg {
   padding: 52px 28px 36px;
   text-align: center;
   box-sizing: border-box;
+  overflow-y: auto;
   animation: app-fade-in var(--d-slow) var(--ease-out) both;
   background: radial-gradient(ellipse at 60% 0%, #EDE9E0 0%, #F7F5F0 65%);
 }
@@ -364,9 +365,9 @@ svg {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 18px;
-  padding-bottom: 36px;
-  padding-top: 16px;
+  gap: 10px;
+  padding-bottom: 20px;
+  padding-top: 8px;
 }
 
 /* Large decorative mark above wordmark */
@@ -375,9 +376,9 @@ svg {
   align-items: baseline;
   gap: 0;
   font-family: "Lora", Georgia, serif;
-  font-size: 72px;
+  font-size: 52px;
   font-weight: 600;
-  letter-spacing: -3px;
+  letter-spacing: -2px;
   line-height: 1;
   filter: drop-shadow(0 2px 0 rgba(45,106,79,0.10));
 }
@@ -386,19 +387,14 @@ svg {
 
 .login-tagline {
   font-family: "Lora", Georgia, serif;
-  font-size: 22px;
+  font-size: 17px;
   font-weight: 600;
   color: var(--text);
   line-height: 1.4;
   max-width: 300px;
 }
 .login-tagline-sub {
-  font-family: "DM Sans", sans-serif;
-  font-size: 15px;
-  font-weight: 400;
-  color: var(--text2);
-  line-height: 1.65;
-  max-width: 290px;
+  display: none;
 }
 
 /* Thin decorative divider between hero and card */
@@ -538,9 +534,9 @@ svg {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
-  padding: 28px 8px 0;
+  padding: 16px 8px 0;
 }
 .login-feature-row {
   display: flex;
@@ -2414,7 +2410,7 @@ svg {
 /* ── Currency picker ───────────────────────────────── */
 .currency-picker-screen {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   min-height: 100vh;
   background: var(--bg, #F7F5F0);

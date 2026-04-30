@@ -57,7 +57,7 @@ export default function App() {
   const [isNewUser, setIsNewUser] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
-  const [currency, setCurrency] = useState('ILS');
+  const [currency, setCurrency] = useState(() => localStorage.getItem('budgi-currency') || 'ILS');
   const [tourDone, setTourDone] = useState(() => localStorage.getItem('budgi-tour-done') === '1');
 
   useEffect(() => {
@@ -68,18 +68,21 @@ export default function App() {
     if (householdCurrency) {
       setCurrency(householdCurrency);
       localStorage.setItem('budgi-currency', householdCurrency);
+      localStorage.setItem('budgi-currency-chosen', '1');
     }
   }, [householdCurrency]);
 
   useEffect(() => {
-    if (householdId && !householdCurrency && !showCurrencyPicker && !showWelcome) {
+    const alreadyChosen = localStorage.getItem('budgi-currency-chosen') === '1';
+    if (householdId && !alreadyChosen && !showCurrencyPicker && !showWelcome) {
       setShowCurrencyPicker(true);
     }
-  }, [householdId, householdCurrency, showCurrencyPicker, showWelcome]);
+  }, [householdId, showCurrencyPicker, showWelcome]);
 
   async function handleCurrencySelect(cur) {
     setCurrency(cur);
     localStorage.setItem('budgi-currency', cur);
+    localStorage.setItem('budgi-currency-chosen', '1');
     if (householdId) {
       await saveCurrency(householdId, cur);
     }
@@ -107,8 +110,8 @@ export default function App() {
   if (loading) return <Loader fullscreen />;
   if (!user) return <LoginScreen onNewUser={() => { setIsNewUser(true); setShowWelcome(true); }} />;
   if (showWelcome) return <WelcomeScreen onContinue={() => { setShowWelcome(false); setShowCurrencyPicker(true); }} />;
-  if (showCurrencyPicker && !householdId) return <CurrencyPicker onSelect={(cur) => { setCurrency(cur); localStorage.setItem('budgi-currency', cur); setShowCurrencyPicker(false); }} />;
-  if (!householdId) return <HouseholdSetup user={user} onComplete={(hid) => { setHouseholdId(hid); if (showCurrencyPicker) saveCurrency(hid, currency); }} />;
+  if (showCurrencyPicker && !householdId) return <CurrencyPicker onSelect={(cur) => { setCurrency(cur); localStorage.setItem('budgi-currency', cur); localStorage.setItem('budgi-currency-chosen', '1'); setShowCurrencyPicker(false); }} />;
+  if (!householdId) return <HouseholdSetup user={user} onComplete={(hid) => { setHouseholdId(hid); if (currency !== 'ILS') saveCurrency(hid, currency); }} />;
   if (showCurrencyPicker) return <CurrencyPicker onSelect={handleCurrencySelect} />;
 
   const pageProps = {

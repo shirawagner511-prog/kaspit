@@ -139,10 +139,10 @@ export default function LoginScreen({ onNewUser }) {
         if (taken) { setError(t('login.errorUsernameTaken')); return; }
 
         const firebaseEmail = `${uname}@budgi.internal`;
+        onNewUser?.();
         const cred = await createUserWithEmailAndPassword(auth, firebaseEmail, password);
         await updateProfile(cred.user, { displayName: displayName.trim() });
         await registerUsername(uname, cred.user.uid);
-        onNewUser?.();
       } else {
         const exists = await getEmailByUsername(uname);
         if (!exists) { setError(t('login.errorUsernameNotFound')); return; }

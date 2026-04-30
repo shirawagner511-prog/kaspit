@@ -56,13 +56,15 @@ export default function OnboardingTour({ onDone }) {
   };
 
   const isAbove = current.placement === 'above';
+  // Tooltip sits 100px away from the target; arrow bridges the gap
   const tooltipTop = isAbove
-    ? spotlight.top - 8  // tooltip will sit above via transform
-    : spotlight.top + spotlight.height + 12;
+    ? spotlight.top - 100
+    : spotlight.top + spotlight.height + 100;
 
+  const tooltipCenterX = spotlight.left + spotlight.width / 2 + 40;
   const tooltipLeft = Math.min(
-    Math.max(spotlight.left + spotlight.width / 2, 100),
-    window.innerWidth - 100
+    Math.max(tooltipCenterX, 130),
+    window.innerWidth - 130
   );
 
   return createPortal(
@@ -102,28 +104,47 @@ export default function OnboardingTour({ onDone }) {
 }
 
 function ArrowSvg({ rect, placement }) {
-  const cx = rect.left + rect.width / 2;
+  const cx = Math.round(rect.left + rect.width / 2);
   const isAbove = placement === 'above';
-  const y1 = isAbove ? rect.top - 20 : rect.bottom + 20;
-  const y2 = isAbove ? rect.top - 60 : rect.bottom + 60;
+
+  // Arrow tail starts near the tooltip, tip points at the target
+  const tailX = cx + 40;
+  const tailY = isAbove ? rect.top - 80 : rect.bottom + 80;
+  const tipX  = cx + 10;
+  const tipY  = isAbove ? rect.top - 12 : rect.bottom + 12;
+
+  // Curly cubic bezier — big swing for comic effect
+  const cp1x = tailX + 55;
+  const cp1y = tailY;
+  const cp2x = tipX + 60;
+  const cp2y = tipY + (isAbove ? -40 : 40);
+
+  const d = `M ${tailX} ${tailY} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${tipX} ${tipY}`;
 
   return (
     <svg
-      style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', pointerEvents: 'none', zIndex: 10001 }}
+      style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', pointerEvents: 'none', zIndex: 10001, overflow: 'visible' }}
     >
-      <path
-        d={`M ${cx} ${y1} C ${cx} ${(y1 + y2) / 2}, ${cx + 30} ${(y1 + y2) / 2}, ${cx + 20} ${y2}`}
-        stroke="#2D6A4F"
-        strokeWidth="2.5"
-        fill="none"
-        strokeDasharray="5 4"
-        markerEnd="url(#arrowhead)"
-      />
       <defs>
-        <marker id="arrowhead" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
-          <path d={isAbove ? 'M 0 0 L 8 4 L 0 8 Z' : 'M 8 0 L 0 4 L 8 8 Z'} fill="#2D6A4F" />
+        <marker id="comic-arrow" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 Z" fill="#F4D03F" stroke="#1C1917" strokeWidth="1" strokeLinejoin="round" />
         </marker>
+        <filter id="comic-shadow">
+          <feDropShadow dx="2" dy="2" stdDeviation="1" floodColor="#1C1917" floodOpacity="0.5" />
+        </filter>
       </defs>
+      {/* Bold black outline */}
+      <path d={d} stroke="#1C1917" strokeWidth="7" fill="none" strokeLinecap="round" />
+      {/* Bright yellow fill on top */}
+      <path
+        d={d}
+        stroke="#F4D03F"
+        strokeWidth="4.5"
+        fill="none"
+        strokeLinecap="round"
+        markerEnd="url(#comic-arrow)"
+        filter="url(#comic-shadow)"
+      />
     </svg>
   );
 }
