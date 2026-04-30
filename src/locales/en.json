@@ -270,6 +270,7 @@
     "addNewCategory": "+ Add new category",
     "categoryNamePlaceholder": "Category name...",
     "recurringHint": "Auto-carried every month — Premium feature",
+    "paymentsLabel": "No. of payments:",
     "errorRequired": "Please fill name, amount and date",
     "errorZero": "Amount must be greater than zero",
     "errorSave": "Error saving: "

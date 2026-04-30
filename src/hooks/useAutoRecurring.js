@@ -23,6 +23,8 @@ function buildRecurring(entries) {
         type: e.type,
         amount: e.amount,
         lastDate: e.date,
+        recurringMonths: e.recurringMonths || null,
+        recurringUntil: e.recurringUntil || null,
       };
     }
   });
@@ -57,6 +59,11 @@ export function useAutoRecurring(entries, currentMonth, currentYear, householdId
         if (diff < 2) return;
       }
 
+      if (r.recurringUntil) {
+        const currentYM = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+        if (currentYM > r.recurringUntil) return;
+      }
+
       try {
         await addEntry(householdId, {
           name: r.name,
@@ -66,6 +73,8 @@ export function useAutoRecurring(entries, currentMonth, currentYear, householdId
           fixed: r.fixed,
           type: r.type,
           note: 'הועבר אוטומטית',
+          recurringMonths: r.recurringMonths,
+          recurringUntil: r.recurringUntil,
         }, user);
       } catch (e) {
         console.error('auto-recurring:', e);

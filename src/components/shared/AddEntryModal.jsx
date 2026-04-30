@@ -11,6 +11,12 @@ const today = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
+function computeUntil(dateStr, months) {
+  const [y, m] = dateStr.split('-').map(Number);
+  const total = y * 12 + (m - 1) + (months - 1);
+  return `${Math.floor(total / 12)}-${String(total % 12 + 1).padStart(2, '0')}`;
+}
+
 function getDefaultCategory(type) {
   if (type === 'income') return 'income';
   if (type === 'saving') return 'savings';
@@ -39,6 +45,7 @@ export default function AddEntryModal({ open, onClose, householdId, user, entry,
   const [fixed, setFixed] = useState('variable');
   const [note, setNote] = useState('');
   const [accountId, setAccountId] = useState('');
+  const [recurringMonths, setRecurringMonths] = useState('');
   const [loading, setLoading] = useState(false);
   const [addingCat, setAddingCat] = useState(false);
   const [newCatName, setNewCatName] = useState('');
@@ -67,6 +74,7 @@ export default function AddEntryModal({ open, onClose, householdId, user, entry,
       setFixed(entry.fixed || 'variable');
       setNote(entry.note || '');
       setAccountId(entry.accountId || '');
+      setRecurringMonths(entry.recurringMonths?.toString() || '');
     } else {
       resetFields();
     }
@@ -91,7 +99,7 @@ export default function AddEntryModal({ open, onClose, householdId, user, entry,
   function resetFields() {
     setName(''); setAmount(''); setNote('');
     setType('expense'); setDate(today());
-    setCategory('housing'); setFixed('variable'); setAccountId('');
+    setCategory('housing'); setFixed('variable'); setAccountId(''); setRecurringMonths('');
   }
 
   const visibleCategories = filterCategories(allCategories, type);
@@ -107,7 +115,13 @@ export default function AddEntryModal({ open, onClose, householdId, user, entry,
     }
     setLoading(true);
     try {
-      const data = { name: name.trim(), amount: parseFloat(amount), category, date, fixed, type, note: note.trim(), accountId: accountId || null };
+      const rm = recurringMonths ? parseInt(recurringMonths) : null;
+      const data = {
+        name: name.trim(), amount: parseFloat(amount), category, date, fixed, type,
+        note: note.trim(), accountId: accountId || null,
+        recurringMonths: rm,
+        recurringUntil: (rm && rm > 1) ? computeUntil(date, rm) : null,
+      };
       if (isEdit) {
         await updateEntry(householdId, entry.id, data);
       } else {
@@ -184,9 +198,22 @@ export default function AddEntryModal({ open, onClose, householdId, user, entry,
                 {FIXED_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
               {(fixed === 'fixed' || fixed === 'bimonthly') && (
-                <div style={{ fontSize: 10, color: 'var(--accent)', marginTop: 4, lineHeight: 1.4 }}>
-                  ✦ {t('addEntry.recurringHint')}
-                </div>
+                <>
+                  <div style={{ fontSize: 10, color: 'var(--accent)', marginTop: 4, lineHeight: 1.4 }}>
+                    ✦ {t('addEntry.recurringHint')}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 5 }}>
+                    <span style={{ fontSize: 10, color: 'var(--text2)', whiteSpace: 'nowrap' }}>{t('addEntry.paymentsLabel')}</span>
+                    <input
+                      type="number" min="1" max="36"
+                      className="form-input"
+                      style={{ width: 52, padding: '4px 6px', fontSize: 12, textAlign: 'center', fontFamily: 'DM Mono,monospace' }}
+                      placeholder="∞"
+                      value={recurringMonths}
+                      onChange={(e) => setRecurringMonths(e.target.value)}
+                    />
+                  </div>
+                </>
               )}
             </div>
           </div>

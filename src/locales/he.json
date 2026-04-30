@@ -270,6 +270,7 @@
     "addNewCategory": "+ הוסיפי קטגוריה חדשה",
     "categoryNamePlaceholder": "שם הקטגוריה...",
     "recurringHint": "מועבר אוטומטית בכל חודש — בגירסת פרמיום",
+    "paymentsLabel": "מס׳ תשלומים:",
     "errorRequired": "יש למלא שם, סכום ותאריך",
     "errorZero": "סכום חייב להיות גדול מאפס",
     "errorSave": "שגיאה בשמירת הפעולה: "

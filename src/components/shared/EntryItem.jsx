@@ -5,8 +5,11 @@ import CategoryIcon from './CategoryIcon';
 
 export default function EntryItem({ entry, showDelete, onDelete, onEdit }) {
   const { t } = useTranslation();
+  const fixedLabel = entry.recurringMonths
+    ? `${t('entryItem.fixed')} · ${entry.recurringMonths}✕`
+    : t('entryItem.fixed');
   const TAG_MAP = {
-    fixed:     <span className="tag fixed">{t('entryItem.fixed')}</span>,
+    fixed:     <span className="tag fixed">{fixedLabel}</span>,
     bimonthly: <span className="tag bimonthly">{t('entryItem.bimonthly')}</span>,
     variable:  <span className="tag var">{t('entryItem.variable')}</span>,
     sep:       <span className="sep-badge">{t('entryItem.sep')}</span>,
