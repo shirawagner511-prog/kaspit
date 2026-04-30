@@ -154,7 +154,7 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
           <Languages size={13} />
           {i18n.language === 'he' ? 'EN' : 'עב'}
         </button>
-        <select className="month-selector" value={value} onChange={handleChange}>
+        <select className="month-selector" data-tour="month-nav" value={value} onChange={handleChange}>
           {MONTH_OPTIONS.map((o) => (
             <option key={`${o.year}-${o.month}`} value={`${o.year}-${o.month}`}>
               {o.label}

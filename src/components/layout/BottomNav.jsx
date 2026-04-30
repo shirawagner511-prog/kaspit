@@ -12,7 +12,7 @@ export default function BottomNav({ activePage, onNavigate, isPremium, subStatus
     { id: 'settings',  Icon: Settings,        label: t('nav.settings') },
   ];
   return (
-    <nav className="bottom-nav">
+    <nav className="bottom-nav" data-tour="nav">
       {TABS.map(({ id, Icon, label }) => (
         <button
           key={id}

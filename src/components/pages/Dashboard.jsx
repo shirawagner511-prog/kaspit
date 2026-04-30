@@ -249,7 +249,7 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
         )}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
+      <div data-tour="summary-cards" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 16px' }}>
           <div style={{ fontSize: 12, color: 'var(--text3)', fontFamily: 'Heebo,sans-serif', marginBottom: 6 }}>{t('dashboard.expenses')}</div>
           <div style={{ fontSize: 22, fontFamily: 'DM Mono,monospace', fontWeight: 600, color: 'var(--expense)', direction: 'ltr', textAlign: 'right' }}>

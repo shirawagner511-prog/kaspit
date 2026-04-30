@@ -156,6 +156,10 @@ export async function saveBudgets(householdId, budgets) {
   ]);
 }
 
+export async function saveCurrency(householdId, currency) {
+  await setDoc(doc(db, 'households', householdId), { currency }, { merge: true });
+}
+
 export async function saveSavingsGoal(householdId, savingsGoal) {
   await Promise.all([
     setDoc(doc(db, 'households', householdId), { savingsGoal }, { merge: true }),

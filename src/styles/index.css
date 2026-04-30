@@ -335,6 +335,7 @@ svg {
   text-align: center;
   box-sizing: border-box;
   animation: app-fade-in var(--d-slow) var(--ease-out) both;
+  background: radial-gradient(ellipse at 60% 0%, #EDE9E0 0%, #F7F5F0 65%);
 }
 
 /* Language pill — absolute top corner */
@@ -435,7 +436,8 @@ svg {
   color: var(--text);
   border: 1.5px solid var(--border);
   border-radius: 10px;
-  padding: 13px 16px;
+  padding: 14px 16px;
+  min-height: 50px;
   font-family: inherit;
   font-size: 14px;
   font-weight: 600;
@@ -2349,4 +2351,227 @@ svg {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
+}
+
+/* ── Welcome screen ────────────────────────────────── */
+.welcome-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 60% 0%, #EDE9E0 0%, #F7F5F0 70%);
+  cursor: pointer;
+  animation: app-fade-in 0.4s ease-out both;
+}
+.welcome-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 360px;
+  padding: 40px 28px;
+  text-align: center;
+}
+.welcome-check {
+  animation: pop-in 0.5s cubic-bezier(0.22,1,0.36,1) both;
+}
+.welcome-wordmark {
+  font-family: Georgia, serif;
+  font-size: 36px;
+  letter-spacing: -1px;
+}
+.welcome-headline {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--text1, #1C1917);
+  margin: 0;
+}
+.welcome-sub {
+  font-family: 'DM Sans', Heebo, sans-serif;
+  font-size: 15px;
+  color: var(--text2, #78716C);
+  margin: 0;
+}
+.welcome-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 13px 28px;
+  font-family: 'DM Sans', Heebo, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+}
+.welcome-hint {
+  font-size: 12px;
+  color: var(--text3, #a8a29e);
+  margin: 0;
+}
+
+/* ── Currency picker ───────────────────────────────── */
+.currency-picker-screen {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--bg, #F7F5F0);
+  padding: 24px 16px;
+  box-sizing: border-box;
+  animation: app-fade-in 0.3s ease-out both;
+}
+.currency-picker-card {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.currency-picker-header h2 {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text1, #1C1917);
+  margin: 0 0 4px;
+  text-align: center;
+}
+.currency-picker-header p {
+  font-size: 13px;
+  color: var(--text2, #78716C);
+  margin: 0;
+  text-align: center;
+}
+.currency-search {
+  margin-top: 4px;
+}
+.currency-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 52vh;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px;
+  background: var(--surface);
+}
+.currency-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1.5px solid transparent;
+  border-radius: 8px;
+  background: none;
+  cursor: pointer;
+  font-family: 'DM Sans', Heebo, sans-serif;
+  font-size: 14px;
+  color: var(--text1, #1C1917);
+  text-align: start;
+  transition: background 0.15s, border-color 0.15s;
+}
+.currency-item:hover {
+  background: var(--bg, #F7F5F0);
+}
+.currency-item.selected {
+  border-color: var(--accent);
+  background: rgba(45,106,79,0.05);
+}
+.currency-flag {
+  font-size: 20px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.currency-name {
+  flex: 1;
+}
+.currency-code {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--text3, #a8a29e);
+}
+.currency-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Onboarding tour ───────────────────────────────── */
+.tour-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  pointer-events: auto;
+}
+.tour-spotlight {
+  position: fixed;
+  border-radius: 10px;
+  box-shadow: 0 0 0 9999px rgba(0,0,0,0.52);
+  pointer-events: none;
+  z-index: 10000;
+  transition: all 0.25s ease;
+}
+.tour-tooltip {
+  position: fixed;
+  transform: translateX(-50%);
+  z-index: 10002;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  width: 240px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.16);
+  font-family: 'DM Sans', Heebo, sans-serif;
+  animation: pop-in 0.2s ease-out both;
+}
+.tour-tooltip.above {
+  transform: translateX(-50%) translateY(-100%) translateY(-12px);
+}
+.tour-tooltip.below {
+  transform: translateX(-50%);
+}
+.tour-tooltip-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text1, #1C1917);
+  margin-bottom: 5px;
+}
+.tour-tooltip-msg {
+  font-size: 13px;
+  color: var(--text2, #78716C);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+.tour-tooltip-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.tour-skip {
+  background: none;
+  border: none;
+  color: var(--text3, #a8a29e);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+}
+.tour-counter {
+  font-size: 11px;
+  color: var(--text3, #a8a29e);
+  font-family: 'DM Mono', monospace;
+}
+.tour-next {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
 }

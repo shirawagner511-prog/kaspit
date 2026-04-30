@@ -300,6 +300,30 @@
     "save": "Save",
     "cancel": "Cancel"
   },
+  "welcome": {
+    "headline": "Welcome to Budgi!",
+    "sub": "Let's set up your account",
+    "continue": "Get started →"
+  },
+  "currency": {
+    "title": "What currency do you use?",
+    "sub": "You can change this later in Settings",
+    "search": "Search currencies...",
+    "confirm": "Continue →",
+    "skip": "Skip (₪ Shekel)"
+  },
+  "tour": {
+    "step1Title": "Monthly summary",
+    "step1": "Here you'll see your income, expenses, and balance for the month",
+    "step2Title": "Month navigation",
+    "step2": "Use the arrows to navigate between months",
+    "step3Title": "Add an entry",
+    "step3": "Tap here to add an expense, income, or saving",
+    "step4Title": "Navigation",
+    "step4": "Browse all sections of the app from here",
+    "next": "Next →",
+    "skip": "Skip"
+  },
   "misc": {
     "loading": "Loading...",
     "errorDelete": "Error deleting: ",

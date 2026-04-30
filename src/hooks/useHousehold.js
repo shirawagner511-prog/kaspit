@@ -7,6 +7,7 @@ export function useHousehold(householdId) {
   const [savingsGoal, setSavingsGoal] = useState(null);
   const [customCategories, setCustomCategories] = useState([]);
   const [memberUids, setMemberUids] = useState([]);
+  const [currency, setCurrency] = useState(null);
 
   // Listen to household doc for membership
   useEffect(() => {
@@ -24,6 +25,7 @@ export function useHousehold(householdId) {
         } else {
           setMemberUids(data.memberUids || []);
         }
+        if (data.currency) setCurrency(data.currency);
       },
       (err) => console.error('household listener error:', err)
     );
@@ -54,5 +56,5 @@ export function useHousehold(householdId) {
     );
   }, [householdId]);
 
-  return { budgets, savingsGoal, customCategories, memberUids };
+  return { budgets, savingsGoal, customCategories, memberUids, currency };
 }

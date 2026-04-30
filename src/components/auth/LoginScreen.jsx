@@ -67,7 +67,7 @@ function GoogleIcon() {
   );
 }
 
-export default function LoginScreen() {
+export default function LoginScreen({ onNewUser }) {
   const { t, i18n } = useTranslation();
   const [error, setError]       = useState('');
   const [loading, setLoading]   = useState('');
@@ -142,6 +142,7 @@ export default function LoginScreen() {
         const cred = await createUserWithEmailAndPassword(auth, firebaseEmail, password);
         await updateProfile(cred.user, { displayName: displayName.trim() });
         await registerUsername(uname, cred.user.uid);
+        onNewUser?.();
       } else {
         const exists = await getEmailByUsername(uname);
         if (!exists) { setError(t('login.errorUsernameNotFound')); return; }
@@ -168,16 +169,20 @@ export default function LoginScreen() {
       </button>
 
       <div className="login-hero">
+        <svg width="72" height="56" viewBox="0 0 72 56" fill="none" style={{ marginBottom: 4 }}>
+          <rect x="4" y="20" width="24" height="30" rx="4" fill="#F4EBD0" stroke="#D6C9A8" strokeWidth="1.2"/>
+          <rect x="32" y="10" width="24" height="40" rx="4" fill="#F4EBD0" stroke="#D6C9A8" strokeWidth="1.2"/>
+          <rect x="4" y="28" width="24" height="4" rx="2" fill="#2D6A4F" opacity="0.7"/>
+          <rect x="32" y="18" width="24" height="4" rx="2" fill="#2D6A4F" opacity="0.9"/>
+          <rect x="32" y="26" width="14" height="4" rx="2" fill="#2D6A4F" opacity="0.5"/>
+          <circle cx="60" cy="14" r="10" fill="#2D6A4F" opacity="0.12"/>
+          <path d="M54 14 L58 18 L66 10" stroke="#2D6A4F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.8"/>
+        </svg>
         <div className="login-wordmark" dir="ltr">
           <span className="login-wordmark-b">B</span>
           <span className="login-wordmark-rest">udgi</span>
         </div>
-        <div className="login-tagline">
-          {t('login.tagline').split('\n').map((line, i) => (
-            <span key={i}>{line}{i === 0 && <br />}</span>
-          ))}
-        </div>
-        <div className="login-tagline-sub">{t('login.taglineSub')}</div>
+        <div className="login-tagline">{t('login.tagline')}</div>
       </div>
 
       <div className="login-card">
