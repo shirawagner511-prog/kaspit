@@ -823,6 +823,7 @@ svg {
   cursor: pointer;
   color: white;
   font-family: inherit;
+  flex-shrink: 0;
   box-shadow: 0 2px 8px rgba(15, 50, 32, 0.25);
   transition: transform var(--d) var(--ease-spring);
 }
