@@ -775,7 +775,16 @@ svg {
 .header-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.header-lang-btn {
+  flex-shrink: 0;
+}
+@media (max-width: 480px) {
+  .header-lang-btn {
+    display: none;
+  }
 }
 
 .month-selector {

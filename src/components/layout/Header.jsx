@@ -143,6 +143,7 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
         <button
           onClick={toggleLang}
           title={i18n.language === 'he' ? 'Switch to English' : 'עברית'}
+          className="header-lang-btn"
           style={{
             background: 'var(--surface)', border: '1px solid var(--border)',
             borderRadius: 'var(--radius-pill)', padding: '6px 10px',
@@ -168,7 +169,7 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
           </button>
           {menuOpen && (
             <div style={{
-              position: 'absolute', top: 40, left: 0,
+              position: 'absolute', top: 40, insetInlineEnd: 0,
               background: 'var(--surface)', border: '0.5px solid var(--border)',
               borderRadius: 'var(--radius)', minWidth: 180, zIndex: 300,
               overflow: 'hidden',

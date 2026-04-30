@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { signOut, updateProfile, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
-import { auth } from '../../firebase/config';
-import { getHousehold, getHouseholdMembers, saveCustomCategories, saveBudgets, saveSavingsGoal, updateEntry, joinHousehold, getUserData, saveUserEmail } from '../../firebase/db';
+import { getHousehold, getHouseholdMembers, saveCustomCategories, saveBudgets, saveSavingsGoal, updateEntry, joinHousehold } from '../../firebase/db';
 import { CATEGORY_VALUES } from '../../utils/constants';
 import { formatAmount } from '../../utils/format';
 
@@ -244,54 +242,6 @@ export default function Settings({ entries, householdId, user, customCategories,
   const [joinLoading, setJoinLoading] = useState(false);
   const [joinSuccess, setJoinSuccess] = useState(false);
   const [subLoading, setSubLoading] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
-  const [displayName, setDisplayName] = useState('');
-  const [recoveryEmail, setRecoveryEmail] = useState('');
-  const [currentPw, setCurrentPw] = useState('');
-  const [newPw, setNewPw] = useState('');
-  const [profileSaving, setProfileSaving] = useState(false);
-  const [profileMsg, setProfileMsg] = useState('');
-  const [profileToast, setProfileToast] = useState(false);
-
-  const isGoogle = user?.providerData?.[0]?.providerId === 'google.com';
-  const lang = i18n.language === 'he' ? 'he' : 'en';
-
-  async function openProfile() {
-    setDisplayName(user?.displayName || '');
-    setCurrentPw(''); setNewPw(''); setProfileMsg('');
-    if (!isGoogle && user?.uid) {
-      const data = await getUserData(user.uid);
-      setRecoveryEmail(data?.email || '');
-    }
-    setProfileOpen(true);
-  }
-
-  async function handleProfileSave() {
-    setProfileSaving(true); setProfileMsg('');
-    try {
-      if (displayName.trim() && displayName.trim() !== user.displayName)
-        await updateProfile(auth.currentUser, { displayName: displayName.trim() });
-      if (!isGoogle && recoveryEmail.trim()) {
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recoveryEmail.trim()))
-          throw new Error(lang === 'he' ? 'כתובת מייל לא תקינה' : 'Invalid email');
-        await saveUserEmail(user.uid, recoveryEmail.trim());
-      }
-      if (!isGoogle && newPw) {
-        if (newPw.length < 6) throw new Error(lang === 'he' ? 'סיסמה חייבת להכיל לפחות 6 תווים' : 'Password must be at least 6 characters');
-        if (!currentPw) throw new Error(lang === 'he' ? 'יש להזין סיסמה נוכחית' : 'Current password required');
-        await reauthenticateWithCredential(auth.currentUser, EmailAuthProvider.credential(auth.currentUser.email, currentPw));
-        await updatePassword(auth.currentUser, newPw);
-        setCurrentPw(''); setNewPw('');
-      }
-      setProfileOpen(false);
-      setProfileToast(true);
-      setTimeout(() => setProfileToast(false), 2500);
-    } catch (e) {
-      setProfileMsg(e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential'
-        ? (lang === 'he' ? 'סיסמה נוכחית שגויה' : 'Incorrect current password')
-        : e.message);
-    } finally { setProfileSaving(false); }
-  }
 
   useEffect(() => {
     if (!householdId) return;
@@ -437,27 +387,6 @@ export default function Settings({ entries, householdId, user, customCategories,
 
   return (
     <div className="page">
-
-      {/* ── Profile card ── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '14px 16px', marginBottom: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 42, height: 42, borderRadius: '50%', background: 'radial-gradient(circle at 30% 30%, var(--accent-600, #1e4d38), var(--accent) 70%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 17, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
-            {(user?.displayName || '?').charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>{user?.displayName}</div>
-            <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 1 }}>{user?.email}</div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={openProfile} style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, padding: '7px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', color: 'var(--text2)' }}>
-            {lang === 'he' ? 'עדכון פרטים' : 'Edit profile'}
-          </button>
-          <button onClick={() => signOut(auth)} style={{ background: 'none', border: '1px solid rgba(192,57,43,.3)', borderRadius: 8, padding: '7px 12px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', color: 'var(--expense)' }}>
-            {lang === 'he' ? 'התנתק' : 'Sign out'}
-          </button>
-        </div>
-      </div>
 
       <SubscriptionSection
         t={t}
@@ -677,74 +606,6 @@ export default function Settings({ entries, householdId, user, customCategories,
         </div>
       )}
 
-      {/* ── Profile edit modal ── */}
-      {profileOpen && (
-        <div className="modal-overlay open" style={{ alignItems: 'center', padding: 16 }} onClick={(e) => e.target === e.currentTarget && setProfileOpen(false)}>
-          <div className="modal" style={{ borderRadius: 12, maxWidth: 400, width: '100%' }}>
-            <div className="modal-title">
-              {lang === 'he' ? 'עדכון פרטים' : 'Edit profile'}
-              <button className="modal-close" onClick={() => setProfileOpen(false)}>✕</button>
-            </div>
-            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 14, paddingTop: 16 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 4 }}>
-                <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
-                  {(user?.displayName || '?').charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 600 }}>{user?.displayName}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text3)' }}>{user?.email}</div>
-                </div>
-              </div>
-              <div>
-                <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 4 }}>{lang === 'he' ? 'שם תצוגה' : 'Display name'}</div>
-                <input className="form-input" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
-              </div>
-              {isGoogle ? (
-                <div style={{ fontSize: 12, color: 'var(--text3)', background: 'var(--surface2)', borderRadius: 8, padding: '10px 12px' }}>
-                  {lang === 'he' ? '🔒 חשבון Google — המייל מנוהל דרך Google' : '🔒 Google account — email managed by Google'}
-                </div>
-              ) : (
-                <div>
-                  <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 4 }}>{lang === 'he' ? 'מייל לשחזור חשבון' : 'Recovery email'}</div>
-                  <input className="form-input" type="email" value={recoveryEmail} onChange={(e) => setRecoveryEmail(e.target.value)} placeholder="email@example.com" inputMode="email" />
-                </div>
-              )}
-              {!isGoogle && (
-                <>
-                  <div style={{ height: 1, background: 'var(--border)' }} />
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text2)' }}>{lang === 'he' ? 'שינוי סיסמה' : 'Change password'}</div>
-                  <div>
-                    <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 4 }}>{lang === 'he' ? 'סיסמה נוכחית' : 'Current password'}</div>
-                    <input className="form-input" type="password" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} placeholder="••••••" autoComplete="current-password" />
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 4 }}>{lang === 'he' ? 'סיסמה חדשה (אופציונלי)' : 'New password (optional)'}</div>
-                    <input className="form-input" type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} placeholder="••••••" autoComplete="new-password" />
-                  </div>
-                </>
-              )}
-              {profileMsg && <div style={{ fontSize: 13, color: 'var(--expense)', fontWeight: 500 }}>{profileMsg}</div>}
-            </div>
-            <div className="modal-footer">
-              <button onClick={() => setProfileOpen(false)} style={{ flex: 1, height: 44, background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: 14, cursor: 'pointer', fontFamily: 'Heebo,sans-serif', color: 'var(--text2)' }}>
-                {lang === 'he' ? 'ביטול' : 'Cancel'}
-              </button>
-              <button onClick={handleProfileSave} disabled={profileSaving} style={{ flex: 2, height: 44, background: 'var(--accent)', border: 'none', borderRadius: 'var(--radius)', fontSize: 15, fontWeight: 700, fontFamily: 'Heebo,sans-serif', color: '#fff', cursor: profileSaving ? 'wait' : 'pointer', opacity: profileSaving ? 0.7 : 1 }}>
-                {profileSaving ? (lang === 'he' ? 'שומר...' : 'Saving...') : (lang === 'he' ? 'שמור שינויים' : 'Save changes')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {profileToast && (
-        <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, pointerEvents: 'none' }}>
-          <div style={{ background: 'var(--accent)', color: '#fff', borderRadius: 14, padding: '16px 28px', fontSize: 16, fontFamily: 'Heebo,sans-serif', fontWeight: 700, boxShadow: '0 8px 32px rgba(0,0,0,0.18)', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 20 }}>✓</span>
-            {lang === 'he' ? 'הפרטים עודכנו בהצלחה' : 'Details updated successfully'}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
