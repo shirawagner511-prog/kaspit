@@ -317,20 +317,6 @@ svg {
     transform: translateX(-50%) scale(0.97);
   }
 
-  .modal {
-    border-radius: var(--radius-lg);
-    width: 90vw;
-    max-width: 520px;
-    min-height: 0;
-    max-height: 85vh;
-    max-height: 85dvh;
-    bottom: auto;
-    top: 50%;
-    left: 50%;
-    right: auto;
-    transform: translate(-50%, -50%);
-    animation: none;
-  }
 }
 
 /* ── Login ─────────────────────────────────────────── */
@@ -1774,6 +1760,23 @@ svg {
 }
 .modal-close:active {
   transform: scale(0.92) rotate(90deg);
+}
+
+@media (min-width: 900px) {
+  .modal {
+    border-radius: var(--radius-lg);
+    width: 90vw;
+    max-width: 520px;
+    min-height: 0;
+    max-height: 85vh;
+    max-height: 85dvh;
+    bottom: auto;
+    top: 50%;
+    left: 50%;
+    right: auto;
+    transform: translate(-50%, -50%);
+    animation: none;
+  }
 }
 
 /* ── Form ──────────────────────────────────────────── */
