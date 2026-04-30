@@ -60,19 +60,25 @@ function DonutChart({ slices, onSliceClick, total }) {
 }
 
 function computeSmartFixed(entries) {
+  const cutoff = new Date();
+  cutoff.setMonth(cutoff.getMonth() - 6);
+  const cutoffStr = cutoff.toISOString().slice(0, 7);
+
   const byName = {};
   entries.forEach((e) => {
-    if (e.type === 'expense' && e.fixed === 'fixed') {
-      if (!byName[e.name]) byName[e.name] = { amounts: [], category: e.category };
+    if (e.type === 'expense' && e.fixed === 'fixed' && e.date >= cutoffStr) {
+      if (!byName[e.name]) byName[e.name] = { amounts: [], months: new Set(), category: e.category };
       byName[e.name].amounts.push(e.amount);
+      byName[e.name].months.add(e.date.slice(0, 7));
     }
   });
-  return Object.entries(byName).map(([name, data]) => ({
-    name,
-    category: data.category,
-    avgAmount: data.amounts.reduce((s, a) => s + a, 0) / data.amounts.length,
-    occurrences: data.amounts.length,
-  }));
+  return Object.entries(byName)
+    .filter(([, data]) => data.months.size >= 3)
+    .map(([name, data]) => ({
+      name,
+      category: data.category,
+      avgAmount: data.amounts.reduce((s, a) => s + a, 0) / data.amounts.length,
+    }));
 }
 
 function computeAccountBalance(account, entries) {
@@ -92,6 +98,7 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
   const catMap = Object.fromEntries(allCategories.map((c) => [c.value, c]));
   const getName = (cat) => catMap[cat?.toLowerCase()]?.label || catMap[cat]?.label || cat;
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const [suggestionsDismissed, setSuggestionsDismissed] = useState(false);
   const [incomeOpen, setIncomeOpen] = useState(false);
   const [drilldown, setDrilldown] = useState(null);
   const [catDrilldown, setCatDrilldown] = useState(null);
@@ -187,10 +194,10 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
         </div>
       )}
 
-      {isPremium && suggested.length > 0 && (
-        <div className="alert info" style={{ cursor: 'pointer' }} onClick={() => setSuggestionsOpen((o) => !o)}>
+      {isPremium && suggested.length > 0 && !suggestionsDismissed && (
+        <div className="alert info" style={{ cursor: 'pointer', alignItems: 'flex-start' }} onClick={() => setSuggestionsOpen((o) => !o)}>
           💡
-          <div>
+          <div style={{ flex: 1 }}>
             <strong>{t('dashboard.suggestedMsg', { count: suggested.length })}</strong>
             {suggestionsOpen && (
               <div style={{ marginTop: 8 }}>
@@ -206,6 +213,10 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
               </div>
             )}
           </div>
+          <button
+            onClick={(e) => { e.stopPropagation(); setSuggestionsDismissed(true); }}
+            style={{ background: 'none', border: 'none', color: 'var(--text3)', cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: '0 0 0 4px', flexShrink: 0 }}
+          >×</button>
         </div>
       )}
 
