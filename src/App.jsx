@@ -109,10 +109,19 @@ export default function App() {
 
   if (loading) return <Loader fullscreen />;
   if (!user) return <LoginScreen onNewUser={() => { setIsNewUser(true); setShowWelcome(true); }} />;
-  if (showWelcome) return <WelcomeScreen onContinue={() => { setShowWelcome(false); setShowCurrencyPicker(true); }} />;
+  if (showWelcome) return <WelcomeScreen onContinue={() => { setShowWelcome(false); if (!householdId) setShowCurrencyPicker(true); }} />;
   if (showCurrencyPicker && !householdId) return <CurrencyPicker onSelect={(cur) => { setCurrency(cur); localStorage.setItem('budgi-currency', cur); localStorage.setItem('budgi-currency-chosen', '1'); setShowCurrencyPicker(false); }} />;
   if (!householdId) return <HouseholdSetup user={user} onComplete={(hid) => { setHouseholdId(hid); if (currency !== 'ILS') saveCurrency(hid, currency); }} />;
   if (showCurrencyPicker) return <CurrencyPicker onSelect={handleCurrencySelect} />;
+
+  function handleResetOnboarding() {
+    localStorage.removeItem('budgi-tour-done');
+    localStorage.removeItem('budgi-currency-chosen');
+    setTourDone(false);
+    setShowWelcome(true);
+    setShowCurrencyPicker(false);
+    setPage('dashboard');
+  }
 
   const pageProps = {
     entries, currentMonth, currentYear, householdId, user, memberUids,
@@ -122,6 +131,7 @@ export default function App() {
     onDelete: setDeleteId,
     onNavigate: setPage,
     onJoinHousehold: setHouseholdId,
+    onResetOnboarding: handleResetOnboarding,
   };
 
   const navItems = [

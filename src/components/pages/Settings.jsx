@@ -223,7 +223,7 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
   );
 }
 
-export default function Settings({ entries, householdId, user, customCategories, allCategories, budgets = {}, savingsGoal = null, onJoinHousehold, onNavigate, isPremium, subStatus, trialDaysLeft, subscription }) {
+export default function Settings({ entries, householdId, user, customCategories, allCategories, budgets = {}, savingsGoal = null, onJoinHousehold, onNavigate, onResetOnboarding, isPremium, subStatus, trialDaysLeft, subscription }) {
   const { t, i18n } = useTranslation();
   const [household, setHousehold] = useState(null);
   const [members, setMembers] = useState([]);
@@ -569,6 +569,18 @@ export default function Settings({ entries, householdId, user, customCategories,
         ))}
       </AccordionBody>
 
+
+      {/* ── Dev: reset onboarding ── */}
+      {onResetOnboarding && (
+        <div style={{ marginTop: 32, paddingTop: 16, borderTop: '1px dashed var(--border)', textAlign: 'center' }}>
+          <button
+            onClick={onResetOnboarding}
+            style={{ background: 'none', border: '1px dashed var(--border)', color: 'var(--text3)', borderRadius: 8, padding: '8px 16px', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}
+          >
+            🧪 הצג מסך ברוכים הבאים מחדש
+          </button>
+        </div>
+      )}
 
       {deletingCat && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
