@@ -1688,7 +1688,6 @@ svg {
   left: 0;
   right: 0;
   width: 100vw;
-  direction: ltr;
   animation: slide-up var(--d-slow) var(--ease-spring);
   max-height: 92vh;
   max-height: 92dvh;
@@ -1710,11 +1709,6 @@ svg {
   border-top: 0.5px solid var(--border);
   display: flex;
   gap: 10px;
-}
-[dir="rtl"] .modal-body,
-[dir="rtl"] .modal-footer,
-[dir="rtl"] .modal-title {
-  direction: rtl;
 }
 .modal::before {
   content: "";

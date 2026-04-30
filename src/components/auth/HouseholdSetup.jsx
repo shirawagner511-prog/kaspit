@@ -11,7 +11,7 @@ function LangToggle() {
     const next = isHe ? 'en' : 'he';
     i18n.changeLanguage(next);
     localStorage.setItem('budgi-lang', next);
-    document.documentElement.dir = next === 'he' ? 'rtl' : 'ltr';
+    document.body.dir = next === 'he' ? 'rtl' : 'ltr';
   }
   return (
     <button className="login-lang-btn" onClick={toggle}>

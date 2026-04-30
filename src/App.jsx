@@ -58,8 +58,8 @@ export default function App() {
 
   useEffect(() => {
     const dir = i18n.language === 'he' ? 'rtl' : 'ltr';
-    document.documentElement.setAttribute('dir', dir);
     document.documentElement.setAttribute('lang', i18n.language);
+    document.body.setAttribute('dir', dir);
   }, [i18n.language]);
 
   async function handleDeleteConfirmed() {
