@@ -1,16 +1,19 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export default function WelcomeScreen({ onContinue }) {
   const { t } = useTranslation();
+  const continueRef = useRef(onContinue);
+  continueRef.current = onContinue;
 
   useEffect(() => {
-    const timer = setTimeout(onContinue, 2500);
+    // Run timer exactly once on mount — not affected by parent re-renders
+    const timer = setTimeout(() => continueRef.current(), 5000);
     return () => clearTimeout(timer);
-  }, [onContinue]);
+  }, []);
 
   return (
-    <div className="welcome-screen" onClick={onContinue}>
+    <div className="welcome-screen" onClick={() => continueRef.current()}>
       <div className="welcome-content">
         <svg width="80" height="80" viewBox="0 0 80 80" fill="none" className="welcome-check">
           <circle cx="40" cy="40" r="38" stroke="#2D6A4F" strokeWidth="3" fill="#F4EBD0" />
@@ -22,7 +25,7 @@ export default function WelcomeScreen({ onContinue }) {
         </div>
         <h1 className="welcome-headline">{t('welcome.headline')}</h1>
         <p className="welcome-sub">{t('welcome.sub')}</p>
-        <button className="welcome-btn" onClick={(e) => { e.stopPropagation(); onContinue(); }}>
+        <button className="welcome-btn" onClick={(e) => { e.stopPropagation(); continueRef.current(); }}>
           {t('welcome.continue')}
         </button>
         <p className="welcome-hint">לחצו בכל מקום להמשך</p>

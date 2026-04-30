@@ -2511,7 +2511,6 @@ svg {
 }
 .tour-tooltip {
   position: fixed;
-  transform: translateX(-50%);
   z-index: 10002;
   background: var(--surface, #fff);
   border: 1px solid var(--border);
@@ -2521,12 +2520,6 @@ svg {
   box-shadow: 0 8px 32px rgba(0,0,0,0.16);
   font-family: 'DM Sans', Heebo, sans-serif;
   animation: pop-in 0.2s ease-out both;
-}
-.tour-tooltip.above {
-  transform: translateX(-50%) translateY(-100%) translateY(-12px);
-}
-.tour-tooltip.below {
-  transform: translateX(-50%);
 }
 .tour-tooltip-title {
   font-size: 14px;
