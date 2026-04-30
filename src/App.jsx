@@ -154,24 +154,28 @@ export default function App() {
         document.body
       )}
 
-      <AddEntryModal
-        open={modalOpen || !!editEntry}
-        onClose={() => { setModalOpen(false); setEditEntry(null); }}
-        householdId={householdId}
-        user={user}
-        entry={editEntry}
-        allCategories={allCategories}
-        customCategories={customCategories}
-        accounts={accounts}
-        onDelete={(id) => { setEditEntry(null); setModalOpen(false); setDeleteId(id); }}
-      />
-
-      <ConfirmDialog
-        open={!!deleteId}
-        message={t('misc.confirmDelete')}
-        onConfirm={handleDeleteConfirmed}
-        onCancel={() => setDeleteId(null)}
-      />
+      {createPortal(
+        <>
+          <AddEntryModal
+            open={modalOpen || !!editEntry}
+            onClose={() => { setModalOpen(false); setEditEntry(null); }}
+            householdId={householdId}
+            user={user}
+            entry={editEntry}
+            allCategories={allCategories}
+            customCategories={customCategories}
+            accounts={accounts}
+            onDelete={(id) => { setEditEntry(null); setModalOpen(false); setDeleteId(id); }}
+          />
+          <ConfirmDialog
+            open={!!deleteId}
+            message={t('misc.confirmDelete')}
+            onConfirm={handleDeleteConfirmed}
+            onCancel={() => setDeleteId(null)}
+          />
+        </>,
+        document.body
+      )}
     </>
   );
 }
