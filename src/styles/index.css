@@ -779,12 +779,17 @@ svg {
   flex-shrink: 0;
 }
 .header-lang-btn {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+.header-sub-badge {
+  display: inline-flex;
   flex-shrink: 0;
 }
 @media (max-width: 480px) {
   .header-lang-btn,
   .header-sub-badge {
-    display: none;
+    display: none !important;
   }
 }
 
