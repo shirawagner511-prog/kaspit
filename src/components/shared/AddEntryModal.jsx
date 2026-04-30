@@ -64,7 +64,7 @@ export default function AddEntryModal({ open, onClose, householdId, user, entry,
       setAmount(entry.amount?.toString() || '');
       setCategory(entry.category || 'housing');
       setDate(entry.date || today());
-      setFixed(entry.fixed || 'fixed');
+      setFixed(entry.fixed || 'variable');
       setNote(entry.note || '');
       setAccountId(entry.accountId || '');
     } else {
@@ -91,7 +91,7 @@ export default function AddEntryModal({ open, onClose, householdId, user, entry,
   function resetFields() {
     setName(''); setAmount(''); setNote('');
     setType('expense'); setDate(today());
-    setCategory('housing'); setFixed('fixed'); setAccountId('');
+    setCategory('housing'); setFixed('variable'); setAccountId('');
   }
 
   const visibleCategories = filterCategories(allCategories, type);
