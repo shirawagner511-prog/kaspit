@@ -320,9 +320,12 @@ svg {
   .modal {
     border-radius: var(--radius-lg);
     max-width: 480px;
-  }
-  .modal-overlay {
-    align-items: center;
+    bottom: auto;
+    top: 50%;
+    left: 50%;
+    right: auto;
+    transform: translate(-50%, -50%);
+    animation: none;
   }
 }
 
@@ -1658,14 +1661,14 @@ svg {
 /* ── Modal ─────────────────────────────────────────── */
 .modal-overlay {
   position: fixed;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   background: rgba(28, 25, 23, 0.55);
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
   z-index: 200;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--d) var(--ease);
@@ -1680,16 +1683,21 @@ svg {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   padding: 0;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   width: 100%;
   max-width: 480px;
+  margin-inline: auto;
   animation: slide-up var(--d-slow) var(--ease-spring);
   max-height: 92vh;
   max-height: 92dvh;
   overflow: hidden;
   box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.18);
-  position: relative;
   display: flex;
   flex-direction: column;
+  z-index: 201;
 }
 .modal-body {
   flex: 1;
