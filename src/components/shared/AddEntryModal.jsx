@@ -46,10 +46,10 @@ export default function AddEntryModal({ open, onClose, householdId, user, entry,
 
   const FIXED_OPTIONS = [
     { value: 'fixed',     label: t('addEntry.fixedDesc') },
-    { value: 'bimonthly', label: t('addEntry.bimonthlyDesc') },
+    { value: 'bimonthly', label: t('addEntry.bimonthlyDesc'), expenseOnly: true },
     { value: 'variable',  label: t('addEntry.variableDesc') },
-    { value: 'sep',       label: t('addEntry.sepDesc') },
-  ];
+    { value: 'sep',       label: t('addEntry.sepDesc'),       expenseOnly: true },
+  ].filter((o) => !o.expenseOnly || type === 'expense');
 
   const NAME_PLACEHOLDERS = {
     expense: t('addEntry.namePlaceholderExpense'),
@@ -178,14 +178,12 @@ export default function AddEntryModal({ open, onClose, householdId, user, entry,
                 ))}
               </select>
             </div>
-            {type !== 'income' && (
-              <div className="form-group" style={{ flex: 1 }}>
-                <label className="form-label">{t('addEntry.character')}</label>
-                <select className="form-input" value={fixed} onChange={(e) => setFixed(e.target.value)}>
-                  {FIXED_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-                </select>
-              </div>
-            )}
+            <div className="form-group" style={{ flex: 1 }}>
+              <label className="form-label">{t('addEntry.character')}</label>
+              <select className="form-input" value={fixed} onChange={(e) => setFixed(e.target.value)}>
+                {FIXED_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
           </div>
 
           {/* Add category inline */}
