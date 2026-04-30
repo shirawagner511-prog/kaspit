@@ -135,8 +135,8 @@ export default function AddEntryModal({ open, onClose, householdId, user, entry,
         </div>
 
         <div className="modal-body">
+          {/* Type toggle */}
           <div className="form-group">
-            <label className="form-label">{t('addEntry.type')}</label>
             <div className="type-toggle">
               {['expense', 'income', 'saving'].map((tp) => (
                 <button
@@ -150,60 +150,69 @@ export default function AddEntryModal({ open, onClose, householdId, user, entry,
             </div>
           </div>
 
+          {/* Name */}
           <div className="form-group">
             <label className="form-label">{t('addEntry.name')}</label>
             <input className="form-input" placeholder={NAME_PLACEHOLDERS[type]} value={name} onChange={(e) => setName(e.target.value)} />
           </div>
 
-          <div className="form-group">
-            <label className="form-label">{t('addEntry.amount')}</label>
-            <input className="form-input" type="number" inputMode="decimal" placeholder="0" value={amount} onChange={(e) => setAmount(e.target.value)} />
+          {/* Amount + Date on one row */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label className="form-label">{t('addEntry.amount')}</label>
+              <input className="form-input" type="number" inputMode="decimal" placeholder="0" value={amount} onChange={(e) => setAmount(e.target.value)} style={{ fontFamily: 'DM Mono,monospace' }} />
+            </div>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label className="form-label">{t('addEntry.date')}</label>
+              <input className="form-input" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            </div>
           </div>
 
-          <div className="form-group">
-            <label className="form-label">{t('addEntry.category')}</label>
-            <select className="form-input" value={category} onChange={(e) => setCategory(e.target.value)}>
-              {visibleCategories.map((c) => (
-                <option key={c.value} value={c.value}>{c.icon} {c.label}</option>
-              ))}
-            </select>
-            {!addingCat ? (
-              <button
-                type="button"
-                onClick={() => setAddingCat(true)}
-                style={{ marginTop: 6, background: 'none', border: 'none', color: 'var(--accent)', fontSize: 12, cursor: 'pointer', padding: 0 }}
-              >
-                {t('addEntry.addNewCategory')}
-              </button>
-            ) : (
-              <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-                <input className="form-input" placeholder="😀" value={newCatIcon} onChange={(e) => setNewCatIcon(e.target.value)} style={{ width: 52, textAlign: 'center', fontSize: 18 }} maxLength={2} />
-                <input className="form-input" placeholder={t('addEntry.categoryNamePlaceholder')} value={newCatName} onChange={(e) => setNewCatName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()} style={{ flex: 1 }} autoFocus />
-                <button type="button" onClick={handleAddCategory} style={{ background: 'var(--accent)', border: 'none', color: '#fff', borderRadius: 8, padding: '0 12px', cursor: 'pointer', fontSize: 13 }}>✓</button>
-                <button type="button" onClick={() => setAddingCat(false)} style={{ background: 'var(--surface3)', border: 'none', color: 'var(--text2)', borderRadius: 8, padding: '0 10px', cursor: 'pointer', fontSize: 13 }}>✕</button>
+          {/* Category + Fixed on one row */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            <div className="form-group" style={{ flex: 1.6 }}>
+              <label className="form-label">{t('addEntry.category')}</label>
+              <select className="form-input" value={category} onChange={(e) => setCategory(e.target.value)}>
+                {visibleCategories.map((c) => (
+                  <option key={c.value} value={c.value}>{c.icon} {c.label}</option>
+                ))}
+              </select>
+            </div>
+            {type !== 'income' && (
+              <div className="form-group" style={{ flex: 1 }}>
+                <label className="form-label">{t('addEntry.character')}</label>
+                <select className="form-input" value={fixed} onChange={(e) => setFixed(e.target.value)}>
+                  {FIXED_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
               </div>
             )}
           </div>
 
-          <div className="form-group">
-            <label className="form-label">{t('addEntry.date')}</label>
-            <input className="form-input" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-          </div>
-
-          {type !== 'income' && (
-            <div className="form-group">
-              <label className="form-label">{t('addEntry.character')}</label>
-              <select className="form-input" value={fixed} onChange={(e) => setFixed(e.target.value)}>
-                {FIXED_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
+          {/* Add category inline */}
+          {addingCat ? (
+            <div style={{ display: 'flex', gap: 6, marginTop: -4, marginBottom: 10 }}>
+              <input className="form-input" placeholder="😀" value={newCatIcon} onChange={(e) => setNewCatIcon(e.target.value)} style={{ width: 46, textAlign: 'center', fontSize: 18, padding: '8px 4px' }} maxLength={2} />
+              <input className="form-input" placeholder={t('addEntry.categoryNamePlaceholder')} value={newCatName} onChange={(e) => setNewCatName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()} style={{ flex: 1 }} autoFocus />
+              <button type="button" onClick={handleAddCategory} style={{ background: 'var(--accent)', border: 'none', color: '#fff', borderRadius: 8, padding: '0 12px', cursor: 'pointer', fontSize: 13 }}>✓</button>
+              <button type="button" onClick={() => setAddingCat(false)} style={{ background: 'var(--surface3)', border: 'none', color: 'var(--text2)', borderRadius: 8, padding: '0 10px', cursor: 'pointer', fontSize: 13 }}>✕</button>
             </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setAddingCat(true)}
+              style={{ marginTop: -4, marginBottom: 10, background: 'none', border: 'none', color: 'var(--accent)', fontSize: 12, cursor: 'pointer', padding: 0, display: 'block' }}
+            >
+              {t('addEntry.addNewCategory')}
+            </button>
           )}
 
+          {/* Note */}
           <div className="form-group">
             <label className="form-label">{t('addEntry.note')}</label>
             <input className="form-input" placeholder={t('addEntry.notePlaceholder')} value={note} onChange={(e) => setNote(e.target.value)} />
           </div>
 
+          {/* Account */}
           {accounts.length > 0 && (
             <div className="form-group">
               <label className="form-label">{t('accounts.nav')}</label>
