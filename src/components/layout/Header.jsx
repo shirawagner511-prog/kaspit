@@ -117,13 +117,14 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
           <span style={{ fontWeight: 700, color: 'var(--accent)' }}>B</span><span style={{ fontWeight: 400, color: 'var(--text)' }}>udgi</span>
         </div>
         {subStatus === 'active' && (
-          <button onClick={() => onNavigate('settings')} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 20, padding: '5px 14px', fontSize: 14, fontWeight: 700, fontFamily: 'Heebo,sans-serif', cursor: 'pointer', letterSpacing: 0.3 }}>
+          <button onClick={() => onNavigate('settings')} className="header-sub-badge" style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 20, padding: '5px 14px', fontSize: 14, fontWeight: 700, fontFamily: 'Heebo,sans-serif', cursor: 'pointer', letterSpacing: 0.3 }}>
             ✦ Pro
           </button>
         )}
         {subStatus === 'trial' && (
           <button
             onClick={() => onNavigate('settings')}
+            className="header-sub-badge"
             style={{
               display: 'flex', alignItems: 'center', gap: 5,
               background: trialDaysLeft <= 7 ? '#fff1f2' : '#fffbeb',

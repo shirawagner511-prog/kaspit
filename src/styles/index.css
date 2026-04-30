@@ -782,7 +782,8 @@ svg {
   flex-shrink: 0;
 }
 @media (max-width: 480px) {
-  .header-lang-btn {
+  .header-lang-btn,
+  .header-sub-badge {
     display: none;
   }
 }
