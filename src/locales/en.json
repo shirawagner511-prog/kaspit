@@ -269,6 +269,7 @@
     "delete": "Delete",
     "addNewCategory": "+ Add new category",
     "categoryNamePlaceholder": "Category name...",
+    "recurringHint": "Auto-carried every month — Premium feature",
     "errorRequired": "Please fill name, amount and date",
     "errorZero": "Amount must be greater than zero",
     "errorSave": "Error saving: "

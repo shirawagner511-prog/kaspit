@@ -183,6 +183,11 @@ export default function AddEntryModal({ open, onClose, householdId, user, entry,
               <select className="form-input" value={fixed} onChange={(e) => setFixed(e.target.value)}>
                 {FIXED_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
+              {(fixed === 'fixed' || fixed === 'bimonthly') && (
+                <div style={{ fontSize: 10, color: 'var(--accent)', marginTop: 4, lineHeight: 1.4 }}>
+                  ✦ {t('addEntry.recurringHint')}
+                </div>
+              )}
             </div>
           </div>
 
