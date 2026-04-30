@@ -1684,6 +1684,7 @@ svg {
   max-width: 480px;
   animation: slide-up var(--d-slow) var(--ease-spring);
   max-height: 92vh;
+  max-height: 92dvh;
   overflow: hidden;
   box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.18);
   position: relative;
@@ -1693,6 +1694,8 @@ svg {
 .modal-body {
   flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   padding: 0 22px;
 }
 .modal-footer {
