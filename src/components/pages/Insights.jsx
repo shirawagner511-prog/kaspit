@@ -25,7 +25,17 @@ export default function Insights({ entries, currentMonth, currentYear, allCatego
   const { t } = useTranslation();
   const months = getMonths(t);
   const catMap = Object.fromEntries(allCategories.map((c) => [c.value, c]));
-  const getName = (cat) => catMap[cat?.toLowerCase()]?.label || catMap[cat]?.label || cat;
+  const getName = (cat) => {
+    if (!cat) return '';
+    const found = catMap[cat.toLowerCase()] || catMap[cat];
+    if (found) return found.label;
+    if (cat.startsWith('custom_')) {
+      const parts = cat.split('_');
+      const withoutTimestamp = parts[parts.length - 1].match(/^\d{10,}$/) ? parts.slice(0, -1) : parts;
+      return withoutTimestamp.slice(1).join('_') || cat;
+    }
+    return cat;
+  };
   const trends = computeTrends(entries, currentMonth, currentYear);
   const prevLabel = currentMonth === 0 ? months[11] : months[currentMonth - 1];
 
