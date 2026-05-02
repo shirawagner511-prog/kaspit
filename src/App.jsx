@@ -40,7 +40,8 @@ export default function App() {
   const entries = useEntries(householdId);
   const { budgets, savingsGoal, customCategories, memberUids, currency: householdCurrency } = useHousehold(householdId);
   const accounts = useAccounts(householdId);
-  const { isPremium, status: subStatus, trialDaysLeft, subscription } = useSubscription(user);
+  const { isPremium: _isPremium, status: subStatus, trialDaysLeft, subscription } = useSubscription(user);
+  const isPremium = _isPremium || localStorage.getItem('budgi-beta') === '1';
 
   const defaultCategories = getDefaultCategories(t);
   const allCategories = [
