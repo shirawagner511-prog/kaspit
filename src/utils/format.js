@@ -15,12 +15,15 @@ export function formatAmount(n, currency) {
 
 export { CURRENCY_SYMBOLS };
 
+function localDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 export function getCycleWindow(month, year, startDay = 1) {
   const start = `${year}-${String(month + 1).padStart(2, '0')}-${String(startDay).padStart(2, '0')}`;
-  const nextStart = new Date(year, month + 1, startDay);
-  nextStart.setDate(nextStart.getDate() - 1);
-  const end = nextStart.toISOString().slice(0, 10);
-  return { start, end };
+  // end = one day before next cycle start, local date arithmetic avoids UTC offset bugs
+  const endDate = new Date(year, month + 1, startDay - 1);
+  return { start, end: localDateStr(endDate) };
 }
 
 export function getMonthEntries(entries, month, year, cycleStartDay = 1) {

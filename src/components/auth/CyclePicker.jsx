@@ -29,27 +29,20 @@ export default function CyclePicker({ onSelect }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6, margin: '8px 0 16px' }}>
           {DAYS.map((d) => {
             const isSelected = selected === d;
-            const isSalary = d === 10;
             return (
-              <div key={d} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                <button
-                  onClick={() => setSelected(d)}
-                  style={{
-                    width: '100%', aspectRatio: '1', border: isSelected ? '2px solid var(--accent)' : '1.5px solid var(--border)',
-                    borderRadius: 10, background: isSelected ? 'var(--accent)' : isSalary ? 'var(--accent-soft)' : 'var(--surface)',
-                    color: isSelected ? '#fff' : 'var(--text)',
-                    fontFamily: 'DM Mono,monospace', fontSize: 14, fontWeight: isSelected ? 700 : 400,
-                    cursor: 'pointer', transition: 'all .15s',
-                  }}
-                >
-                  {d}
-                </button>
-                {isSalary && (
-                  <span style={{ fontSize: 8, color: 'var(--accent)', fontWeight: 700, whiteSpace: 'nowrap' }}>
-                    {isHe ? 'משכורת' : 'salary'}
-                  </span>
-                )}
-              </div>
+              <button
+                key={d}
+                onClick={() => setSelected(d)}
+                style={{
+                  aspectRatio: '1', border: isSelected ? '2px solid var(--accent)' : '1.5px solid var(--border)',
+                  borderRadius: 10, background: isSelected ? 'var(--accent)' : 'var(--surface)',
+                  color: isSelected ? '#fff' : 'var(--text)',
+                  fontFamily: 'DM Mono,monospace', fontSize: 14, fontWeight: isSelected ? 700 : 400,
+                  cursor: 'pointer', transition: 'all .15s',
+                }}
+              >
+                {d}
+              </button>
             );
           })}
         </div>
