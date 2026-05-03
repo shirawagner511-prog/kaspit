@@ -35,7 +35,7 @@ export function useAutoRecurring(entries, currentMonth, currentYear, householdId
   const processed = useRef(new Set());
 
   useEffect(() => {
-    if (!householdId || !user || entries.length === 0 || !isPremium) return;
+    if (!householdId || !user || entries.length === 0) return;
     const key = `${currentYear}-${currentMonth}`;
     if (processed.current.has(key)) return;
     processed.current.add(key);
