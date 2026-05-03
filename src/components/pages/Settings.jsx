@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getHousehold, getHouseholdMembers, saveCustomCategories, saveBudgets, saveSavingsGoal, updateEntry, joinHousehold } from '../../firebase/db';
+import { getHousehold, getHouseholdMembers, saveCustomCategories, saveBudgets, saveSavingsGoal, updateEntry, joinHousehold, saveNotificationPrefs, getNotificationPrefs } from '../../firebase/db';
+import { registerForPush } from '../../firebase/notifications';
 import { CATEGORY_VALUES } from '../../utils/constants';
 import { formatAmount } from '../../utils/format';
 
@@ -242,6 +243,10 @@ export default function Settings({ entries, householdId, user, customCategories,
   const [joinLoading, setJoinLoading] = useState(false);
   const [joinSuccess, setJoinSuccess] = useState(false);
   const [subLoading, setSubLoading] = useState(false);
+  const [notifEnabled, setNotifEnabled] = useState(false);
+  const [notifTime, setNotifTime] = useState('20:00');
+  const [notifStatus, setNotifStatus] = useState('idle'); // idle | saving | saved | error
+  const [notifError, setNotifError] = useState('');
 
   useEffect(() => {
     if (!householdId) return;
@@ -260,6 +265,14 @@ export default function Settings({ entries, householdId, user, customCategories,
     }
   }, [savingsGoal]);
 
+  useEffect(() => {
+    if (section !== 'notifications' || !user?.uid) return;
+    getNotificationPrefs(user.uid).then((prefs) => {
+      setNotifEnabled(prefs.enabled);
+      setNotifTime(prefs.time || '20:00');
+    }).catch(() => {});
+  }, [section, user?.uid]);
+
   async function handleJoinHousehold() {
     if (!joinCode.trim()) return;
     setJoinLoading(true); setJoinError('');
@@ -270,6 +283,26 @@ export default function Settings({ entries, householdId, user, customCategories,
     } catch (e) {
       setJoinError(e.message || t('household.errorJoin'));
     } finally { setJoinLoading(false); }
+  }
+
+  async function handleSaveNotifications() {
+    setNotifStatus('saving');
+    setNotifError('');
+    try {
+      let token = null;
+      if (notifEnabled) {
+        token = await registerForPush();
+      }
+      await saveNotificationPrefs(user.uid, { enabled: notifEnabled, time: notifTime, token });
+      setNotifStatus('saved');
+      setTimeout(() => setNotifStatus('idle'), 2000);
+    } catch (e) {
+      const key = e.message === 'permission_denied' ? 'permissionDenied'
+        : e.message === 'notifications_unsupported' || e.message === 'messaging_unsupported' || e.message === 'sw_unsupported' ? 'unsupported'
+        : null;
+      setNotifError(key ? t(`notifications.${key}`) : e.message);
+      setNotifStatus('error');
+    }
   }
 
   async function handleAddCategory() {
@@ -569,6 +602,79 @@ export default function Settings({ entries, householdId, user, customCategories,
         ))}
       </AccordionBody>
 
+
+      {/* ── Notifications ── */}
+      <AccordionHeader skey="notifications" icon="🔔" label={t('notifications.title')} />
+      <AccordionBody skey="notifications">
+        {(() => {
+          const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+          const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+          return (
+            <>
+              <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 16 }}>{t('notifications.subtitle')}</div>
+
+              {isIOS && !isStandalone && (
+                <div style={{ background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 10, padding: '12px 14px', marginBottom: 16, fontSize: 12, color: '#92400e' }}>
+                  <div style={{ fontWeight: 700, marginBottom: 6 }}>{t('notifications.iosTitle')}</div>
+                  <ol style={{ margin: 0, paddingInlineStart: 18, lineHeight: 2 }}>
+                    <li>{t('notifications.iosStep1')} <span style={{ fontSize: 15 }}>⎋</span></li>
+                    <li>{t('notifications.iosStep2')}</li>
+                    <li>{t('notifications.iosStep3')}</li>
+                  </ol>
+                  <div style={{ marginTop: 8, opacity: 0.8 }}>{t('notifications.iosNote')}</div>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                <span style={{ fontSize: 14, fontWeight: 500 }}>{t('notifications.enable')}</span>
+                <button
+                  onClick={() => setNotifEnabled((v) => !v)}
+                  style={{
+                    width: 48, height: 28, borderRadius: 14, border: 'none', cursor: 'pointer',
+                    background: notifEnabled ? 'var(--accent)' : 'var(--surface3)',
+                    position: 'relative', transition: 'background .2s', flexShrink: 0,
+                  }}
+                >
+                  <span style={{
+                    position: 'absolute', top: 4, width: 20, height: 20, borderRadius: '50%',
+                    background: '#fff', transition: 'inset-inline-start .2s',
+                    insetInlineStart: notifEnabled ? 24 : 4,
+                    boxShadow: '0 1px 3px rgba(0,0,0,.2)',
+                  }} />
+                </button>
+              </div>
+
+              {notifEnabled && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                  <label style={{ fontSize: 13, color: 'var(--text2)', flexShrink: 0 }}>{t('notifications.timeLabel')}</label>
+                  <input
+                    type="time"
+                    className="form-input"
+                    value={notifTime}
+                    onChange={(e) => setNotifTime(e.target.value)}
+                    style={{ width: 120, direction: 'ltr', textAlign: 'center' }}
+                  />
+                </div>
+              )}
+
+              {notifError && (
+                <div style={{ fontSize: 12, color: 'var(--expense)', marginBottom: 12 }}>{notifError}</div>
+              )}
+
+              <button
+                className="submit-btn"
+                onClick={handleSaveNotifications}
+                disabled={notifStatus === 'saving'}
+                style={{ marginTop: 0 }}
+              >
+                {notifStatus === 'saving' ? t('notifications.saving')
+                  : notifStatus === 'saved' ? '✓ ' + t('notifications.saved')
+                  : t('notifications.save')}
+              </button>
+            </>
+          );
+        })()}
+      </AccordionBody>
 
       {/* ── Dev: reset onboarding ── */}
       {onResetOnboarding && (

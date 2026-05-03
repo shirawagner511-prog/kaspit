@@ -98,6 +98,33 @@ export async function addEntryToFirestore(householdId, entry, addedBy) {
   });
 }
 
+export async function getUsersForReminder(time) {
+  const token = await getAccessToken();
+  const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents:runQuery`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      structuredQuery: {
+        from: [{ collectionId: 'users' }],
+        where: {
+          compositeFilter: {
+            op: 'AND',
+            filters: [
+              { fieldFilter: { field: { fieldPath: 'reminderEnabled' }, op: 'EQUAL', value: { booleanValue: true } } },
+              { fieldFilter: { field: { fieldPath: 'reminderTime' }, op: 'EQUAL', value: { stringValue: time } } },
+            ],
+          },
+        },
+      },
+    }),
+  });
+  const data = await res.json();
+  return data
+    .filter((d) => d.document)
+    .map((d) => ({ uid: d.document.name.split('/').pop(), ...fromFields(d.document.fields) }));
+}
+
 export async function getHouseholdCategories(householdId) {
   const token = await getAccessToken();
   const res = await fetch(`${BASE}/households/${householdId}`, {

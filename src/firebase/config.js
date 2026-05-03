@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { initializeFirestore, persistentLocalCache } from 'firebase/firestore';
+import { getMessaging, isSupported } from 'firebase/messaging';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyBrAZBMOWmvy0afvp_l2EEbVusz08ziMQ0',
@@ -18,3 +19,5 @@ export const db = initializeFirestore(app, {
   localCache: persistentLocalCache(),
 });
 export const googleProvider = new GoogleAuthProvider();
+
+export const messaging = isSupported().then((ok) => ok ? getMessaging(app) : null);

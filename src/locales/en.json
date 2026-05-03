@@ -326,6 +326,22 @@
     "next": "Next →",
     "skip": "Skip"
   },
+  "notifications": {
+    "title": "Daily Reminders",
+    "subtitle": "Get a nudge to log your expenses",
+    "enable": "Send me a daily reminder",
+    "timeLabel": "Reminder time",
+    "save": "Save",
+    "saving": "Saving...",
+    "saved": "Saved!",
+    "permissionDenied": "Notification permission blocked. Enable it in your browser settings.",
+    "unsupported": "Your browser doesn't support notifications.",
+    "iosTitle": "To receive notifications on iPhone",
+    "iosStep1": "Tap the Share button",
+    "iosStep2": "Choose \"Add to Home Screen\"",
+    "iosStep3": "Open the app from your Home Screen",
+    "iosNote": "Notifications only work when the app is installed on your Home Screen"
+  },
   "misc": {
     "loading": "Loading...",
     "errorDelete": "Error deleting: ",

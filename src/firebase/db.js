@@ -68,6 +68,21 @@ export async function disconnectWhatsapp(uid) {
   await updateDoc(doc(db, 'users', uid), { whatsappNumber: '', pendingWhatsappPhone: '' });
 }
 
+export async function saveNotificationPrefs(uid, { enabled, time, token }) {
+  await updateDoc(doc(db, 'users', uid), {
+    reminderEnabled: enabled,
+    reminderTime: time || null,
+    fcmToken: token || null,
+  });
+}
+
+export async function getNotificationPrefs(uid) {
+  const snap = await getDoc(doc(db, 'users', uid));
+  if (!snap.exists()) return { enabled: false, time: '20:00' };
+  const d = snap.data();
+  return { enabled: d.reminderEnabled || false, time: d.reminderTime || '20:00' };
+}
+
 // ── Households ─────────────────────────────────────────
 
 function generateInviteCode() {

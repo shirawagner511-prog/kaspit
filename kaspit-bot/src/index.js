@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
+import { startReminderCron } from './cron.js';
 import { getHouseholdByPhone, getUserByPendingPhone, confirmWhatsappLink, addEntryToFirestore, getHouseholdCategories } from './firestore.js';
 import { parseMessage, parseReceiptImage } from './claude.js';
 import { sendReply } from './whatsapp.js';
@@ -166,4 +167,7 @@ app.post('/webhook', async (req, res) => {
 });
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`קיקי מוכנה! http://localhost:${port}`));
+app.listen(port, () => {
+  console.log(`קיקי מוכנה! http://localhost:${port}`);
+  startReminderCron();
+});
