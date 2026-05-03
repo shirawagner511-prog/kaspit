@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   signInWithPopup, signInWithRedirect,
   createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile,
+  sendEmailVerification,
 } from 'firebase/auth';
 import { auth, googleProvider } from '../../firebase/config';
 import { isUsernameTaken, registerUsername, getEmailByUsername } from '../../firebase/db';
@@ -74,6 +75,7 @@ export default function LoginScreen({ onNewUser }) {
   const [showManual, setShowManual] = useState(false);
   const [isCreate, setIsCreate] = useState(false);
   const [showPw, setShowPw] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
 
   const [username,    setUsername]    = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -138,15 +140,16 @@ export default function LoginScreen({ onNewUser }) {
         const taken = await isUsernameTaken(uname);
         if (taken) { setError(t('login.errorUsernameTaken')); return; }
 
-        const firebaseEmail = `${uname}@budgi.internal`;
+        const firebaseEmail = email.trim();
         onNewUser?.();
         const cred = await createUserWithEmailAndPassword(auth, firebaseEmail, password);
         await updateProfile(cred.user, { displayName: displayName.trim() });
-        await registerUsername(uname, cred.user.uid);
+        await registerUsername(uname, cred.user.uid, firebaseEmail);
+        await sendEmailVerification(cred.user);
       } else {
-        const exists = await getEmailByUsername(uname);
-        if (!exists) { setError(t('login.errorUsernameNotFound')); return; }
-        const firebaseEmail = `${uname}@budgi.internal`;
+        const storedEmail = await getEmailByUsername(uname);
+        if (!storedEmail) { setError(t('login.errorUsernameNotFound')); return; }
+        const firebaseEmail = storedEmail.includes('@') ? storedEmail : `${uname}@budgi.internal`;
         await signInWithEmailAndPassword(auth, firebaseEmail, password);
       }
     } catch (e) {
@@ -318,7 +321,46 @@ export default function LoginScreen({ onNewUser }) {
         </div>
       )}
 
-      <div className="login-footer">{t('login.footer')}</div>
+      <div className="login-footer">
+        <button
+          type="button"
+          onClick={() => setShowPrivacy(true)}
+          style={{ background: 'none', border: 'none', color: 'var(--text3)', fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}
+        >
+          {isHe ? 'מדיניות פרטיות ותנאי שימוש' : 'Privacy Policy & Terms'}
+        </button>
+      </div>
+
+      {showPrivacy && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={() => setShowPrivacy(false)}>
+          <div style={{ background: 'var(--surface)', borderRadius: 16, padding: 24, maxWidth: 480, width: '100%', maxHeight: '80vh', overflowY: 'auto', textAlign: 'start' }} onClick={(e) => e.stopPropagation()}>
+            <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>{isHe ? 'מדיניות פרטיות ותנאי שימוש' : 'Privacy Policy & Terms'}</h2>
+            <p style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.7, marginBottom: 12 }}>
+              {isHe
+                ? 'Budgi היא אפליקציה לניהול הוצאות אישיות. אנו שומרים את נתוני ההוצאות שלך ב-Firebase של Google בצורה מאובטחת. אנו לא מוכרים ולא משתפים את הנתונים שלך עם צדדים שלישיים.'
+                : 'Budgi is a personal expense management app. We store your financial data securely in Google Firebase. We do not sell or share your data with third parties.'}
+            </p>
+            <p style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.7, marginBottom: 12 }}>
+              {isHe
+                ? 'הנתונים הנשמרים: פעולות הוצאה והכנסה, תקציבים, מטרות חיסכון. לא נשמרים פרטי בנק או כרטיס אשראי.'
+                : 'Data we store: expense and income entries, budgets, savings goals. No bank or credit card details are stored.'}
+            </p>
+            <p style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.7, marginBottom: 12 }}>
+              {isHe
+                ? 'תנאי שימוש: השירות ניתן "כמות שהוא". איננו אחראים להחלטות פיננסיות שנעשות על בסיס הנתונים באפליקציה.'
+                : 'Terms of use: The service is provided "as is". We are not responsible for financial decisions made based on data in the app.'}
+            </p>
+            <p style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.7, marginBottom: 20 }}>
+              {isHe
+                ? 'ניתן למחוק את החשבון ואת כל הנתונים בכל עת דרך הגדרות → ניהול חשבון.'
+                : 'You can delete your account and all data at any time via Settings → Account management.'}
+            </p>
+            <button className="btn-primary" onClick={() => setShowPrivacy(false)} style={{ width: '100%' }}>
+              {isHe ? 'הבנתי' : 'Got it'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

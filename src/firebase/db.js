@@ -37,8 +37,8 @@ export async function isUsernameTaken(username) {
   return snap.exists();
 }
 
-export async function registerUsername(username, uid) {
-  await setDoc(doc(db, 'usernames', username.toLowerCase()), { uid });
+export async function registerUsername(username, uid, email) {
+  await setDoc(doc(db, 'usernames', username.toLowerCase()), { uid, ...(email && { email }) });
 }
 
 export async function getEmailByUsername(username) {

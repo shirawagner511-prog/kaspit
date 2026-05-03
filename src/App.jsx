@@ -18,6 +18,7 @@ import HouseholdSetup from './components/auth/HouseholdSetup';
 import WelcomeScreen from './components/auth/WelcomeScreen';
 import CurrencyPicker from './components/auth/CurrencyPicker';
 import CyclePicker from './components/auth/CyclePicker';
+import VerifyEmailScreen from './components/auth/VerifyEmailScreen';
 import OnboardingTour from './components/shared/OnboardingTour';
 import Loader from './components/shared/Loader';
 import ScrollToTop from './components/shared/ScrollToTop';
@@ -56,7 +57,6 @@ export default function App() {
   const [deleteId, setDeleteId] = useState(null);
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-  const [isNewUser, setIsNewUser] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
   const [currency, setCurrency] = useState(() => localStorage.getItem('budgi-currency') || 'ILS');
@@ -134,7 +134,8 @@ export default function App() {
   useAutoRecurring(entries, currentMonth, currentYear, householdId, user, isPremium, cycleStartDay);
 
   if (loading) return <Loader fullscreen />;
-  if (!user) return <LoginScreen onNewUser={() => { setIsNewUser(true); setShowWelcome(true); }} />;
+  if (!user) return <LoginScreen onNewUser={() => { setShowWelcome(true); }} />;
+  if (user && !user.emailVerified && !user.email?.endsWith('@budgi.internal')) return <VerifyEmailScreen user={user} />;
   if (showWelcome) return <WelcomeScreen onContinue={() => { setShowWelcome(false); if (!householdId) setShowCurrencyPicker(true); }} />;
   if (showCurrencyPicker && !householdId) return <CurrencyPicker onSelect={(cur) => { setCurrency(cur); localStorage.setItem('budgi-currency', cur); localStorage.setItem('budgi-currency-chosen', '1'); setShowCurrencyPicker(false); }} />;
   if (!householdId) return <HouseholdSetup user={user} onComplete={(hid) => { setHouseholdId(hid); if (currency !== 'ILS') saveCurrency(hid, currency); }} />;

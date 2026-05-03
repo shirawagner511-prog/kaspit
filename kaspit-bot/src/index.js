@@ -1,10 +1,11 @@
 import 'dotenv/config';
 import express from 'express';
 import { startReminderCron } from './cron.js';
-import { getHouseholdByPhone, getUserByPendingPhone, confirmWhatsappLink, addEntryToFirestore, getHouseholdCategories } from './firestore.js';
+import { getHouseholdByPhone, getUserByPendingPhone, confirmWhatsappLink, addEntryToFirestore, getHouseholdCategories, checkAndIncrementAiUsage } from './firestore.js';
 import { parseMessage, parseReceiptImage } from './claude.js';
 import { sendReply } from './whatsapp.js';
 import { generateClientToken, createSubscription, cancelSubscription, parseWebhook } from './braintree.js';
+import twilio from 'twilio';
 import { upsertSubscription, getUidByCustomerId } from './subscriptions.js';
 
 const app = express();
@@ -101,7 +102,17 @@ app.post('/braintree/webhook', async (req, res) => {
   }
 });
 
-app.post('/webhook', async (req, res) => {
+function validateTwilioSignature(req, res, next) {
+  const signature = req.headers['x-twilio-signature'] || '';
+  const proto = req.headers['x-forwarded-proto'] || 'https';
+  const host = req.headers['x-forwarded-host'] || req.headers['host'];
+  const url = `${proto}://${host}/webhook`;
+  const valid = twilio.validateRequest(process.env.TWILIO_AUTH_TOKEN, signature, url, req.body);
+  if (!valid) { console.warn('Invalid Twilio signature'); return res.sendStatus(403); }
+  next();
+}
+
+app.post('/webhook', validateTwilioSignature, async (req, res) => {
   // Respond to Twilio immediately to avoid timeout
   res.sendStatus(200);
 
@@ -130,7 +141,14 @@ app.post('/webhook', async (req, res) => {
       return;
     }
 
-    const { householdId } = userData;
+    const { householdId, uid } = userData;
+
+    const allowed = await checkAndIncrementAiUsage(uid);
+    if (!allowed) {
+      await sendReply(from, `⚠️ הגעת למגבלת ${30} הודעות יומית לקיקי. נסי שוב מחר 🙏`);
+      return;
+    }
+
     const customCategories = await getHouseholdCategories(householdId);
     const today = new Date().toISOString().split('T')[0];
 

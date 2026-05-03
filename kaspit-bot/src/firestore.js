@@ -125,6 +125,24 @@ export async function getUsersForReminder(time) {
     .map((d) => ({ uid: d.document.name.split('/').pop(), ...fromFields(d.document.fields) }));
 }
 
+const DAILY_AI_LIMIT = 30;
+
+export async function checkAndIncrementAiUsage(uid) {
+  const token = await getAccessToken();
+  const res = await fetch(`${BASE}/users/${uid}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const data = await res.json();
+  const user = data.fields ? fromFields(data.fields) : {};
+
+  const today = new Date().toISOString().split('T')[0];
+  const count = user.aiUsageDate === today ? (user.aiUsageCount || 0) : 0;
+  if (count >= DAILY_AI_LIMIT) return false;
+
+  await patchUser(uid, { aiUsageDate: today, aiUsageCount: count + 1 });
+  return true;
+}
+
 export async function getHouseholdCategories(householdId) {
   const token = await getAccessToken();
   const res = await fetch(`${BASE}/households/${householdId}`, {
