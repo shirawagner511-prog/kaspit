@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { addEntry } from '../firebase/db';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase/config';
 import { getCycleWindow } from '../utils/format';
 
 function parseYM(dateStr) {
@@ -64,7 +65,11 @@ export function useAutoRecurring(entries, currentMonth, currentYear, householdId
       }
 
       try {
-        await addEntry(householdId, {
+        const householdSnap = await getDoc(doc(db, 'households', householdId));
+        const memberUids = householdSnap.data()?.memberUids || [user.uid];
+        // Deterministic ID prevents duplicates from concurrent devices/tabs
+        const autoId = `auto-${start}-${r.name.replace(/\//g, '-')}`;
+        await setDoc(doc(db, 'households', householdId, 'entries', autoId), {
           name: r.name,
           amount: r.amount,
           category: r.category,
@@ -72,12 +77,16 @@ export function useAutoRecurring(entries, currentMonth, currentYear, householdId
           fixed: r.fixed,
           type: r.type,
           note: 'הועבר אוטומטית',
+          householdId,
+          memberUids,
           recurringMonths: r.recurringMonths,
           recurringUntil: r.recurringUntil,
-        }, user);
+          uid: user.uid,
+          createdAt: new Date().toISOString(),
+        }, { merge: false });
       } catch (e) {
         console.error('auto-recurring:', e);
       }
     });
-  }, [currentMonth, currentYear, householdId]);
+  }, [currentMonth, currentYear, householdId, entries]);
 }
