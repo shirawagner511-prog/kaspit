@@ -7,6 +7,7 @@ const STEPS = [
   { target: 'month-nav',     titleKey: 'tour.step2Title', msgKey: 'tour.step2', placement: 'below' },
   { target: 'fab',           titleKey: 'tour.step3Title', msgKey: 'tour.step3', placement: 'above' },
   { target: 'nav',           titleKey: 'tour.step4Title', msgKey: 'tour.step4', placement: 'above' },
+  { target: null,            titleKey: 'tour.step5Title', msgKey: 'tour.step5', placement: null },
 ];
 
 const TOOLTIP_W   = 240;
@@ -43,6 +44,41 @@ export default function OnboardingTour({ onDone }) {
   function next() {
     if (step < STEPS.length - 1) setStep((s) => s + 1);
     else finish();
+  }
+
+  // Centered notification step (no target element)
+  if (current.target === null) {
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    return createPortal(
+      <div className="tour-overlay" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }} onClick={finish}>
+        <div
+          className="tour-tooltip"
+          style={{ position: 'relative', left: 'auto', top: 'auto', transform: 'none', width: '100%', maxWidth: 320 }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div style={{ fontSize: 28, textAlign: 'center', marginBottom: 8 }}>🔔</div>
+          <div className="tour-tooltip-title" style={{ textAlign: 'center' }}>{t(current.titleKey)}</div>
+          <div className="tour-tooltip-msg">{t(current.msgKey)}</div>
+          {isIOS && !isStandalone && (
+            <div style={{ background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 8, padding: '10px 12px', marginTop: 10, fontSize: 11, color: '#92400e' }}>
+              <div style={{ fontWeight: 700, marginBottom: 4 }}>{t('notifications.iosTitle')}</div>
+              <ol style={{ margin: 0, paddingInlineStart: 16, lineHeight: 1.9 }}>
+                <li>{t('notifications.iosStep1')} <span style={{ fontSize: 13 }}>⎋</span></li>
+                <li>{t('notifications.iosStep2')}</li>
+                <li>{t('notifications.iosStep3')}</li>
+              </ol>
+            </div>
+          )}
+          <div className="tour-tooltip-footer">
+            <span />
+            <span className="tour-counter">{step + 1}/{STEPS.length}</span>
+            <button className="tour-next" onClick={finish}>{t('tour.finish')}</button>
+          </div>
+        </div>
+      </div>,
+      document.body
+    );
   }
 
   if (!rect) return null;

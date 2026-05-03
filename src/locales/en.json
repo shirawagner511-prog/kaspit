@@ -323,8 +323,11 @@
     "step3": "Tap here to add an expense, income, or saving",
     "step4Title": "Navigation",
     "step4": "Browse all sections of the app from here",
+    "step5Title": "Daily Reminders 🔔",
+    "step5": "Never forget to log — enable a daily reminder. Set your preferred time in Settings → Notifications.",
     "next": "Next →",
-    "skip": "Skip"
+    "skip": "Skip",
+    "finish": "Done ✓"
   },
   "notifications": {
     "title": "Daily Reminders",
