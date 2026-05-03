@@ -3,10 +3,10 @@ import EntryItem from '../shared/EntryItem';
 import { getMonths } from '../../utils/constants';
 import { getMonthEntries } from '../../utils/format';
 
-export default function Entries({ entries, currentMonth, currentYear, householdId, user, onEdit, onDelete }) {
+export default function Entries({ entries, currentMonth, currentYear, householdId, user, onEdit, onDelete, cycleStartDay = 1 }) {
   const { t } = useTranslation();
   const months = getMonths(t);
-  const me = getMonthEntries(entries, currentMonth, currentYear);
+  const me = getMonthEntries(entries, currentMonth, currentYear, cycleStartDay);
 
   return (
     <div className="page">

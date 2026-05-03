@@ -4,11 +4,11 @@ import { getMonths } from '../../utils/constants';
 import { formatAmount, getMonthEntries } from '../../utils/format';
 import PremiumGate from '../shared/PremiumGate';
 
-function computeTrends(entries, currentMonth, currentYear) {
+function computeTrends(entries, currentMonth, currentYear, cycleStartDay = 1) {
   const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
   const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-  const prev = getMonthEntries(entries, prevMonth, prevYear);
-  const curr = getMonthEntries(entries, currentMonth, currentYear);
+  const prev = getMonthEntries(entries, prevMonth, prevYear, cycleStartDay);
+  const curr = getMonthEntries(entries, currentMonth, currentYear, cycleStartDay);
   const cats = [...new Set([...prev, ...curr].filter((e) => e.type !== 'income').map((e) => e.category))];
   return cats
     .map((cat) => {
@@ -20,7 +20,7 @@ function computeTrends(entries, currentMonth, currentYear) {
     .sort((a, b) => b.curr - a.curr);
 }
 
-export default function Insights({ entries, currentMonth, currentYear, allCategories = [], isPremium, user }) {
+export default function Insights({ entries, currentMonth, currentYear, allCategories = [], isPremium, user, cycleStartDay = 1 }) {
   if (!isPremium) return <PremiumGate feature="insights" user={user} isPremium={isPremium}>{null}</PremiumGate>;
   const { t } = useTranslation();
   const months = getMonths(t);
@@ -36,14 +36,14 @@ export default function Insights({ entries, currentMonth, currentYear, allCatego
     }
     return cat;
   };
-  const trends = computeTrends(entries, currentMonth, currentYear);
+  const trends = computeTrends(entries, currentMonth, currentYear, cycleStartDay);
   const prevLabel = currentMonth === 0 ? months[11] : months[currentMonth - 1];
 
   const monthTotals = [];
   for (let i = 5; i >= 0; i--) {
     let m = currentMonth - i, y = currentYear;
     if (m < 0) { m += 12; y--; }
-    const tot = getMonthEntries(entries, m, y).filter((e) => e.type !== 'income').reduce((s, e) => s + e.amount, 0);
+    const tot = getMonthEntries(entries, m, y, cycleStartDay).filter((e) => e.type !== 'income').reduce((s, e) => s + e.amount, 0);
     monthTotals.push({ label: months[m].slice(0, 3), total: tot, isCurrent: m === currentMonth && y === currentYear });
   }
   const maxTotal = Math.max(...monthTotals.map((m) => m.total), 1);

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getHousehold, getHouseholdMembers, saveCustomCategories, saveBudgets, saveSavingsGoal, updateEntry, joinHousehold, saveNotificationPrefs, getNotificationPrefs } from '../../firebase/db';
+import { getHousehold, getHouseholdMembers, saveCustomCategories, saveBudgets, saveSavingsGoal, updateEntry, joinHousehold, saveNotificationPrefs, getNotificationPrefs, saveCycleDay } from '../../firebase/db';
 import { registerForPush } from '../../firebase/notifications';
 import { CATEGORY_VALUES } from '../../utils/constants';
 import { formatAmount } from '../../utils/format';
@@ -224,7 +224,7 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
   );
 }
 
-export default function Settings({ entries, householdId, user, customCategories, allCategories, budgets = {}, savingsGoal = null, onJoinHousehold, onNavigate, onResetOnboarding, isPremium, subStatus, trialDaysLeft, subscription }) {
+export default function Settings({ entries, householdId, user, customCategories, allCategories, budgets = {}, savingsGoal = null, onJoinHousehold, onNavigate, onResetOnboarding, isPremium, subStatus, trialDaysLeft, subscription, cycleStartDay: initialCycleDay = 1 }) {
   const { t, i18n } = useTranslation();
   const [household, setHousehold] = useState(null);
   const [members, setMembers] = useState([]);
@@ -243,6 +243,9 @@ export default function Settings({ entries, householdId, user, customCategories,
   const [joinLoading, setJoinLoading] = useState(false);
   const [joinSuccess, setJoinSuccess] = useState(false);
   const [subLoading, setSubLoading] = useState(false);
+  const [localCycleDay, setLocalCycleDay] = useState(initialCycleDay);
+  const [cycleSaving, setCycleSaving] = useState(false);
+  const [cycleSaved, setCycleSaved] = useState(false);
   const [notifEnabled, setNotifEnabled] = useState(false);
   const [notifTime, setNotifTime] = useState('20:00');
   const [notifStatus, setNotifStatus] = useState('idle'); // idle | saving | saved | error
@@ -283,6 +286,19 @@ export default function Settings({ entries, householdId, user, customCategories,
     } catch (e) {
       setJoinError(e.message || t('household.errorJoin'));
     } finally { setJoinLoading(false); }
+  }
+
+  useEffect(() => { setLocalCycleDay(initialCycleDay); }, [initialCycleDay]);
+
+  async function handleSaveCycleDay() {
+    setCycleSaving(true);
+    try {
+      await saveCycleDay(householdId, localCycleDay);
+      localStorage.setItem('budgi-cycle-day', localCycleDay);
+      localStorage.setItem('budgi-cycle-chosen', '1');
+      setCycleSaved(true);
+      setTimeout(() => setCycleSaved(false), 2000);
+    } finally { setCycleSaving(false); }
   }
 
   async function handleSaveNotifications() {
@@ -602,6 +618,40 @@ export default function Settings({ entries, householdId, user, customCategories,
         ))}
       </AccordionBody>
 
+
+      {/* ── Cycle start day ── */}
+      <AccordionHeader skey="cycle" icon="📅" label={i18n.language === 'he' ? 'תאריך תחילת חודש' : 'Billing cycle start'} />
+      <AccordionBody skey="cycle">
+        <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 14 }}>
+          {i18n.language === 'he'
+            ? 'בחר מאיזה יום בחודש תרצה לספור הכנסות והוצאות'
+            : 'Choose which day each month your tracking cycle starts'}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6, marginBottom: 16 }}>
+          {Array.from({ length: 28 }, (_, i) => i + 1).map((d) => {
+            const isSel = localCycleDay === d;
+            return (
+              <button
+                key={d}
+                onClick={() => setLocalCycleDay(d)}
+                style={{
+                  aspectRatio: '1', border: isSel ? '2px solid var(--accent)' : '1.5px solid var(--border)',
+                  borderRadius: 8, background: isSel ? 'var(--accent)' : 'var(--surface)',
+                  color: isSel ? '#fff' : 'var(--text)',
+                  fontFamily: 'DM Mono,monospace', fontSize: 13, fontWeight: isSel ? 700 : 400, cursor: 'pointer',
+                }}
+              >
+                {d}
+              </button>
+            );
+          })}
+        </div>
+        <button className="submit-btn" style={{ marginTop: 0 }} onClick={handleSaveCycleDay} disabled={cycleSaving}>
+          {cycleSaving ? (i18n.language === 'he' ? 'שומר...' : 'Saving...')
+            : cycleSaved ? '✓ ' + (i18n.language === 'he' ? 'נשמר' : 'Saved')
+            : (i18n.language === 'he' ? 'שמור' : 'Save')}
+        </button>
+      </AccordionBody>
 
       {/* ── Notifications ── */}
       <AccordionHeader skey="notifications" icon="🔔" label={t('notifications.title')} />

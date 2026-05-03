@@ -91,7 +91,7 @@ function computeAccountBalance(account, entries) {
   }, 0);
 }
 
-export default function Dashboard({ entries, currentMonth, currentYear, householdId, user, onEdit, onDelete, allCategories = [], budgets = {}, savingsGoal = null, accounts = [], onNavigate, isPremium, subStatus, trialDaysLeft }) {
+export default function Dashboard({ entries, currentMonth, currentYear, householdId, user, onEdit, onDelete, allCategories = [], budgets = {}, savingsGoal = null, accounts = [], onNavigate, isPremium, subStatus, trialDaysLeft, cycleStartDay = 1 }) {
   const { t } = useTranslation();
   const months = getMonths(t);
   const accountsTotal = accounts.reduce((sum, a) => sum + computeAccountBalance(a, entries), 0);
@@ -119,14 +119,14 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
     setTrialNudgeDismissed(true);
   }
 
-  const me = getMonthEntries(entries, currentMonth, currentYear);
+  const me = getMonthEntries(entries, currentMonth, currentYear, cycleStartDay);
   const totalIn = me.filter((e) => e.type === 'income').reduce((s, e) => s + e.amount, 0);
   const totalOut = me.filter((e) => e.type !== 'income').reduce((s, e) => s + e.amount, 0);
   const balance = totalIn - totalOut;
 
   const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
   const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-  const prevMe = getMonthEntries(entries, prevMonth, prevYear);
+  const prevMe = getMonthEntries(entries, prevMonth, prevYear, cycleStartDay);
   const prevBalance = prevMe.filter((e) => e.type === 'income').reduce((s, e) => s + e.amount, 0)
                    - prevMe.filter((e) => e.type !== 'income').reduce((s, e) => s + e.amount, 0);
   const balanceDiff = prevBalance !== 0 ? Math.round(((balance - prevBalance) / Math.abs(prevBalance)) * 100) : null;

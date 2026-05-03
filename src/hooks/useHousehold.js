@@ -8,6 +8,7 @@ export function useHousehold(householdId) {
   const [customCategories, setCustomCategories] = useState([]);
   const [memberUids, setMemberUids] = useState([]);
   const [currency, setCurrency] = useState(null);
+  const [cycleStartDay, setCycleStartDay] = useState(null);
 
   // Listen to household doc for membership
   useEffect(() => {
@@ -42,6 +43,7 @@ export function useHousehold(householdId) {
           setBudgets(data.budgets || {});
           setSavingsGoal(data.savingsGoal || null);
           setCustomCategories(data.customCategories || []);
+          if (data.cycleStartDay) setCycleStartDay(data.cycleStartDay);
         } else {
           // settings/main not yet created — fall back to household doc
           getDoc(doc(db, 'households', householdId)).then((hSnap) => {
@@ -49,6 +51,7 @@ export function useHousehold(householdId) {
             setBudgets(data.budgets || {});
             setSavingsGoal(data.savingsGoal || null);
             setCustomCategories(data.customCategories || []);
+            if (data.cycleStartDay) setCycleStartDay(data.cycleStartDay);
           }).catch(console.error);
         }
       },
@@ -56,5 +59,5 @@ export function useHousehold(householdId) {
     );
   }, [householdId]);
 
-  return { budgets, savingsGoal, customCategories, memberUids, currency };
+  return { budgets, savingsGoal, customCategories, memberUids, currency, cycleStartDay };
 }

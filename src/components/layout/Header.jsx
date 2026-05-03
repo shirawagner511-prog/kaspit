@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { signOut, signInWithPopup, GoogleAuthProvider, updateProfile, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
+import { getCycleWindow } from '../../utils/format';
 import { auth, googleProvider } from '../../firebase/config';
 import { getMonths } from '../../utils/constants';
 import { getUserData, saveUserEmail } from '../../firebase/db';
 import { RefreshCw, LogOut, Languages, UserPen } from 'lucide-react';
 
-export default function Header({ user, currentMonth, currentYear, onMonthChange, isPremium, subStatus, trialDaysLeft, onNavigate }) {
+export default function Header({ user, currentMonth, currentYear, onMonthChange, isPremium, subStatus, trialDaysLeft, onNavigate, cycleStartDay = 1 }) {
   const { t, i18n } = useTranslation();
   const lang = i18n.language === 'he' ? 'he' : 'en';
   function toggleLang() {
@@ -156,13 +157,24 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
           <Languages size={13} />
           {i18n.language === 'he' ? 'EN' : 'עב'}
         </button>
-        <select className="month-selector" data-tour="month-nav" value={value} onChange={handleChange}>
-          {MONTH_OPTIONS.map((o) => (
-            <option key={`${o.year}-${o.month}`} value={`${o.year}-${o.month}`}>
-              {o.label}
-            </option>
-          ))}
-        </select>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+          <select className="month-selector" data-tour="month-nav" value={value} onChange={handleChange}>
+            {MONTH_OPTIONS.map((o) => (
+              <option key={`${o.year}-${o.month}`} value={`${o.year}-${o.month}`}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+          {cycleStartDay !== 1 && (() => {
+            const { start, end } = getCycleWindow(currentMonth, currentYear, cycleStartDay);
+            const fmt = (s) => { const [, m, d] = s.split('-'); return `${parseInt(d)}/${parseInt(m)}`; };
+            return (
+              <span style={{ fontSize: 10, color: 'var(--text3)', letterSpacing: 0.2, direction: 'ltr' }}>
+                {fmt(start)} – {fmt(end)}
+              </span>
+            );
+          })()}
+        </div>
 
         <div ref={menuRef} style={{ position: 'relative' }}>
           <button className="avatar" onClick={() => setMenuOpen((o) => !o)}>

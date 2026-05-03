@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { addEntry } from '../firebase/db';
+import { getCycleWindow } from '../utils/format';
 
 function parseYM(dateStr) {
   const [y, m] = (dateStr || '').split('-').map(Number);
@@ -31,23 +32,21 @@ function buildRecurring(entries) {
   return Object.values(byName);
 }
 
-export function useAutoRecurring(entries, currentMonth, currentYear, householdId, user, isPremium) {
+export function useAutoRecurring(entries, currentMonth, currentYear, householdId, user, isPremium, cycleStartDay = 1) {
   const processed = useRef(new Set());
 
   useEffect(() => {
     if (!householdId || !user || entries.length === 0) return;
-    const key = `${currentYear}-${currentMonth}`;
+    const key = `${currentYear}-${currentMonth}-${cycleStartDay}`;
     if (processed.current.has(key)) return;
     processed.current.add(key);
 
     const recurring = buildRecurring(entries);
 
-    const monthEntries = entries.filter((e) => {
-      const [y, m] = (e.date || '').split('-').map(Number);
-      return m - 1 === currentMonth && y === currentYear;
-    });
+    const { start, end } = getCycleWindow(currentMonth, currentYear, cycleStartDay);
+    const monthEntries = entries.filter((e) => e.date >= start && e.date <= end);
 
-    const date = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01`;
+    const date = start;
 
     recurring.forEach(async (r) => {
       const alreadyThisMonth = monthEntries.some((e) => e.name === r.name);

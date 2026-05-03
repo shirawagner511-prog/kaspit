@@ -3,10 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Clock } from 'lucide-react';
 import CategoryIcon from '../shared/CategoryIcon';
 import { getMonths } from '../../utils/constants';
-import { formatAmount } from '../../utils/format';
+import { formatAmount, getCycleWindow } from '../../utils/format';
 import PremiumGate from '../shared/PremiumGate';
 
-function buildRecurringSummary(entries, currentMonth, currentYear) {
+function buildRecurringSummary(entries, currentMonth, currentYear, cycleStartDay = 1) {
   const byName = {};
   entries.forEach((e) => {
     if (e.fixed !== 'fixed' && e.fixed !== 'bimonthly' && e.fixed !== 'sep') return;
@@ -17,12 +17,10 @@ function buildRecurringSummary(entries, currentMonth, currentYear) {
     if (e.date > byName[e.name].lastDate) byName[e.name].lastDate = e.date;
   });
 
+  const { start, end } = getCycleWindow(currentMonth, currentYear, cycleStartDay);
   const monthEntryNames = new Set(
     entries
-      .filter((e) => {
-        const [y, m] = (e.date || '').split('-').map(Number);
-        return m - 1 === currentMonth && y === currentYear;
-      })
+      .filter((e) => e.date >= start && e.date <= end)
       .map((e) => e.name)
   );
 
@@ -33,14 +31,14 @@ function buildRecurringSummary(entries, currentMonth, currentYear) {
   }));
 }
 
-export default function Breakeven({ entries, currentMonth, currentYear, allCategories = [], isPremium, user }) {
+export default function Breakeven({ entries, currentMonth, currentYear, allCategories = [], isPremium, user, cycleStartDay = 1 }) {
   if (!isPremium) return <PremiumGate feature="breakeven" user={user} isPremium={isPremium}>{null}</PremiumGate>;
   const { t } = useTranslation();
   const months = getMonths(t);
   const [isSep, setIsSep] = useState(false);
   const catMap = Object.fromEntries(allCategories.map((c) => [c.value, c]));
 
-  const summary = buildRecurringSummary(entries, currentMonth, currentYear);
+  const summary = buildRecurringSummary(entries, currentMonth, currentYear, cycleStartDay);
   const fixed = summary.filter((r) => r.fixed === 'fixed' && r.type !== 'income');
   const fixedIncome = summary.filter((r) => r.fixed === 'fixed' && r.type === 'income');
   const bimonthly = summary.filter((r) => r.fixed === 'bimonthly' && r.type !== 'income');

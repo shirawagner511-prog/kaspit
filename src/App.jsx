@@ -9,7 +9,7 @@ import { useHousehold } from './hooks/useHousehold';
 import { useAccounts } from './hooks/useAccounts';
 import { useAutoRecurring } from './hooks/useAutoRecurring';
 import { useSubscription } from './hooks/useSubscription';
-import { deleteEntry, saveCurrency } from './firebase/db';
+import { deleteEntry, saveCurrency, saveCycleDay } from './firebase/db';
 import { getDefaultCategories } from './utils/constants';
 
 import { LayoutDashboard, ListOrdered, Scale, TrendingUp, Landmark, Settings as SettingsIcon, MessageCircle } from 'lucide-react';
@@ -17,6 +17,7 @@ import LoginScreen from './components/auth/LoginScreen';
 import HouseholdSetup from './components/auth/HouseholdSetup';
 import WelcomeScreen from './components/auth/WelcomeScreen';
 import CurrencyPicker from './components/auth/CurrencyPicker';
+import CyclePicker from './components/auth/CyclePicker';
 import OnboardingTour from './components/shared/OnboardingTour';
 import Loader from './components/shared/Loader';
 import ScrollToTop from './components/shared/ScrollToTop';
@@ -38,7 +39,7 @@ export default function App() {
   const { t, i18n } = useTranslation();
   const { user, householdId, setHouseholdId, loading } = useAuth();
   const entries = useEntries(householdId);
-  const { budgets, savingsGoal, customCategories, memberUids, currency: householdCurrency } = useHousehold(householdId);
+  const { budgets, savingsGoal, customCategories, memberUids, currency: householdCurrency, cycleStartDay: householdCycleDay } = useHousehold(householdId);
   const accounts = useAccounts(householdId);
   const { isPremium: _isPremium, status: subStatus, trialDaysLeft, subscription } = useSubscription(user);
   const isPremium = _isPremium || localStorage.getItem('budgi-beta') === '1';
@@ -60,6 +61,8 @@ export default function App() {
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
   const [currency, setCurrency] = useState(() => localStorage.getItem('budgi-currency') || 'ILS');
   const [tourDone, setTourDone] = useState(() => localStorage.getItem('budgi-tour-done') === '1');
+  const [cycleStartDay, setCycleStartDay] = useState(() => parseInt(localStorage.getItem('budgi-cycle-day') || '1'));
+  const [showCyclePicker, setShowCyclePicker] = useState(false);
 
   useEffect(() => {
     getRedirectResult(auth).catch((e) => console.error('Redirect error:', e));
@@ -80,6 +83,20 @@ export default function App() {
     }
   }, [householdId, showCurrencyPicker, showWelcome]);
 
+  useEffect(() => {
+    if (householdCycleDay) {
+      setCycleStartDay(householdCycleDay);
+      localStorage.setItem('budgi-cycle-day', householdCycleDay);
+    }
+  }, [householdCycleDay]);
+
+  useEffect(() => {
+    const alreadyChosen = localStorage.getItem('budgi-cycle-chosen') === '1';
+    if (householdId && !alreadyChosen && !showCyclePicker && !showCurrencyPicker && !showWelcome) {
+      setShowCyclePicker(true);
+    }
+  }, [householdId, showCyclePicker, showCurrencyPicker, showWelcome]);
+
   async function handleCurrencySelect(cur) {
     setCurrency(cur);
     localStorage.setItem('budgi-currency', cur);
@@ -88,6 +105,14 @@ export default function App() {
       await saveCurrency(householdId, cur);
     }
     setShowCurrencyPicker(false);
+  }
+
+  async function handleCycleSelect(day) {
+    setCycleStartDay(day);
+    localStorage.setItem('budgi-cycle-day', day);
+    localStorage.setItem('budgi-cycle-chosen', '1');
+    if (householdId) await saveCycleDay(householdId, day);
+    setShowCyclePicker(false);
   }
 
   useEffect(() => {
@@ -106,7 +131,7 @@ export default function App() {
     }
   }
 
-  useAutoRecurring(entries, currentMonth, currentYear, householdId, user, isPremium);
+  useAutoRecurring(entries, currentMonth, currentYear, householdId, user, isPremium, cycleStartDay);
 
   if (loading) return <Loader fullscreen />;
   if (!user) return <LoginScreen onNewUser={() => { setIsNewUser(true); setShowWelcome(true); }} />;
@@ -114,10 +139,12 @@ export default function App() {
   if (showCurrencyPicker && !householdId) return <CurrencyPicker onSelect={(cur) => { setCurrency(cur); localStorage.setItem('budgi-currency', cur); localStorage.setItem('budgi-currency-chosen', '1'); setShowCurrencyPicker(false); }} />;
   if (!householdId) return <HouseholdSetup user={user} onComplete={(hid) => { setHouseholdId(hid); if (currency !== 'ILS') saveCurrency(hid, currency); }} />;
   if (showCurrencyPicker) return <CurrencyPicker onSelect={handleCurrencySelect} />;
+  if (showCyclePicker) return <CyclePicker onSelect={handleCycleSelect} />;
 
   function handleResetOnboarding() {
     localStorage.removeItem('budgi-tour-done');
     localStorage.removeItem('budgi-currency-chosen');
+    localStorage.removeItem('budgi-cycle-chosen');
     setTourDone(false);
     setShowWelcome(true);
     setShowCurrencyPicker(false);
@@ -127,7 +154,7 @@ export default function App() {
   const pageProps = {
     entries, currentMonth, currentYear, householdId, user, memberUids,
     allCategories, customCategories, budgets, savingsGoal, accounts,
-    isPremium, subStatus, trialDaysLeft, subscription, currency,
+    isPremium, subStatus, trialDaysLeft, subscription, currency, cycleStartDay,
     onEdit: setEditEntry,
     onDelete: setDeleteId,
     onNavigate: setPage,
@@ -176,6 +203,7 @@ export default function App() {
           subStatus={subStatus}
           trialDaysLeft={trialDaysLeft}
           onNavigate={setPage}
+          cycleStartDay={cycleStartDay}
         />
 
         <Suspense fallback={<Loader />}>

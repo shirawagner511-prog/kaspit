@@ -15,10 +15,22 @@ export function formatAmount(n, currency) {
 
 export { CURRENCY_SYMBOLS };
 
-export function getMonthEntries(entries, month, year) {
-  return entries.filter((e) => {
-    if (!e.date) return false;
-    const [y, m] = e.date.split('-').map(Number);
-    return m - 1 === month && y === year;
-  });
+export function getCycleWindow(month, year, startDay = 1) {
+  const start = `${year}-${String(month + 1).padStart(2, '0')}-${String(startDay).padStart(2, '0')}`;
+  const nextStart = new Date(year, month + 1, startDay);
+  nextStart.setDate(nextStart.getDate() - 1);
+  const end = nextStart.toISOString().slice(0, 10);
+  return { start, end };
+}
+
+export function getMonthEntries(entries, month, year, cycleStartDay = 1) {
+  if (cycleStartDay === 1) {
+    return entries.filter((e) => {
+      if (!e.date) return false;
+      const [y, m] = e.date.split('-').map(Number);
+      return m - 1 === month && y === year;
+    });
+  }
+  const { start, end } = getCycleWindow(month, year, cycleStartDay);
+  return entries.filter((e) => e.date >= start && e.date <= end);
 }

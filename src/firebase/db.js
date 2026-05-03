@@ -68,6 +68,10 @@ export async function disconnectWhatsapp(uid) {
   await updateDoc(doc(db, 'users', uid), { whatsappNumber: '', pendingWhatsappPhone: '' });
 }
 
+export async function saveCycleDay(householdId, day) {
+  await setDoc(doc(db, 'households', householdId, 'settings', 'main'), { cycleStartDay: day }, { merge: true });
+}
+
 export async function saveNotificationPrefs(uid, { enabled, time, token }) {
   await updateDoc(doc(db, 'users', uid), {
     reminderEnabled: enabled,
