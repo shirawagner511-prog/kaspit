@@ -7,8 +7,8 @@ const saved = localStorage.getItem('budgi-lang');
 
 i18n.use(initReactI18next).init({
   resources: { en: { translation: en }, he: { translation: he } },
-  lng: saved || 'en',
-  fallbackLng: 'en',
+  lng: saved || 'he',
+  fallbackLng: 'he',
   interpolation: { escapeValue: false },
 });
 

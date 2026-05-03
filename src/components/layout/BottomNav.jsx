@@ -1,12 +1,11 @@
 import { useTranslation } from 'react-i18next';
-import { LayoutDashboard, ListOrdered, Scale, TrendingUp, MessageCircle, Settings, Crown } from 'lucide-react';
+import { LayoutDashboard, ListOrdered, TrendingUp, MessageCircle, Settings, Crown } from 'lucide-react';
 
 export default function BottomNav({ activePage, onNavigate, isPremium, subStatus }) {
   const { t } = useTranslation();
   const TABS = [
     { id: 'dashboard', Icon: LayoutDashboard, label: t('nav.dashboard') },
     { id: 'entries',   Icon: ListOrdered,     label: t('nav.entries') },
-    { id: 'breakeven', Icon: Scale,           label: t('nav.breakeven') },
     { id: 'insights',  Icon: TrendingUp,      label: t('nav.insights') },
     { id: 'bot',       Icon: MessageCircle,   label: 'Bot' },
     { id: 'settings',  Icon: Settings,        label: t('nav.settings') },

@@ -199,21 +199,21 @@ export default function Breakeven({ entries, currentMonth, currentYear, allCateg
         )}
         <div className="be-total">
           <div className="name">{isSep ? t('breakeven.breakevenSep') : t('breakeven.breakevenPoint')}</div>
-          <div className="val">₪{Math.round(activeTotal).toLocaleString()}</div>
+          <div className="val">{formatAmount(Math.round(activeTotal))}</div>
         </div>
       </div>
 
       <div className="target-row breakeven">
         <div className="tname">{t('breakeven.breakevenPoint')}</div>
-        <div className="tval">₪{Math.round(activeTotal).toLocaleString()}</div>
+        <div className="tval">{formatAmount(Math.round(activeTotal))}</div>
       </div>
       <div className="target-row surplus">
         <div className="tname">{t('breakeven.plus10')}</div>
-        <div className="tval">₪{Math.ceil(activeTotal * 1.1).toLocaleString()}</div>
+        <div className="tval">{formatAmount(Math.ceil(activeTotal * 1.1))}</div>
       </div>
       <div className="target-row surplus">
         <div className="tname">{t('breakeven.plus20')}</div>
-        <div className="tval">₪{Math.ceil(activeTotal * 1.2).toLocaleString()}</div>
+        <div className="tval">{formatAmount(Math.ceil(activeTotal * 1.2))}</div>
       </div>
 
       {monthIncome > 0 && (

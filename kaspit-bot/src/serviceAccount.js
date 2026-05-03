@@ -1,9 +1,1 @@
-export default {
-  type: "service_account",
-  project_id: "kaspit-d01e9",
-  private_key_id: "eda53d21836199ba79f0c06c6a2ff46bdbcd0bef",
-  private_key: "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDSxqTT4/Tv07Tm\nfZtTrc7PxN6i3bTzsP3yHsCx8g09y2e7sTEEWxrciYkVIQEw4rL+nASNd5Y/+CA+\nKbqh7RBfU1IIaU4j0gMZvlRHZ+dTrrjCJgi8ZZ73r2aL6f9bFACWNcwt8gwBj5bV\nCgGlSKmy3ATIYzJCo27bOm7xsKa5kmvGHz0HWhUrfB9tMR7ZP2AgJG/gTAGElE9x\nVt3JguOdz6N+mFEuQyOyxIF07KlUxEs1jiY9+qROFSV+ZgwTRUngwS66X1TduU+h\nVzLpmSTmMlwbsSnz93wENgBhpaY6mog0dWTc12qEE50Nev72BG688HFyx1B+/apn\nW8+lcNyxAgMBAAECggEAJjq60ybNuoEQ1txx44nLEMKxqeMiCrAvwy5CP5Q6RBrE\nSBYBoLtggh8dArzPgT0g/46vQbRux0/7EyNQ80Uy+sM7RgTJlDQndVAg66mkGri+\nUJKC857P6DdDV32739pfJ99+ltfHxzGyxxWvSjoFc4g2At2BFHadqPwuer5SYyZf\n8mgLC8/gpabm/HsYQGhcGhFpvDAeu48yGvoLSH1Kme80Xqb4yfB9pNw/UM+YZ+B/\nTOEr5vjOqUOTHyIGkIUhXYIt7vbwl/blZffahmUuAZqdAYlAEYZpTDUWikKC6jql\nhxGL10T1xHq+If/MpXhAB3k0CC6TediPMP8zp2hkNQKBgQDzz53A0JUzla2Z8vdS\nqbXXMW2peZOX2L3MXT1g2efa8VA9CZzJkByEFKrGvdPTM9y8GqUWGKzB+qLWlRiN\nMx8i4R+0GCEwWj7s3ZIMLOVM5gibwt0O/ION9/+YnVvyJqfXg2/m/eU3UpevzXNR\nk67n7ykD5hHn1nODbrProfs17QKBgQDdUDuZmo4akKGpwMGfs6rMRgdBjlhtCbDG\nwOaIQhKtrUhUe31wkJUKLw4JXZZmnNmDadTyfJvp5QB35BfT26Nn/NMd4iOee5MJ\nkYk3E/mhOhwuUgG2UfoYiW2+X7+mcKlj6hCcpS8ShKneBL8iL/e2lrR4YS+t6/Qr\nr8XfKlkpVQKBgQCVXb5Rn/eoMKy4QgePFvWWLmv2hcsMHfa5Ou4dZaILmgcEPd1W\nBvnRWS/+rdEV9RHoE5LL5LYB6ODWAWWXK5iJr83ScW3zx3YBewS8fMzFva/MbScs\nxTp7QVHPV6g6w7/T4mwt4aIJsInJZF6fvZBL+1LvVoXluJXwEWQcmZHjSQKBgAvB\nTDkfbXbZwcx7cY1jBKpu+cmwnt/DyQD1lAkewVE6SAI8wO/urgvpbexvbSKsKB2D\nzIzIs5tbz4eOtPlKzEYktq36qfusAqZadZhYVkULCh4nuvGNLySIgCzBdzOG/mhR\nMWqwl2x7YW5qgCB3vceT/6f5OYgaZVDAuFjfLfc1AoGAS9Fi8vsv4jP/hdG3L/v5\nOoDQUB2nOl2TJJmGm9G5uRHNW2pj7FbpWFbUSo3r5FWRUHky1twlF0WTYk8sHCKt\n5emxu24b5OR856CMh7y+Ccly5NGnWOEEjVncNl0Nnlq4Ldc6vD3sqR1Bl7ZQ2doW\nxFKeiNVSBstzTH4iGhA6AnI=\n-----END PRIVATE KEY-----\n",
-  client_email: "firebase-adminsdk-fbsvc@kaspit-d01e9.iam.gserviceaccount.com",
-  client_id: "101046094593477478046",
-  token_uri: "https://oauth2.googleapis.com/token",
-};
+export default JSON.parse(process.env.SERVICE_ACCOUNT_JSON || '{}');

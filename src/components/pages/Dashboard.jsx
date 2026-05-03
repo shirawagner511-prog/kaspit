@@ -51,7 +51,7 @@ function DonutChart({ slices, onSliceClick, total }) {
       ) : (
         <>
           <text x={74} y={72} textAnchor="middle" fill="var(--expense)" fontSize={15} fontFamily="DM Mono,monospace" fontWeight="600">
-            {total != null ? `₪${Math.round(total).toLocaleString()}` : ''}
+            {total != null ? formatAmount(total) : ''}
           </text>
         </>
       )}
@@ -263,13 +263,13 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 16px' }}>
           <div style={{ fontSize: 12, color: 'var(--text3)', fontFamily: 'Heebo,sans-serif', marginBottom: 6 }}>{t('dashboard.expenses')}</div>
           <div style={{ fontSize: 22, fontFamily: 'DM Mono,monospace', fontWeight: 600, color: 'var(--expense)', direction: 'ltr', textAlign: 'right' }}>
-            ₪ {totalOut.toLocaleString('he-IL', { maximumFractionDigits: 0 })}
+            {formatAmount(totalOut)}
           </div>
         </div>
         <div style={{ background: 'var(--accent)', border: 'none', borderRadius: 14, padding: '14px 16px' }}>
           <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', fontFamily: 'Heebo,sans-serif', marginBottom: 6 }}>{t('dashboard.income')}</div>
           <div style={{ fontSize: 22, fontFamily: 'DM Mono,monospace', fontWeight: 600, color: '#fff', direction: 'ltr', textAlign: 'right' }}>
-            ₪ {totalIn.toLocaleString('he-IL', { maximumFractionDigits: 0 })}
+            {formatAmount(totalIn)}
           </div>
         </div>
       </div>
