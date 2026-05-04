@@ -64,11 +64,15 @@ async function patchUser(uid, fields) {
   const token = await getAccessToken();
   const updateMask = Object.keys(fields).map((k) => `updateMask.fieldPaths=${k}`).join('&');
   const body = { fields: Object.fromEntries(Object.entries(fields).map(([k, v]) => [k, toValue(v)])) };
-  await fetch(`${BASE}/users/${uid}?${updateMask}`, {
+  const res = await fetch(`${BASE}/users/${uid}?${updateMask}`, {
     method: 'PATCH',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`patchUser failed (${res.status}): ${err}`);
+  }
 }
 
 export async function getHouseholdByPhone(phone) {
