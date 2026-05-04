@@ -163,11 +163,11 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
                 {[
                   { label: lang === 'he' ? 'ניסיון' : 'Trial', price: lang === 'he' ? 'חינם' : 'Free', color: 'var(--surface2)', border: 'var(--border)', accent: false, features: lang === 'he'
-                    ? ['✓ הכנסות והוצאות', '✓ דשבורד ותרשימים', '✓ עד 2 חשבונות', '✗ שיתוף משותף', '✗ תובנות', '✗ נקודת איזון', '✗ קטגוריות מותאמות', '✗ קיקי WhatsApp']
-                    : ['✓ Income & expenses', '✓ Dashboard & charts', '✓ Up to 2 accounts', '✗ Household sharing', '✗ Insights', '✗ Break-even', '✗ Custom categories', '✗ Kiki WhatsApp'] },
+                    ? ['✓ הכנסות והוצאות', '✓ דשבורד ותרשימים', '✓ עד 2 חשבונות', '✓ קיקי WhatsApp', '✗ שיתוף משותף', '✗ תובנות', '✗ נקודת איזון', '✗ קטגוריות מותאמות']
+                    : ['✓ Income & expenses', '✓ Dashboard & charts', '✓ Up to 2 accounts', '✓ Kiki WhatsApp', '✗ Household sharing', '✗ Insights', '✗ Break-even', '✗ Custom categories'] },
                   { label: lang === 'he' ? 'פרמיום' : 'Premium', price: '$5.50/mo', color: '#f0fdf4', border: 'var(--accent)', accent: true, features: lang === 'he'
-                    ? ['✓ הכנסות והוצאות', '✓ דשבורד ותרשימים', '✓ חשבונות ללא הגבלה', '✓ שיתוף משותף', '✓ תובנות', '✓ נקודת איזון', '✓ קטגוריות מותאמות', '✓ קיקי WhatsApp']
-                    : ['✓ Income & expenses', '✓ Dashboard & charts', '✓ Unlimited accounts', '✓ Household sharing', '✓ Insights', '✓ Break-even', '✓ Custom categories', '✓ Kiki WhatsApp'] },
+                    ? ['✓ הכנסות והוצאות', '✓ דשבורד ותרשימים', '✓ חשבונות ללא הגבלה', '✓ קיקי WhatsApp', '✓ שיתוף משותף', '✓ תובנות', '✓ נקודת איזון', '✓ קטגוריות מותאמות']
+                    : ['✓ Income & expenses', '✓ Dashboard & charts', '✓ Unlimited accounts', '✓ Kiki WhatsApp', '✓ Household sharing', '✓ Insights', '✓ Break-even', '✓ Custom categories'] },
                 ].map((plan) => (
                   <div key={plan.label} style={{ background: plan.color, border: `1.5px solid ${plan.border}`, borderRadius: 10, padding: '10px 8px' }}>
                     <div style={{ fontWeight: 700, fontSize: 13, fontFamily: 'Heebo,sans-serif', color: plan.accent ? 'var(--accent)' : 'var(--text)', marginBottom: 1 }}>{plan.label}</div>
