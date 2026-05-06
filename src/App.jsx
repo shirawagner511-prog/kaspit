@@ -220,6 +220,8 @@ export default function App() {
           trialDaysLeft={trialDaysLeft}
           onNavigate={setPage}
           cycleStartDay={cycleStartDay}
+          householdId={householdId}
+          currency={currency}
         />
 
         <Suspense fallback={<Loader />}>

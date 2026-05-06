@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getHousehold, getHouseholdMembers, saveCustomCategories, saveBudgets, saveSavingsGoal, updateEntry, joinHousehold, saveNotificationPrefs, getNotificationPrefs, saveCycleDay, saveCurrency } from '../../firebase/db';
-import { registerForPush } from '../../firebase/notifications';
+import { getHousehold, getHouseholdMembers, saveCustomCategories, saveBudgets, saveSavingsGoal, updateEntry, joinHousehold } from '../../firebase/db';
 import { CATEGORY_VALUES } from '../../utils/constants';
 import { formatAmount } from '../../utils/format';
 
@@ -224,18 +223,6 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
   );
 }
 
-const CURRENCIES = [
-  { code: 'ILS', symbol: '₪', flag: '🇮🇱', name: 'שקל' },
-  { code: 'USD', symbol: '$',  flag: '🇺🇸', name: 'דולר' },
-  { code: 'EUR', symbol: '€',  flag: '🇪🇺', name: 'אירו' },
-  { code: 'GBP', symbol: '£',  flag: '🇬🇧', name: 'לירה' },
-  { code: 'AED', symbol: 'د.إ',flag: '🇦🇪', name: 'דירהם' },
-  { code: 'CAD', symbol: '$',  flag: '🇨🇦', name: 'CAD' },
-  { code: 'AUD', symbol: '$',  flag: '🇦🇺', name: 'AUD' },
-  { code: 'CHF', symbol: 'Fr', flag: '🇨🇭', name: 'פרנק' },
-  { code: 'JPY', symbol: '¥',  flag: '🇯🇵', name: 'ין' },
-  { code: 'TRY', symbol: '₺',  flag: '🇹🇷', name: 'לירה טורקית' },
-];
 
 export default function Settings({ entries, householdId, user, customCategories, allCategories, budgets = {}, savingsGoal = null, onJoinHousehold, onNavigate, onResetOnboarding, isPremium, subStatus, trialDaysLeft, subscription, cycleStartDay: initialCycleDay = 1, currency: initialCurrency = 'ILS' }) {
   const { t, i18n } = useTranslation();
@@ -256,16 +243,6 @@ export default function Settings({ entries, householdId, user, customCategories,
   const [joinLoading, setJoinLoading] = useState(false);
   const [joinSuccess, setJoinSuccess] = useState(false);
   const [subLoading, setSubLoading] = useState(false);
-  const [localCycleDay, setLocalCycleDay] = useState(initialCycleDay);
-  const [cycleSaving, setCycleSaving] = useState(false);
-  const [cycleSaved, setCycleSaved] = useState(false);
-  const [localCurrency, setLocalCurrency] = useState(initialCurrency);
-  const [currencySaving, setCurrencySaving] = useState(false);
-  const [currencySaved, setCurrencySaved] = useState(false);
-  const [notifEnabled, setNotifEnabled] = useState(false);
-  const [notifTime, setNotifTime] = useState('20:00');
-  const [notifStatus, setNotifStatus] = useState('idle'); // idle | saving | saved | error
-  const [notifError, setNotifError] = useState('');
 
   useEffect(() => {
     if (!householdId) return;
@@ -284,14 +261,6 @@ export default function Settings({ entries, householdId, user, customCategories,
     }
   }, [savingsGoal]);
 
-  useEffect(() => {
-    if (section !== 'notifications' || !user?.uid) return;
-    getNotificationPrefs(user.uid).then((prefs) => {
-      setNotifEnabled(prefs.enabled);
-      setNotifTime(prefs.time || '20:00');
-    }).catch(() => {});
-  }, [section, user?.uid]);
-
   async function handleJoinHousehold() {
     if (!joinCode.trim()) return;
     setJoinLoading(true); setJoinError('');
@@ -302,51 +271,6 @@ export default function Settings({ entries, householdId, user, customCategories,
     } catch (e) {
       setJoinError(e.message || t('household.errorJoin'));
     } finally { setJoinLoading(false); }
-  }
-
-  useEffect(() => { setLocalCycleDay(initialCycleDay); }, [initialCycleDay]);
-  useEffect(() => { setLocalCurrency(initialCurrency); }, [initialCurrency]);
-
-  async function handleSaveCurrency() {
-    setCurrencySaving(true);
-    try {
-      await saveCurrency(householdId, localCurrency);
-      localStorage.setItem('budgi-currency', localCurrency);
-      localStorage.setItem('budgi-currency-chosen', '1');
-      setCurrencySaved(true);
-      setTimeout(() => setCurrencySaved(false), 2000);
-    } finally { setCurrencySaving(false); }
-  }
-
-  async function handleSaveCycleDay() {
-    setCycleSaving(true);
-    try {
-      await saveCycleDay(householdId, localCycleDay);
-      localStorage.setItem('budgi-cycle-day', localCycleDay);
-      localStorage.setItem('budgi-cycle-chosen', '1');
-      setCycleSaved(true);
-      setTimeout(() => setCycleSaved(false), 2000);
-    } finally { setCycleSaving(false); }
-  }
-
-  async function handleSaveNotifications() {
-    setNotifStatus('saving');
-    setNotifError('');
-    try {
-      let token = null;
-      if (notifEnabled) {
-        token = await registerForPush();
-      }
-      await saveNotificationPrefs(user.uid, { enabled: notifEnabled, time: notifTime, token });
-      setNotifStatus('saved');
-      setTimeout(() => setNotifStatus('idle'), 2000);
-    } catch (e) {
-      const key = e.message === 'permission_denied' ? 'permissionDenied'
-        : e.message === 'notifications_unsupported' || e.message === 'messaging_unsupported' || e.message === 'sw_unsupported' ? 'unsupported'
-        : null;
-      setNotifError(key ? t(`notifications.${key}`) : e.message);
-      setNotifStatus('error');
-    }
   }
 
   async function handleAddCategory() {
@@ -647,148 +571,6 @@ export default function Settings({ entries, householdId, user, customCategories,
       </AccordionBody>
 
 
-      {/* ── Currency ── */}
-      <AccordionHeader skey="currency" icon="💱" label={i18n.language === 'he' ? 'מטבע' : 'Currency'} />
-      <AccordionBody skey="currency">
-        <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 14 }}>
-          {i18n.language === 'he' ? 'בחר את המטבע שישמש לתצוגת הסכומים' : 'Choose the currency used to display amounts'}
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 16 }}>
-          {CURRENCIES.map((c) => {
-            const isSel = localCurrency === c.code;
-            return (
-              <button
-                key={c.code}
-                onClick={() => setLocalCurrency(c.code)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
-                  border: isSel ? '2px solid var(--accent)' : '1.5px solid var(--border)',
-                  borderRadius: 10, background: isSel ? 'var(--accent-soft)' : 'var(--surface)',
-                  cursor: 'pointer', textAlign: 'start',
-                }}
-              >
-                <span style={{ fontSize: 18 }}>{c.flag}</span>
-                <div>
-                  <div style={{ fontFamily: 'DM Mono,monospace', fontSize: 13, fontWeight: isSel ? 700 : 400, color: isSel ? 'var(--accent)' : 'var(--text)' }}>{c.symbol} {c.code}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text3)' }}>{c.name}</div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-        <button className="submit-btn" style={{ marginTop: 0 }} onClick={handleSaveCurrency} disabled={currencySaving}>
-          {currencySaving ? (i18n.language === 'he' ? 'שומר...' : 'Saving...')
-            : currencySaved ? '✓ ' + (i18n.language === 'he' ? 'נשמר' : 'Saved')
-            : (i18n.language === 'he' ? 'שמור' : 'Save')}
-        </button>
-      </AccordionBody>
-
-      {/* ── Cycle start day ── */}
-      <AccordionHeader skey="cycle" icon="📅" label={i18n.language === 'he' ? 'תאריך תחילת חודש' : 'Billing cycle start'} />
-      <AccordionBody skey="cycle">
-        <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 14 }}>
-          {i18n.language === 'he'
-            ? 'בחר מאיזה יום בחודש תרצה לספור הכנסות והוצאות'
-            : 'Choose which day each month your tracking cycle starts'}
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6, marginBottom: 16 }}>
-          {Array.from({ length: 28 }, (_, i) => i + 1).map((d) => {
-            const isSel = localCycleDay === d;
-            return (
-              <button
-                key={d}
-                onClick={() => setLocalCycleDay(d)}
-                style={{
-                  aspectRatio: '1', border: isSel ? '2px solid var(--accent)' : '1.5px solid var(--border)',
-                  borderRadius: 8, background: isSel ? 'var(--accent)' : 'var(--surface)',
-                  color: isSel ? '#fff' : 'var(--text)',
-                  fontFamily: 'DM Mono,monospace', fontSize: 13, fontWeight: isSel ? 700 : 400, cursor: 'pointer',
-                }}
-              >
-                {d}
-              </button>
-            );
-          })}
-        </div>
-        <button className="submit-btn" style={{ marginTop: 0 }} onClick={handleSaveCycleDay} disabled={cycleSaving}>
-          {cycleSaving ? (i18n.language === 'he' ? 'שומר...' : 'Saving...')
-            : cycleSaved ? '✓ ' + (i18n.language === 'he' ? 'נשמר' : 'Saved')
-            : (i18n.language === 'he' ? 'שמור' : 'Save')}
-        </button>
-      </AccordionBody>
-
-      {/* ── Notifications ── */}
-      <AccordionHeader skey="notifications" icon="🔔" label={t('notifications.title')} />
-      <AccordionBody skey="notifications">
-        {(() => {
-          const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-          const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-          return (
-            <>
-              <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 16 }}>{t('notifications.subtitle')}</div>
-
-              {isIOS && !isStandalone && (
-                <div style={{ background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 10, padding: '12px 14px', marginBottom: 16, fontSize: 12, color: '#92400e' }}>
-                  <div style={{ fontWeight: 700, marginBottom: 6 }}>{t('notifications.iosTitle')}</div>
-                  <ol style={{ margin: 0, paddingInlineStart: 18, lineHeight: 2 }}>
-                    <li>{t('notifications.iosStep1')} <span style={{ fontSize: 15 }}>⎋</span></li>
-                    <li>{t('notifications.iosStep2')}</li>
-                    <li>{t('notifications.iosStep3')}</li>
-                  </ol>
-                  <div style={{ marginTop: 8, opacity: 0.8 }}>{t('notifications.iosNote')}</div>
-                </div>
-              )}
-
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                <span style={{ fontSize: 14, fontWeight: 500 }}>{t('notifications.enable')}</span>
-                <button
-                  onClick={() => setNotifEnabled((v) => !v)}
-                  style={{
-                    width: 48, height: 28, borderRadius: 14, border: 'none', cursor: 'pointer',
-                    background: notifEnabled ? 'var(--accent)' : 'var(--surface3)',
-                    position: 'relative', transition: 'background .2s', flexShrink: 0,
-                  }}
-                >
-                  <span style={{
-                    position: 'absolute', top: 4, width: 20, height: 20, borderRadius: '50%',
-                    background: '#fff', transition: 'inset-inline-start .2s',
-                    insetInlineStart: notifEnabled ? 24 : 4,
-                    boxShadow: '0 1px 3px rgba(0,0,0,.2)',
-                  }} />
-                </button>
-              </div>
-
-              {notifEnabled && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-                  <label style={{ fontSize: 13, color: 'var(--text2)', flexShrink: 0 }}>{t('notifications.timeLabel')}</label>
-                  <input
-                    type="time"
-                    className="form-input"
-                    value={notifTime}
-                    onChange={(e) => setNotifTime(e.target.value)}
-                    style={{ width: 120, direction: 'ltr', textAlign: 'center' }}
-                  />
-                </div>
-              )}
-
-              {notifError && (
-                <div style={{ fontSize: 12, color: 'var(--expense)', marginBottom: 12 }}>{notifError}</div>
-              )}
-
-              <button
-                className="submit-btn"
-                onClick={handleSaveNotifications}
-                disabled={notifStatus === 'saving'}
-                style={{ marginTop: 0 }}
-              >
-                {notifStatus === 'saving' ? t('notifications.saving')
-                  : notifStatus === 'saved' ? '✓ ' + t('notifications.saved')
-                  : t('notifications.save')}
-              </button>
-            </>
-          );
-        })()}
-      </AccordionBody>
 
       {/* ── Dev: reset onboarding ── */}
       {onResetOnboarding && (

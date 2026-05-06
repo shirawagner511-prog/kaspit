@@ -4,10 +4,24 @@ import { signOut, signInWithPopup, GoogleAuthProvider, updateProfile, updatePass
 import { getCycleWindow } from '../../utils/format';
 import { auth, googleProvider } from '../../firebase/config';
 import { getMonths } from '../../utils/constants';
-import { getUserData, saveUserEmail } from '../../firebase/db';
+import { getUserData, saveUserEmail, saveCurrency, saveCycleDay, saveNotificationPrefs, getNotificationPrefs } from '../../firebase/db';
+import { registerForPush } from '../../firebase/notifications';
 import { RefreshCw, LogOut, Languages, UserPen } from 'lucide-react';
 
-export default function Header({ user, currentMonth, currentYear, onMonthChange, isPremium, subStatus, trialDaysLeft, onNavigate, cycleStartDay = 1 }) {
+const CURRENCIES = [
+  { code: 'ILS', symbol: '₪', flag: '🇮🇱', name: 'שקל' },
+  { code: 'USD', symbol: '$',  flag: '🇺🇸', name: 'דולר' },
+  { code: 'EUR', symbol: '€',  flag: '🇪🇺', name: 'אירו' },
+  { code: 'GBP', symbol: '£',  flag: '🇬🇧', name: 'לירה' },
+  { code: 'AED', symbol: 'د.إ',flag: '🇦🇪', name: 'דירהם' },
+  { code: 'CAD', symbol: 'CA$',flag: '🇨🇦', name: 'CAD' },
+  { code: 'AUD', symbol: 'A$', flag: '🇦🇺', name: 'AUD' },
+  { code: 'CHF', symbol: 'Fr', flag: '🇨🇭', name: 'פרנק' },
+  { code: 'JPY', symbol: '¥',  flag: '🇯🇵', name: 'ין' },
+  { code: 'TRY', symbol: '₺',  flag: '🇹🇷', name: 'לירה טורקית' },
+];
+
+export default function Header({ user, currentMonth, currentYear, onMonthChange, isPremium, subStatus, trialDaysLeft, onNavigate, cycleStartDay = 1, householdId, currency = 'ILS' }) {
   const { t, i18n } = useTranslation();
   const lang = i18n.language === 'he' ? 'he' : 'en';
   function toggleLang() {
@@ -24,6 +38,10 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMsg, setProfileMsg] = useState('');
   const [successToast, setSuccessToast] = useState(false);
+  const [localCurrency, setLocalCurrency] = useState(currency);
+  const [localCycleDay, setLocalCycleDay] = useState(cycleStartDay);
+  const [notifEnabled, setNotifEnabled] = useState(false);
+  const [notifTime, setNotifTime] = useState('20:00');
 
   const isGoogle = user?.providerData?.[0]?.providerId === 'google.com';
 
@@ -31,9 +49,16 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
     setMenuOpen(false);
     setDisplayName(user?.displayName || '');
     setCurrentPw(''); setNewPw(''); setProfileMsg('');
-    if (!isGoogle && user?.uid) {
-      const data = await getUserData(user.uid);
-      setRecoveryEmail(data?.email || '');
+    setLocalCurrency(currency);
+    setLocalCycleDay(cycleStartDay);
+    if (user?.uid) {
+      const [data, prefs] = await Promise.all([
+        !isGoogle ? getUserData(user.uid) : Promise.resolve(null),
+        getNotificationPrefs(user.uid).catch(() => ({})),
+      ]);
+      if (data) setRecoveryEmail(data?.email || '');
+      setNotifEnabled(prefs.enabled || false);
+      setNotifTime(prefs.time || '20:00');
     }
     setProfileOpen(true);
   }
@@ -57,6 +82,23 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
         await reauthenticateWithCredential(auth.currentUser, cred);
         await updatePassword(auth.currentUser, newPw);
         setCurrentPw(''); setNewPw('');
+      }
+      if (householdId) {
+        const saves = [];
+        if (localCurrency !== currency) {
+          saves.push(saveCurrency(householdId, localCurrency));
+          localStorage.setItem('budgi-currency', localCurrency);
+          localStorage.setItem('budgi-currency-chosen', '1');
+        }
+        if (localCycleDay !== cycleStartDay) {
+          saves.push(saveCycleDay(householdId, localCycleDay));
+          localStorage.setItem('budgi-cycle-day', localCycleDay);
+          localStorage.setItem('budgi-cycle-chosen', '1');
+        }
+        let token = null;
+        if (notifEnabled) token = await registerForPush().catch(() => null);
+        saves.push(saveNotificationPrefs(user.uid, { enabled: notifEnabled, time: notifTime, token }));
+        await Promise.all(saves);
       }
       setProfileOpen(false);
       setSuccessToast(true);
@@ -276,6 +318,95 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
                 </div>
               </>
             )}
+            <div style={{ height: 1, background: 'var(--border)' }} />
+
+            {/* Currency */}
+            <div>
+              <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 8 }}>{lang === 'he' ? 'מטבע' : 'Currency'}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
+                {CURRENCIES.map((c) => {
+                  const isSel = localCurrency === c.code;
+                  return (
+                    <button
+                      key={c.code}
+                      onClick={() => setLocalCurrency(c.code)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px',
+                        border: isSel ? '2px solid var(--accent)' : '1.5px solid var(--border)',
+                        borderRadius: 8, background: isSel ? 'var(--accent-soft)' : 'var(--surface)',
+                        cursor: 'pointer', textAlign: 'start',
+                      }}
+                    >
+                      <span style={{ fontSize: 16 }}>{c.flag}</span>
+                      <div>
+                        <div style={{ fontFamily: 'DM Mono,monospace', fontSize: 12, fontWeight: isSel ? 700 : 400, color: isSel ? 'var(--accent)' : 'var(--text)' }}>{c.symbol} {c.code}</div>
+                        <div style={{ fontSize: 10, color: 'var(--text3)' }}>{c.name}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Cycle start day */}
+            <div>
+              <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 8 }}>{lang === 'he' ? 'תאריך תחילת חודש' : 'Billing cycle start day'}</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
+                {Array.from({ length: 28 }, (_, i) => i + 1).map((d) => {
+                  const isSel = localCycleDay === d;
+                  return (
+                    <button
+                      key={d}
+                      onClick={() => setLocalCycleDay(d)}
+                      style={{
+                        aspectRatio: '1', border: isSel ? '2px solid var(--accent)' : '1.5px solid var(--border)',
+                        borderRadius: 6, background: isSel ? 'var(--accent)' : 'var(--surface)',
+                        color: isSel ? '#fff' : 'var(--text)',
+                        fontFamily: 'DM Mono,monospace', fontSize: 11, fontWeight: isSel ? 700 : 400, cursor: 'pointer',
+                      }}
+                    >
+                      {d}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Notifications */}
+            <div>
+              <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 8 }}>{lang === 'he' ? 'תזכורת יומית' : 'Daily reminder'}</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: notifEnabled ? 10 : 0 }}>
+                <span style={{ fontSize: 13 }}>{lang === 'he' ? 'שלח תזכורת' : 'Send reminder'}</span>
+                <button
+                  onClick={() => setNotifEnabled((v) => !v)}
+                  style={{
+                    width: 44, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer',
+                    background: notifEnabled ? 'var(--accent)' : 'var(--surface3)',
+                    position: 'relative', flexShrink: 0,
+                  }}
+                >
+                  <span style={{
+                    position: 'absolute', top: 3, width: 20, height: 20, borderRadius: '50%',
+                    background: '#fff', transition: 'inset-inline-start .2s',
+                    insetInlineStart: notifEnabled ? 21 : 3,
+                    boxShadow: '0 1px 3px rgba(0,0,0,.2)',
+                  }} />
+                </button>
+              </div>
+              {notifEnabled && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <label style={{ fontSize: 12, color: 'var(--text2)', flexShrink: 0 }}>{lang === 'he' ? 'שעה' : 'Time'}</label>
+                  <input
+                    type="time"
+                    className="form-input"
+                    value={notifTime}
+                    onChange={(e) => setNotifTime(e.target.value)}
+                    style={{ width: 110, direction: 'ltr', textAlign: 'center' }}
+                  />
+                </div>
+              )}
+            </div>
+
             {profileMsg && (
               <div style={{ fontSize: 13, color: 'var(--expense)', fontWeight: 500 }}>{profileMsg}</div>
             )}
