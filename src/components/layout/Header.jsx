@@ -337,10 +337,10 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
     {profileOpen && (
       <div className="modal-overlay open" onClick={(e) => e.target === e.currentTarget && setProfileOpen(false)}>
         <div style={{
-          position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
           width: 'min(92vw, 440px)', maxHeight: '85vh', minHeight: 0,
           background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12,
-          display: 'flex', flexDirection: 'column', zIndex: 202, overflow: 'hidden',
+          display: 'flex', flexDirection: 'column', overflow: 'hidden',
           boxShadow: '0 8px 40px rgba(0,0,0,0.18)',
         }}>
           <div className="modal-title" style={{ flexShrink: 0 }}>
