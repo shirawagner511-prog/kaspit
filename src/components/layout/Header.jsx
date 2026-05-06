@@ -335,9 +335,8 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
       </div>
     </div>
     {profileOpen && (
-      <div className="modal-overlay open" onClick={(e) => e.target === e.currentTarget && setProfileOpen(false)}>
+      <div className="modal-overlay open" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={(e) => e.target === e.currentTarget && setProfileOpen(false)}>
         <div style={{
-          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
           width: 'min(92vw, 440px)', maxHeight: '85vh', minHeight: 0,
           background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12,
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
