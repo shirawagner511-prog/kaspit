@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { signOut, signInWithPopup, GoogleAuthProvider, updateProfile, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import { getCycleWindow } from '../../utils/format';
@@ -20,6 +20,63 @@ const CURRENCIES = [
   { code: 'JPY', symbol: '¥',  flag: '🇯🇵', name: 'ין' },
   { code: 'TRY', symbol: '₺',  flag: '🇹🇷', name: 'לירה טורקית' },
 ];
+
+function CurrencyDropdown({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const selected = CURRENCIES.find((c) => c.code === value) || CURRENCIES[0];
+
+  useEffect(() => {
+    function handler(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false); }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+          padding: '10px 12px', background: 'var(--surface)', border: '1px solid var(--border)',
+          borderRadius: 8, cursor: 'pointer', fontFamily: 'DM Mono,monospace', fontSize: 14,
+          color: 'var(--text)',
+        }}
+      >
+        <span style={{ fontSize: 18, lineHeight: 1 }}>{selected.flag}</span>
+        <span style={{ flex: 1, textAlign: 'start' }}>{selected.symbol} {selected.code}</span>
+        <span style={{ fontSize: 11, color: 'var(--text3)', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }}>▼</span>
+      </button>
+      {open && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 4px)', insetInlineStart: 0, insetInlineEnd: 0,
+          background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8,
+          zIndex: 400, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,.1)',
+        }}>
+          {CURRENCIES.map((c) => (
+            <button
+              key={c.code}
+              type="button"
+              onClick={() => { onChange(c.code); setOpen(false); }}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                padding: '9px 12px', background: c.code === value ? 'var(--accent-soft)' : 'transparent',
+                border: 'none', borderBottom: '0.5px solid var(--border)', cursor: 'pointer',
+                fontFamily: 'DM Mono,monospace', fontSize: 13, color: c.code === value ? 'var(--accent)' : 'var(--text)',
+                textAlign: 'start',
+              }}
+            >
+              <span style={{ fontSize: 17, lineHeight: 1 }}>{c.flag}</span>
+              <span style={{ fontWeight: c.code === value ? 700 : 400 }}>{c.symbol} {c.code}</span>
+              <span style={{ fontSize: 11, color: 'var(--text3)', fontFamily: 'Heebo,sans-serif', marginInlineStart: 'auto' }}>{c.name}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Header({ user, currentMonth, currentYear, onMonthChange, isPremium, subStatus, trialDaysLeft, onNavigate, cycleStartDay = 1, householdId, currency = 'ILS' }) {
   const { t, i18n } = useTranslation();
@@ -274,13 +331,13 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
       </div>
     </div>
     {profileOpen && (
-      <div className="modal-overlay open" style={{ alignItems: 'center', padding: 16 }} onClick={(e) => e.target === e.currentTarget && setProfileOpen(false)}>
-        <div className="modal" style={{ borderRadius: 12, maxWidth: 400, width: '100%' }}>
-          <div className="modal-title">
+      <div className="modal-overlay open" style={{ alignItems: 'flex-start', paddingTop: 'max(5vh, 16px)', padding: 16 }} onClick={(e) => e.target === e.currentTarget && setProfileOpen(false)}>
+        <div className="modal" style={{ borderRadius: 12, maxWidth: 400, width: '100%', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
+          <div className="modal-title" style={{ flexShrink: 0 }}>
             {lang === 'he' ? 'עדכון פרטים' : 'Edit profile'}
             <button className="modal-close" onClick={() => setProfileOpen(false)}>✕</button>
           </div>
-          <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 14, paddingTop: 16, overflowY: 'auto', maxHeight: 'calc(80vh - 120px)' }}>
+          <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 14, paddingTop: 16, overflowY: 'auto', flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 4 }}>
               <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
                 {(user?.displayName || '?').charAt(0).toUpperCase()}
@@ -325,18 +382,9 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
             <div style={{ height: 1, background: 'var(--border)' }} />
 
             {/* Currency */}
-            <div>
+            <div style={{ position: 'relative' }}>
               <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 4 }}>{lang === 'he' ? 'מטבע' : 'Currency'}</div>
-              <select
-                className="form-input"
-                value={localCurrency}
-                onChange={(e) => setLocalCurrency(e.target.value)}
-                style={{ direction: 'ltr', fontFamily: 'DM Mono,monospace' }}
-              >
-                {CURRENCIES.map((c) => (
-                  <option key={c.code} value={c.code}>{c.flag} {c.symbol} {c.code} — {c.name}</option>
-                ))}
-              </select>
+              <CurrencyDropdown value={localCurrency} onChange={setLocalCurrency} />
             </div>
 
             {/* Cycle start day */}
@@ -402,7 +450,7 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
               <div style={{ fontSize: 13, color: 'var(--expense)', fontWeight: 500 }}>{profileMsg}</div>
             )}
           </div>
-          <div className="modal-footer">
+          <div className="modal-footer" style={{ flexShrink: 0 }}>
             <button onClick={() => setProfileOpen(false)} style={{ flex: 1, height: 44, background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: 14, cursor: 'pointer', fontFamily: 'Heebo,sans-serif', color: 'var(--text2)' }}>
               {lang === 'he' ? 'ביטול' : 'Cancel'}
             </button>
