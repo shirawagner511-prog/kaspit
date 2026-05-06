@@ -9,17 +9,21 @@ import { registerForPush } from '../../firebase/notifications';
 import { RefreshCw, LogOut, Languages, UserPen } from 'lucide-react';
 
 const CURRENCIES = [
-  { code: 'ILS', symbol: '₪', flag: '🇮🇱', name: 'שקל' },
-  { code: 'USD', symbol: '$',  flag: '🇺🇸', name: 'דולר' },
-  { code: 'EUR', symbol: '€',  flag: '🇪🇺', name: 'אירו' },
-  { code: 'GBP', symbol: '£',  flag: '🇬🇧', name: 'לירה' },
-  { code: 'AED', symbol: 'د.إ',flag: '🇦🇪', name: 'דירהם' },
-  { code: 'CAD', symbol: 'CA$',flag: '🇨🇦', name: 'CAD' },
-  { code: 'AUD', symbol: 'A$', flag: '🇦🇺', name: 'AUD' },
-  { code: 'CHF', symbol: 'Fr', flag: '🇨🇭', name: 'פרנק' },
-  { code: 'JPY', symbol: '¥',  flag: '🇯🇵', name: 'ין' },
-  { code: 'TRY', symbol: '₺',  flag: '🇹🇷', name: 'לירה טורקית' },
+  { code: 'ILS', symbol: '₪',   cc: 'il', name: 'שקל' },
+  { code: 'USD', symbol: '$',   cc: 'us', name: 'דולר' },
+  { code: 'EUR', symbol: '€',   cc: 'eu', name: 'אירו' },
+  { code: 'GBP', symbol: '£',   cc: 'gb', name: 'לירה' },
+  { code: 'AED', symbol: 'د.إ', cc: 'ae', name: 'דירהם' },
+  { code: 'CAD', symbol: 'CA$', cc: 'ca', name: 'CAD' },
+  { code: 'AUD', symbol: 'A$',  cc: 'au', name: 'AUD' },
+  { code: 'CHF', symbol: 'Fr',  cc: 'ch', name: 'פרנק' },
+  { code: 'JPY', symbol: '¥',   cc: 'jp', name: 'ין' },
+  { code: 'TRY', symbol: '₺',   cc: 'tr', name: 'לירה טורקית' },
 ];
+
+function FlagImg({ cc }) {
+  return <img src={`https://flagcdn.com/w20/${cc}.png`} width={20} height={15} alt={cc} style={{ borderRadius: 2, objectFit: 'cover', flexShrink: 0 }} />;
+}
 
 function CurrencyDropdown({ value, onChange }) {
   const [open, setOpen] = useState(false);
@@ -44,7 +48,7 @@ function CurrencyDropdown({ value, onChange }) {
           color: 'var(--text)',
         }}
       >
-        <span style={{ fontSize: 18, lineHeight: 1 }}>{selected.flag}</span>
+        <FlagImg cc={selected.cc} />
         <span style={{ flex: 1, textAlign: 'start' }}>{selected.symbol} {selected.code}</span>
         <span style={{ fontSize: 11, color: 'var(--text3)', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }}>▼</span>
       </button>
@@ -67,7 +71,7 @@ function CurrencyDropdown({ value, onChange }) {
                 textAlign: 'start',
               }}
             >
-              <span style={{ fontSize: 17, lineHeight: 1 }}>{c.flag}</span>
+              <FlagImg cc={c.cc} />
               <span style={{ fontWeight: c.code === value ? 700 : 400 }}>{c.symbol} {c.code}</span>
               <span style={{ fontSize: 11, color: 'var(--text3)', fontFamily: 'Heebo,sans-serif', marginInlineStart: 'auto' }}>{c.name}</span>
             </button>
@@ -331,8 +335,14 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
       </div>
     </div>
     {profileOpen && (
-      <div className="modal-overlay open" style={{ alignItems: 'flex-start', paddingTop: 'max(5vh, 16px)', padding: 16 }} onClick={(e) => e.target === e.currentTarget && setProfileOpen(false)}>
-        <div className="modal" style={{ borderRadius: 12, maxWidth: 400, width: '100%', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
+      <div className="modal-overlay open" onClick={(e) => e.target === e.currentTarget && setProfileOpen(false)}>
+        <div style={{
+          position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+          width: 'min(92vw, 440px)', maxHeight: '85vh', minHeight: 0,
+          background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12,
+          display: 'flex', flexDirection: 'column', zIndex: 202, overflow: 'hidden',
+          boxShadow: '0 8px 40px rgba(0,0,0,0.18)',
+        }}>
           <div className="modal-title" style={{ flexShrink: 0 }}>
             {lang === 'he' ? 'עדכון פרטים' : 'Edit profile'}
             <button className="modal-close" onClick={() => setProfileOpen(false)}>✕</button>
