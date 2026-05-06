@@ -260,19 +260,36 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
       </div>
 
       <div data-tour="summary-cards" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 16px' }}>
+        <button
+          onClick={() => setDrilldown((d) => d === 'expenses' ? null : 'expenses')}
+          style={{ background: drilldown === 'expenses' ? '#fef2f2' : 'var(--surface)', border: drilldown === 'expenses' ? '2px solid var(--expense)' : '1px solid var(--border)', borderRadius: 14, padding: '14px 16px', cursor: 'pointer', textAlign: 'right' }}
+        >
           <div style={{ fontSize: 12, color: 'var(--text3)', fontFamily: 'Heebo,sans-serif', marginBottom: 6 }}>{t('dashboard.expenses')}</div>
           <div style={{ fontSize: 22, fontFamily: 'DM Mono,monospace', fontWeight: 600, color: 'var(--expense)', direction: 'ltr', textAlign: 'right' }}>
             {formatAmount(totalOut)}
           </div>
-        </div>
-        <div style={{ background: 'var(--accent)', border: 'none', borderRadius: 14, padding: '14px 16px' }}>
+        </button>
+        <button
+          onClick={() => setDrilldown((d) => d === 'income' ? null : 'income')}
+          style={{ background: drilldown === 'income' ? '#166534' : 'var(--accent)', border: 'none', borderRadius: 14, padding: '14px 16px', cursor: 'pointer', textAlign: 'right' }}
+        >
           <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', fontFamily: 'Heebo,sans-serif', marginBottom: 6 }}>{t('dashboard.income')}</div>
           <div style={{ fontSize: 22, fontFamily: 'DM Mono,monospace', fontWeight: 600, color: '#fff', direction: 'ltr', textAlign: 'right' }}>
             {formatAmount(totalIn)}
           </div>
-        </div>
+        </button>
       </div>
+
+      {drilldown && (() => {
+        const items = me.filter(drilldown === 'income' ? (e) => e.type === 'income' : (e) => e.type !== 'income');
+        return items.length === 0 ? null : (
+          <div className="expense-list" style={{ marginTop: 0, marginBottom: 10 }}>
+            {[...items].sort((a, b) => (b.date > a.date ? 1 : -1)).map((e) => (
+              <EntryItem key={e.id} entry={e} showDelete={true} onEdit={onEdit} onDelete={onDelete} />
+            ))}
+          </div>
+        );
+      })()}
 
       {totalBudget > 0 && (
         <div className="progress-section">
@@ -333,41 +350,6 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
         </div>
       )}
 
-      <div className="cards-row">
-        {[
-          { key: 'fixed',    label: t('dashboard.fixed'),        val: fixedTotal,    color: 'red',            filter: (e) => e.type !== 'income' && e.fixed === 'fixed' },
-          { key: 'variable', label: t('dashboard.variable'),     val: variableTotal, color: 'orange',         filter: (e) => e.type !== 'income' && e.fixed === 'variable' },
-          { key: 'saving',   label: t('dashboard.savingsLabel'), val: savingsTotal,  color: 'var(--accent)',  filter: (e) => e.type === 'saving' },
-          { key: 'income',   label: t('dashboard.incomeLabel'),  val: totalIn,       color: 'var(--accent2)', filter: (e) => e.type === 'income' },
-        ].map(({ key, label, val, color, filter }) => (
-          <div
-            key={key}
-            className={`mini-card${drilldown === key ? ' active' : ''}`}
-            style={{ cursor: 'pointer' }}
-            onClick={() => setDrilldown((d) => d === key ? null : key)}
-          >
-            <div className="label">{label}</div>
-            <div className="val" style={{ color }}>{formatAmount(val)}</div>
-          </div>
-        ))}
-      </div>
-
-      {drilldown && (() => {
-        const filters = {
-          fixed:    (e) => e.type !== 'income' && e.fixed === 'fixed',
-          variable: (e) => e.type !== 'income' && e.fixed === 'variable',
-          saving:   (e) => e.type === 'saving',
-          income:   (e) => e.type === 'income',
-        };
-        const items = me.filter(filters[drilldown]);
-        return items.length === 0 ? null : (
-          <div className="expense-list" style={{ marginTop: 4 }}>
-            {items.map((e) => (
-              <EntryItem key={e.id} entry={e} showDelete={true} onEdit={onEdit} onDelete={onDelete} />
-            ))}
-          </div>
-        );
-      })()}
 
       {sortedCats.length > 0 && (
         <>
