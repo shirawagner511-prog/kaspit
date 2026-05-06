@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getHousehold, getHouseholdMembers, saveCustomCategories, saveBudgets, saveSavingsGoal, updateEntry, joinHousehold, saveNotificationPrefs, getNotificationPrefs, saveCycleDay } from '../../firebase/db';
+import { getHousehold, getHouseholdMembers, saveCustomCategories, saveBudgets, saveSavingsGoal, updateEntry, joinHousehold, saveNotificationPrefs, getNotificationPrefs, saveCycleDay, saveCurrency } from '../../firebase/db';
 import { registerForPush } from '../../firebase/notifications';
 import { CATEGORY_VALUES } from '../../utils/constants';
 import { formatAmount } from '../../utils/format';
@@ -224,7 +224,20 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
   );
 }
 
-export default function Settings({ entries, householdId, user, customCategories, allCategories, budgets = {}, savingsGoal = null, onJoinHousehold, onNavigate, onResetOnboarding, isPremium, subStatus, trialDaysLeft, subscription, cycleStartDay: initialCycleDay = 1 }) {
+const CURRENCIES = [
+  { code: 'ILS', symbol: '₪', flag: '🇮🇱', name: 'שקל' },
+  { code: 'USD', symbol: '$',  flag: '🇺🇸', name: 'דולר' },
+  { code: 'EUR', symbol: '€',  flag: '🇪🇺', name: 'אירו' },
+  { code: 'GBP', symbol: '£',  flag: '🇬🇧', name: 'לירה' },
+  { code: 'AED', symbol: 'د.إ',flag: '🇦🇪', name: 'דירהם' },
+  { code: 'CAD', symbol: '$',  flag: '🇨🇦', name: 'CAD' },
+  { code: 'AUD', symbol: '$',  flag: '🇦🇺', name: 'AUD' },
+  { code: 'CHF', symbol: 'Fr', flag: '🇨🇭', name: 'פרנק' },
+  { code: 'JPY', symbol: '¥',  flag: '🇯🇵', name: 'ין' },
+  { code: 'TRY', symbol: '₺',  flag: '🇹🇷', name: 'לירה טורקית' },
+];
+
+export default function Settings({ entries, householdId, user, customCategories, allCategories, budgets = {}, savingsGoal = null, onJoinHousehold, onNavigate, onResetOnboarding, isPremium, subStatus, trialDaysLeft, subscription, cycleStartDay: initialCycleDay = 1, currency: initialCurrency = 'ILS' }) {
   const { t, i18n } = useTranslation();
   const [household, setHousehold] = useState(null);
   const [members, setMembers] = useState([]);
@@ -246,6 +259,9 @@ export default function Settings({ entries, householdId, user, customCategories,
   const [localCycleDay, setLocalCycleDay] = useState(initialCycleDay);
   const [cycleSaving, setCycleSaving] = useState(false);
   const [cycleSaved, setCycleSaved] = useState(false);
+  const [localCurrency, setLocalCurrency] = useState(initialCurrency);
+  const [currencySaving, setCurrencySaving] = useState(false);
+  const [currencySaved, setCurrencySaved] = useState(false);
   const [notifEnabled, setNotifEnabled] = useState(false);
   const [notifTime, setNotifTime] = useState('20:00');
   const [notifStatus, setNotifStatus] = useState('idle'); // idle | saving | saved | error
@@ -289,6 +305,18 @@ export default function Settings({ entries, householdId, user, customCategories,
   }
 
   useEffect(() => { setLocalCycleDay(initialCycleDay); }, [initialCycleDay]);
+  useEffect(() => { setLocalCurrency(initialCurrency); }, [initialCurrency]);
+
+  async function handleSaveCurrency() {
+    setCurrencySaving(true);
+    try {
+      await saveCurrency(householdId, localCurrency);
+      localStorage.setItem('budgi-currency', localCurrency);
+      localStorage.setItem('budgi-currency-chosen', '1');
+      setCurrencySaved(true);
+      setTimeout(() => setCurrencySaved(false), 2000);
+    } finally { setCurrencySaving(false); }
+  }
 
   async function handleSaveCycleDay() {
     setCycleSaving(true);
@@ -618,6 +646,42 @@ export default function Settings({ entries, householdId, user, customCategories,
         ))}
       </AccordionBody>
 
+
+      {/* ── Currency ── */}
+      <AccordionHeader skey="currency" icon="💱" label={i18n.language === 'he' ? 'מטבע' : 'Currency'} />
+      <AccordionBody skey="currency">
+        <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 14 }}>
+          {i18n.language === 'he' ? 'בחר את המטבע שישמש לתצוגת הסכומים' : 'Choose the currency used to display amounts'}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 16 }}>
+          {CURRENCIES.map((c) => {
+            const isSel = localCurrency === c.code;
+            return (
+              <button
+                key={c.code}
+                onClick={() => setLocalCurrency(c.code)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
+                  border: isSel ? '2px solid var(--accent)' : '1.5px solid var(--border)',
+                  borderRadius: 10, background: isSel ? 'var(--accent-soft)' : 'var(--surface)',
+                  cursor: 'pointer', textAlign: 'start',
+                }}
+              >
+                <span style={{ fontSize: 18 }}>{c.flag}</span>
+                <div>
+                  <div style={{ fontFamily: 'DM Mono,monospace', fontSize: 13, fontWeight: isSel ? 700 : 400, color: isSel ? 'var(--accent)' : 'var(--text)' }}>{c.symbol} {c.code}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text3)' }}>{c.name}</div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+        <button className="submit-btn" style={{ marginTop: 0 }} onClick={handleSaveCurrency} disabled={currencySaving}>
+          {currencySaving ? (i18n.language === 'he' ? 'שומר...' : 'Saving...')
+            : currencySaved ? '✓ ' + (i18n.language === 'he' ? 'נשמר' : 'Saved')
+            : (i18n.language === 'he' ? 'שמור' : 'Save')}
+        </button>
+      </AccordionBody>
 
       {/* ── Cycle start day ── */}
       <AccordionHeader skey="cycle" icon="📅" label={i18n.language === 'he' ? 'תאריך תחילת חודש' : 'Billing cycle start'} />
