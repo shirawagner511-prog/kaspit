@@ -11,7 +11,8 @@ function getIsraelTime() {
   }).formatToParts(new Date());
   const hour = parts.find((p) => p.type === 'hour').value;
   const minute = parts.find((p) => p.type === 'minute').value;
-  return `${hour}:${minute}`;
+  const h = hour === '24' ? '00' : hour;
+  return `${h}:${minute}`;
 }
 
 export function startReminderCron() {

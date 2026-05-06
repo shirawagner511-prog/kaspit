@@ -9,7 +9,8 @@ import { useHousehold } from './hooks/useHousehold';
 import { useAccounts } from './hooks/useAccounts';
 import { useAutoRecurring } from './hooks/useAutoRecurring';
 import { useSubscription } from './hooks/useSubscription';
-import { deleteEntry, saveCurrency, saveCycleDay } from './firebase/db';
+import { deleteEntry, saveCurrency, saveCycleDay, getUserData, saveNotificationPrefs } from './firebase/db';
+import { registerForPush } from './firebase/notifications';
 import { getDefaultCategories } from './utils/constants';
 
 import { LayoutDashboard, ListOrdered, Scale, TrendingUp, Landmark, Settings as SettingsIcon, MessageCircle } from 'lucide-react';
@@ -67,6 +68,20 @@ export default function App() {
   useEffect(() => {
     getRedirectResult(auth).catch((e) => console.error('Redirect error:', e));
   }, []);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    (async () => {
+      try {
+        const data = await getUserData(user.uid);
+        if (!data.reminderEnabled) return;
+        const token = await registerForPush();
+        if (token && token !== data.fcmToken) {
+          await saveNotificationPrefs(user.uid, { enabled: true, time: data.reminderTime, token });
+        }
+      } catch { /* notifications not supported or denied — silent */ }
+    })();
+  }, [user?.uid]);
 
   useEffect(() => {
     if (householdCurrency) {
