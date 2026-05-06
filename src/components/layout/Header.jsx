@@ -280,7 +280,7 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
             {lang === 'he' ? 'עדכון פרטים' : 'Edit profile'}
             <button className="modal-close" onClick={() => setProfileOpen(false)}>✕</button>
           </div>
-          <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 14, paddingTop: 16 }}>
+          <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 14, paddingTop: 16, overflowY: 'auto', maxHeight: 'calc(80vh - 120px)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 4 }}>
               <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
                 {(user?.displayName || '?').charAt(0).toUpperCase()}
@@ -295,12 +295,16 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
               <input className="form-input" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
             </div>
             {isGoogle ? (
-              <div style={{ fontSize: 12, color: 'var(--text3)', background: 'var(--surface2)', borderRadius: 8, padding: '10px 12px' }}>
-                {lang === 'he' ? '🔒 חשבון Google — המייל מנוהל דרך Google' : '🔒 Google account — email managed by Google'}
+              <div>
+                <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 4 }}>{lang === 'he' ? 'אימייל' : 'Email'}</div>
+                <input className="form-input" value={user?.email || ''} readOnly style={{ color: 'var(--text3)', cursor: 'default' }} />
+                <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4 }}>
+                  {lang === 'he' ? 'מנוהל דרך Google' : 'Managed by Google'}
+                </div>
               </div>
             ) : (
               <div>
-                <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 4 }}>{lang === 'he' ? 'מייל לשחזור חשבון' : 'Recovery email'}</div>
+                <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 4 }}>{lang === 'he' ? 'אימייל' : 'Email'}</div>
                 <input className="form-input" type="email" value={recoveryEmail} onChange={(e) => setRecoveryEmail(e.target.value)} placeholder="email@example.com" inputMode="email" autoComplete="email" />
               </div>
             )}
