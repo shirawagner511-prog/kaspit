@@ -435,7 +435,7 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
         <>
           <div className="section-title">{t('dashboard.recent')}</div>
           <div className="expense-list">
-            {me.slice(0, 5).map((e) => (
+            {[...me].sort((a, b) => (b.date > a.date ? 1 : -1)).slice(0, 5).map((e) => (
               <EntryItem key={e.id} entry={e} showDelete={true} onEdit={onEdit} onDelete={onDelete} />
             ))}
           </div>
