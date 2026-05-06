@@ -326,30 +326,17 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
 
             {/* Currency */}
             <div>
-              <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 8 }}>{lang === 'he' ? 'מטבע' : 'Currency'}</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
-                {CURRENCIES.map((c) => {
-                  const isSel = localCurrency === c.code;
-                  return (
-                    <button
-                      key={c.code}
-                      onClick={() => setLocalCurrency(c.code)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px',
-                        border: isSel ? '2px solid var(--accent)' : '1.5px solid var(--border)',
-                        borderRadius: 8, background: isSel ? 'var(--accent-soft)' : 'var(--surface)',
-                        cursor: 'pointer', textAlign: 'start',
-                      }}
-                    >
-                      <span style={{ fontSize: 16 }}>{c.flag}</span>
-                      <div>
-                        <div style={{ fontFamily: 'DM Mono,monospace', fontSize: 12, fontWeight: isSel ? 700 : 400, color: isSel ? 'var(--accent)' : 'var(--text)' }}>{c.symbol} {c.code}</div>
-                        <div style={{ fontSize: 10, color: 'var(--text3)' }}>{c.name}</div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+              <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 4 }}>{lang === 'he' ? 'מטבע' : 'Currency'}</div>
+              <select
+                className="form-input"
+                value={localCurrency}
+                onChange={(e) => setLocalCurrency(e.target.value)}
+                style={{ direction: 'ltr', fontFamily: 'DM Mono,monospace' }}
+              >
+                {CURRENCIES.map((c) => (
+                  <option key={c.code} value={c.code}>{c.flag} {c.symbol} {c.code} — {c.name}</option>
+                ))}
+              </select>
             </div>
 
             {/* Cycle start day */}
