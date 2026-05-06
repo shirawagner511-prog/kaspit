@@ -109,7 +109,6 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
   };
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [suggestionsDismissed, setSuggestionsDismissed] = useState(false);
-  const [incomeOpen, setIncomeOpen] = useState(false);
   const [drilldown, setDrilldown] = useState(null);
   const [catDrilldown, setCatDrilldown] = useState(null);
   const [trialNudgeDismissed, setTrialNudgeDismissed] = useState(() => localStorage.getItem('budgi-trial-nudge-dismissed') === '1');
@@ -245,16 +244,6 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
             }}>
               {balanceDiff >= 0 ? '▲' : '▼'} {Math.abs(balanceDiff)}% {t('dashboard.vsLastMonth')}
             </span>
-          </div>
-        )}
-        {incomeOpen && (
-          <div style={{ marginTop: 12, borderTop: '1px solid rgba(255,255,255,.1)', paddingTop: 10, textAlign: 'right' }}>
-            {me.filter((e) => e.type === 'income').map((e) => (
-              <div key={e.id} onClick={() => onEdit(e)} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', cursor: 'pointer', fontSize: 13 }}>
-                <span style={{ color: 'var(--accent2)', fontWeight: 600 }}>+{formatAmount(e.amount)}</span>
-                <span style={{ color: 'var(--text2)' }}>{e.name}</span>
-              </div>
-            ))}
           </div>
         )}
       </div>
