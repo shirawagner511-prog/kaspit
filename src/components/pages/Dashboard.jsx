@@ -109,7 +109,8 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
   };
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [suggestionsDismissed, setSuggestionsDismissed] = useState(false);
-  const [drilldown, setDrilldown] = useState(null);
+  const [drilldown, setDrilldown] = useState(null); // null | 'income' | 'expenses'
+  const [expenseTab, setExpenseTab] = useState(null); // null | 'fixed' | 'variable'
   const [catDrilldown, setCatDrilldown] = useState(null);
   const [trialNudgeDismissed, setTrialNudgeDismissed] = useState(() => localStorage.getItem('budgi-trial-nudge-dismissed') === '1');
 
@@ -250,7 +251,7 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
 
       <div data-tour="summary-cards" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 }}>
         <button
-          onClick={() => setDrilldown((d) => d === 'expenses' ? null : 'expenses')}
+          onClick={() => { setDrilldown((d) => d === 'expenses' ? null : 'expenses'); setExpenseTab(null); }}
           style={{ background: drilldown === 'expenses' ? '#fef2f2' : 'var(--surface)', border: drilldown === 'expenses' ? '2px solid var(--expense)' : '1px solid var(--border)', borderRadius: 14, padding: '14px 16px', cursor: 'pointer', textAlign: 'right' }}
         >
           <div style={{ fontSize: 12, color: 'var(--text3)', fontFamily: 'Heebo,sans-serif', marginBottom: 6 }}>{t('dashboard.expenses')}</div>
@@ -269,42 +270,64 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
         </button>
       </div>
 
-      {drilldown && (() => {
-        if (drilldown === 'income') {
-          const items = [...me.filter((e) => e.type === 'income')].sort((a, b) => (b.date > a.date ? 1 : -1));
-          return items.length === 0 ? null : (
-            <div className="expense-list" style={{ marginTop: 0, marginBottom: 10 }}>
-              {items.map((e) => <EntryItem key={e.id} entry={e} showDelete={true} onEdit={onEdit} onDelete={onDelete} />)}
-            </div>
-          );
-        }
-        const fixed    = [...me.filter((e) => e.type !== 'income' && e.fixed === 'fixed')].sort((a, b) => (b.date > a.date ? 1 : -1));
-        const variable = [...me.filter((e) => e.type !== 'income' && e.fixed !== 'fixed')].sort((a, b) => (b.date > a.date ? 1 : -1));
-        return (
-          <div style={{ marginBottom: 10 }}>
-            {fixed.length > 0 && (
-              <>
-                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text3)', padding: '8px 4px 4px', textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                  {t('dashboard.fixed')} · {formatAmount(fixedTotal)}
-                </div>
-                <div className="expense-list">
-                  {fixed.map((e) => <EntryItem key={e.id} entry={e} showDelete={true} onEdit={onEdit} onDelete={onDelete} />)}
-                </div>
-              </>
-            )}
-            {variable.length > 0 && (
-              <>
-                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text3)', padding: '8px 4px 4px', textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                  {t('dashboard.variable')} · {formatAmount(variableTotal)}
-                </div>
-                <div className="expense-list">
-                  {variable.map((e) => <EntryItem key={e.id} entry={e} showDelete={true} onEdit={onEdit} onDelete={onDelete} />)}
-                </div>
-              </>
-            )}
+      {drilldown === 'income' && (() => {
+        const items = [...me.filter((e) => e.type === 'income')].sort((a, b) => (b.date > a.date ? 1 : -1));
+        return items.length === 0 ? null : (
+          <div className="expense-list" style={{ marginBottom: 10 }}>
+            {items.map((e) => <EntryItem key={e.id} entry={e} showDelete={true} onEdit={onEdit} onDelete={onDelete} />)}
           </div>
         );
       })()}
+
+      {drilldown === 'expenses' && (
+        <div style={{ marginBottom: 10 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+            {[
+              { key: 'fixed',    label: t('dashboard.fixed'),    total: fixedTotal },
+              { key: 'variable', label: t('dashboard.variable'), total: variableTotal },
+            ].map(({ key, label, total }) => (
+              <button
+                key={key}
+                onClick={() => setExpenseTab((t) => t === key ? null : key)}
+                style={{
+                  padding: '10px 14px', borderRadius: 10, cursor: 'pointer', textAlign: 'right',
+                  background: expenseTab === key ? '#fef2f2' : 'var(--surface)',
+                  border: expenseTab === key ? '2px solid var(--expense)' : '1px solid var(--border)',
+                }}
+              >
+                <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 4 }}>{label}</div>
+                <div style={{ fontFamily: 'DM Mono,monospace', fontSize: 16, fontWeight: 600, color: 'var(--expense)' }}>{formatAmount(total)}</div>
+              </button>
+            ))}
+          </div>
+          {expenseTab && (() => {
+            const items = [...me.filter(expenseTab === 'fixed'
+              ? (e) => e.type !== 'income' && e.fixed === 'fixed'
+              : (e) => e.type !== 'income' && e.fixed !== 'fixed'
+            )].sort((a, b) => (b.date > a.date ? 1 : -1));
+            const byCat = {};
+            items.forEach((e) => { byCat[e.category] = (byCat[e.category] || 0) + e.amount; });
+            const sortedByCat = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
+            return (
+              <>
+                {sortedByCat.map(([cat, total]) => (
+                  <div key={cat} style={{ marginBottom: 2 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', background: 'var(--surface2)', borderRadius: 8, marginBottom: 2, fontSize: 13 }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <CategoryIcon category={cat} size={14} /> {getName(cat)}
+                      </span>
+                      <span style={{ fontFamily: 'DM Mono,monospace', fontWeight: 600, color: 'var(--expense)' }}>{formatAmount(total)}</span>
+                    </div>
+                    {items.filter((e) => e.category === cat).map((e) => (
+                      <EntryItem key={e.id} entry={e} showDelete={true} onEdit={onEdit} onDelete={onDelete} />
+                    ))}
+                  </div>
+                ))}
+              </>
+            );
+          })()}
+        </div>
+      )}
 
       {totalBudget > 0 && (
         <div className="progress-section">
