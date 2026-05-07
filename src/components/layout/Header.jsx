@@ -157,7 +157,20 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
           localStorage.setItem('budgi-cycle-chosen', '1');
         }
         let token = null;
-        if (notifEnabled) token = await registerForPush().catch(() => null);
+        if (notifEnabled) {
+          try {
+            token = await registerForPush();
+          } catch (e) {
+            const msg = e.message === 'permission_denied'
+              ? (lang === 'he' ? 'נדרש אישור להתראות בהגדרות המכשיר' : 'Enable notifications in device settings')
+              : e.message === 'notifications_unsupported' || e.message === 'messaging_unsupported' || e.message === 'sw_unsupported'
+              ? (lang === 'he' ? 'התראות לא נתמכות בדפדפן זה' : 'Notifications not supported in this browser')
+              : (lang === 'he' ? 'שגיאה ברישום התראות: ' : 'Push registration error: ') + e.message;
+            setProfileMsg(msg);
+            setProfileSaving(false);
+            return;
+          }
+        }
         saves.push(saveNotificationPrefs(user.uid, { enabled: notifEnabled, time: notifTime, token }));
         await Promise.all(saves);
       }

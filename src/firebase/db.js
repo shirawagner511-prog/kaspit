@@ -73,11 +73,9 @@ export async function saveCycleDay(householdId, day) {
 }
 
 export async function saveNotificationPrefs(uid, { enabled, time, token }) {
-  await updateDoc(doc(db, 'users', uid), {
-    reminderEnabled: enabled,
-    reminderTime: time || null,
-    fcmToken: token || null,
-  });
+  const update = { reminderEnabled: enabled, reminderTime: time || null };
+  if (token) update.fcmToken = token;
+  await updateDoc(doc(db, 'users', uid), update);
 }
 
 export async function getNotificationPrefs(uid) {
