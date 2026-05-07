@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { signOut, signInWithPopup, GoogleAuthProvider, updateProfile, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import { getCycleWindow } from '../../utils/format';
@@ -347,8 +348,15 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
         </div>
       </div>
     </div>
-    {profileOpen && (
-      <div className="modal-overlay open" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={(e) => e.target === e.currentTarget && setProfileOpen(false)}>
+    {profileOpen && createPortal(
+      <div
+        onClick={(e) => e.target === e.currentTarget && setProfileOpen(false)}
+        style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(28,25,23,0.55)', backdropFilter: 'blur(6px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+        }}
+      >
         <div style={{
           width: 'min(92vw, 440px)', maxHeight: '85vh', minHeight: 0,
           background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12,
@@ -481,7 +489,8 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
             </button>
           </div>
         </div>
-      </div>
+      </div>,
+      document.body
     )}
 
     {successToast && (
