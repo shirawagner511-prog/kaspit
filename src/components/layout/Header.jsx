@@ -358,7 +358,7 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
         }}
       >
         <div style={{
-          width: 'min(92vw, 440px)', maxHeight: '85vh', minHeight: 0,
+          width: 'min(96vw, 480px)', maxHeight: '94vh', minHeight: 0,
           background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12,
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
           boxShadow: '0 8px 40px rgba(0,0,0,0.18)',
@@ -367,9 +367,9 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
             {lang === 'he' ? 'עדכון פרטים' : 'Edit profile'}
             <button className="modal-close" onClick={() => setProfileOpen(false)}>✕</button>
           </div>
-          <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 14, paddingTop: 16, overflowY: 'auto', flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 4 }}>
-              <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
+          <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingTop: 12, overflowY: 'auto', flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 2 }}>
+              <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
                 {(user?.displayName || '?').charAt(0).toUpperCase()}
               </div>
               <div>
@@ -420,7 +420,7 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
             {/* Cycle start day */}
             <div>
               <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 8 }}>{lang === 'he' ? 'תאריך תחילת חודש' : 'Billing cycle start day'}</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 3 }}>
                 {Array.from({ length: 28 }, (_, i) => i + 1).map((d) => {
                   const isSel = localCycleDay === d;
                   return (
@@ -428,10 +428,10 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
                       key={d}
                       onClick={() => setLocalCycleDay(d)}
                       style={{
-                        aspectRatio: '1', border: isSel ? '2px solid var(--accent)' : '1.5px solid var(--border)',
-                        borderRadius: 6, background: isSel ? 'var(--accent)' : 'var(--surface)',
+                        padding: '5px 0', border: isSel ? '2px solid var(--accent)' : '1px solid var(--border)',
+                        borderRadius: 5, background: isSel ? 'var(--accent)' : 'var(--surface)',
                         color: isSel ? '#fff' : 'var(--text)',
-                        fontFamily: 'DM Mono,monospace', fontSize: 11, fontWeight: isSel ? 700 : 400, cursor: 'pointer',
+                        fontFamily: 'DM Mono,monospace', fontSize: 10, fontWeight: isSel ? 700 : 400, cursor: 'pointer',
                       }}
                     >
                       {d}
