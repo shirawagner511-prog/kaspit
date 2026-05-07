@@ -15,8 +15,8 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
   self.registration.showNotification(payload.notification.title, {
     body: payload.notification.body,
-    icon: '/kaspit/icon-192.png',
-    badge: '/kaspit/icon-192.png',
+    icon: '/Budgi/icon-192.png',
+    badge: '/Budgi/icon-192.png',
     tag: 'budgi-reminder',
   });
 });
