@@ -270,12 +270,38 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
       </div>
 
       {drilldown && (() => {
-        const items = me.filter(drilldown === 'income' ? (e) => e.type === 'income' : (e) => e.type !== 'income');
-        return items.length === 0 ? null : (
-          <div className="expense-list" style={{ marginTop: 0, marginBottom: 10 }}>
-            {[...items].sort((a, b) => (b.date > a.date ? 1 : -1)).map((e) => (
-              <EntryItem key={e.id} entry={e} showDelete={true} onEdit={onEdit} onDelete={onDelete} />
-            ))}
+        if (drilldown === 'income') {
+          const items = [...me.filter((e) => e.type === 'income')].sort((a, b) => (b.date > a.date ? 1 : -1));
+          return items.length === 0 ? null : (
+            <div className="expense-list" style={{ marginTop: 0, marginBottom: 10 }}>
+              {items.map((e) => <EntryItem key={e.id} entry={e} showDelete={true} onEdit={onEdit} onDelete={onDelete} />)}
+            </div>
+          );
+        }
+        const fixed    = [...me.filter((e) => e.type !== 'income' && e.fixed === 'fixed')].sort((a, b) => (b.date > a.date ? 1 : -1));
+        const variable = [...me.filter((e) => e.type !== 'income' && e.fixed !== 'fixed')].sort((a, b) => (b.date > a.date ? 1 : -1));
+        return (
+          <div style={{ marginBottom: 10 }}>
+            {fixed.length > 0 && (
+              <>
+                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text3)', padding: '8px 4px 4px', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                  {t('dashboard.fixed')} · {formatAmount(fixedTotal)}
+                </div>
+                <div className="expense-list">
+                  {fixed.map((e) => <EntryItem key={e.id} entry={e} showDelete={true} onEdit={onEdit} onDelete={onDelete} />)}
+                </div>
+              </>
+            )}
+            {variable.length > 0 && (
+              <>
+                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text3)', padding: '8px 4px 4px', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                  {t('dashboard.variable')} · {formatAmount(variableTotal)}
+                </div>
+                <div className="expense-list">
+                  {variable.map((e) => <EntryItem key={e.id} entry={e} showDelete={true} onEdit={onEdit} onDelete={onDelete} />)}
+                </div>
+              </>
+            )}
           </div>
         );
       })()}
