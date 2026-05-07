@@ -2,7 +2,7 @@ import { getToken } from 'firebase/messaging';
 import { messaging } from './config';
 
 const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
-const SW_PATH = '/kaspit/firebase-messaging-sw.js';
+const SW_PATH = '/Budgi/firebase-messaging-sw.js';
 
 export async function registerForPush() {
   if (!('Notification' in window)) throw new Error('notifications_unsupported');

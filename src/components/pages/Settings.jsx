@@ -337,7 +337,7 @@ export default function Settings({ entries, householdId, user, customCategories,
     entries.forEach((e) => rows.push([e.date, e.name, e.amount, catMap[e.category] || e.category, e.type, e.fixed, e.addedBy || '']));
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob(['\uFEFF' + rows.map((r) => r.join(',')).join('\n')], { type: 'text/csv;charset=utf-8;' }));
-    a.download = 'kaspit.csv';
+    a.download = 'budgi.csv';
     a.click();
   }
 
