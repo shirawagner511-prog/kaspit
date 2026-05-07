@@ -283,25 +283,34 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
         <div style={{ marginBottom: 10 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
             {[
-              { key: 'fixed',    label: t('dashboard.fixed'),    total: fixedTotal },
-              { key: 'variable', label: t('dashboard.variable'), total: variableTotal },
-            ].map(({ key, label, total }) => (
-              <button
-                key={key}
-                onClick={() => setExpenseTab((t) => t === key ? null : key)}
-                style={{
-                  padding: '10px 14px', borderRadius: 10, cursor: 'pointer', textAlign: 'right',
-                  background: expenseTab === key ? '#fef2f2' : 'var(--surface)',
-                  border: expenseTab === key ? '2px solid var(--expense)' : '1px solid var(--border)',
-                }}
-              >
-                <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 4 }}>{label}</div>
-                <div style={{ fontFamily: 'DM Mono,monospace', fontSize: 16, fontWeight: 600, color: 'var(--expense)' }}>{formatAmount(total)}</div>
-              </button>
-            ))}
+              { key: 'fixed',    label: t('dashboard.fixed'),    total: fixedTotal,
+                bg: '#fef3c7', bgSel: '#fffbeb', border: '#f59e0b', textColor: '#92400e' },
+              { key: 'variable', label: t('dashboard.variable'), total: variableTotal,
+                bg: '#eff6ff', bgSel: '#dbeafe', border: '#3b82f6', textColor: '#1e40af' },
+            ].map(({ key, label, total, bg, bgSel, border, textColor }) => {
+              const isSel = expenseTab === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => setExpenseTab((t) => t === key ? null : key)}
+                  style={{
+                    padding: '12px 14px', borderRadius: 12, cursor: 'pointer', textAlign: 'right',
+                    background: isSel ? bgSel : 'var(--surface)',
+                    border: `${isSel ? '2px' : '1px'} solid ${isSel ? border : 'var(--border)'}`,
+                    transition: 'all .15s',
+                  }}
+                >
+                  <div style={{ fontSize: 11, color: isSel ? textColor : 'var(--text3)', fontWeight: 600, marginBottom: 5, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</div>
+                  <div style={{ fontFamily: 'DM Mono,monospace', fontSize: 17, fontWeight: 700, color: isSel ? textColor : 'var(--text)' }}>{formatAmount(total)}</div>
+                </button>
+              );
+            })}
           </div>
           {expenseTab && (() => {
-            const items = [...me.filter(expenseTab === 'fixed'
+            const isFixed = expenseTab === 'fixed';
+            const accentColor = isFixed ? '#92400e' : '#1e40af';
+            const headerBg   = isFixed ? '#fef9ee' : '#f0f6ff';
+            const items = [...me.filter(isFixed
               ? (e) => e.type !== 'income' && e.fixed === 'fixed'
               : (e) => e.type !== 'income' && e.fixed !== 'fixed'
             )].sort((a, b) => (b.date > a.date ? 1 : -1));
@@ -309,21 +318,25 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
             items.forEach((e) => { byCat[e.category] = (byCat[e.category] || 0) + e.amount; });
             const sortedByCat = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
             return (
-              <>
-                {sortedByCat.map(([cat, total]) => (
-                  <div key={cat} style={{ marginBottom: 2 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 8px', background: 'var(--surface2)', borderRadius: 8, marginBottom: 2, fontSize: 13 }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
+                {sortedByCat.map(([cat, catTotal], i) => (
+                  <div key={cat}>
+                    <div style={{
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                      padding: '8px 12px', background: headerBg,
+                      borderTop: i > 0 ? '1px solid var(--border)' : 'none',
+                    }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 600, color: accentColor }}>
                         <CategoryIcon category={cat} size={14} /> {getName(cat)}
                       </span>
-                      <span style={{ fontFamily: 'DM Mono,monospace', fontWeight: 600, color: 'var(--expense)' }}>{formatAmount(total)}</span>
+                      <span style={{ fontFamily: 'DM Mono,monospace', fontSize: 13, fontWeight: 700, color: accentColor }}>{formatAmount(catTotal)}</span>
                     </div>
                     {items.filter((e) => e.category === cat).map((e) => (
                       <EntryItem key={e.id} entry={e} showDelete={true} onEdit={onEdit} onDelete={onDelete} />
                     ))}
                   </div>
                 ))}
-              </>
+              </div>
             );
           })()}
         </div>
