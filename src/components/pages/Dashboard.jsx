@@ -281,13 +281,12 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
 
       {drilldown === 'expenses' && (
         <div style={{ marginBottom: 10 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
             {[
-              { key: 'fixed',    label: t('dashboard.fixed'),    total: fixedTotal,
-                bg: '#fef3c7', bgSel: '#fffbeb', border: '#f59e0b', textColor: '#92400e' },
-              { key: 'variable', label: t('dashboard.variable'), total: variableTotal,
-                bg: '#eff6ff', bgSel: '#dbeafe', border: '#3b82f6', textColor: '#1e40af' },
-            ].map(({ key, label, total, bg, bgSel, border, textColor }) => {
+              { key: 'fixed',    label: t('dashboard.fixed'),        total: fixedTotal,    bgSel: '#fffbeb', border: '#f59e0b', textColor: '#92400e' },
+              { key: 'variable', label: t('dashboard.variable'),     total: variableTotal, bgSel: '#dbeafe', border: '#3b82f6', textColor: '#1e40af' },
+              { key: 'saving',   label: t('dashboard.savingsLabel'), total: savingsTotal,  bgSel: '#dcfce7', border: 'var(--accent)', textColor: 'var(--accent)' },
+            ].map(({ key, label, total, bgSel, border, textColor }) => {
               const isSel = expenseTab === key;
               return (
                 <button
@@ -307,13 +306,18 @@ export default function Dashboard({ entries, currentMonth, currentYear, househol
             })}
           </div>
           {expenseTab && (() => {
-            const isFixed = expenseTab === 'fixed';
-            const accentColor = isFixed ? '#92400e' : '#1e40af';
-            const headerBg   = isFixed ? '#fef9ee' : '#f0f6ff';
-            const items = [...me.filter(isFixed
+            const colors = {
+              fixed:    { accent: '#92400e', bg: '#fef9ee' },
+              variable: { accent: '#1e40af', bg: '#f0f6ff' },
+              saving:   { accent: 'var(--accent)', bg: '#f0fdf4' },
+            };
+            const { accent: accentColor, bg: headerBg } = colors[expenseTab];
+            const filterFn = expenseTab === 'fixed'
               ? (e) => e.type !== 'income' && e.fixed === 'fixed'
-              : (e) => e.type !== 'income' && e.fixed !== 'fixed'
-            )].sort((a, b) => (b.date > a.date ? 1 : -1));
+              : expenseTab === 'saving'
+              ? (e) => e.type === 'saving'
+              : (e) => e.type !== 'income' && e.type !== 'saving' && e.fixed !== 'fixed';
+            const items = [...me.filter(filterFn)].sort((a, b) => (b.date > a.date ? 1 : -1));
             const byCat = {};
             items.forEach((e) => { byCat[e.category] = (byCat[e.category] || 0) + e.amount; });
             const sortedByCat = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
