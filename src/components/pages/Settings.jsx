@@ -5,7 +5,7 @@ import { getHousehold, getHouseholdMembers, saveCustomCategories, saveBudgets, s
 import { CATEGORY_VALUES } from '../../utils/constants';
 import { formatAmount } from '../../utils/format';
 
-const BOT_URL = import.meta.env.VITE_BOT_URL || 'https://kaspit-production.up.railway.app';
+const BOT_URL = import.meta.env.VITE_BOT_URL || 'https://attractive-laughter-production-8d00.up.railway.app';
 
 function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, subscription, user, subLoading, setSubLoading }) {
   const lang = i18n.language === 'he' ? 'he' : 'en';

@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Crown, MessageCircle, Users } from 'lucide-react';
 
-const BOT_URL = import.meta.env.VITE_BOT_URL || 'https://kaspit-production.up.railway.app';
+const BOT_URL = import.meta.env.VITE_BOT_URL || 'https://attractive-laughter-production-8d00.up.railway.app';
 
 const FEATURE_LABELS = {
   kiki:       { he: 'Budgi Bot — הוספת הוצאות בוואטסאפ', en: 'Budgi Bot — add expenses via WhatsApp' },
