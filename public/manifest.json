@@ -1,7 +1,7 @@
 {
-  "name": "BUDGI",
-  "short_name": "BUDGI",
-  "description": "Smart budget tracking",
+  "name": "Budgi — ניהול תקציב",
+  "short_name": "Budgi",
+  "description": "מעקב הוצאות והכנסות משפחתי — פשוט, פרטי, בלי להתחבר לבנק",
   "start_url": "/Budgi/",
   "scope": "/Budgi/",
   "display": "standalone",
@@ -10,16 +10,19 @@
   "theme_color": "#2D6A4F",
   "lang": "he",
   "dir": "rtl",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/Budgi/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/Budgi/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/Budgi/icon-512.png",

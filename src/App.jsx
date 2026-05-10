@@ -21,6 +21,8 @@ import CurrencyPicker from './components/auth/CurrencyPicker';
 import CyclePicker from './components/auth/CyclePicker';
 import VerifyEmailScreen from './components/auth/VerifyEmailScreen';
 import OnboardingTour from './components/shared/OnboardingTour';
+import InstallPrompt from './components/shared/InstallPrompt';
+import OfflineBanner from './components/shared/OfflineBanner';
 import Loader from './components/shared/Loader';
 import ScrollToTop from './components/shared/ScrollToTop';
 import Header from './components/layout/Header';
@@ -250,6 +252,9 @@ export default function App() {
       {!tourDone && householdId && page === 'dashboard' && (
         <OnboardingTour onDone={() => setTourDone(true)} />
       )}
+
+      <OfflineBanner />
+      <InstallPrompt />
 
       {createPortal(
         <>

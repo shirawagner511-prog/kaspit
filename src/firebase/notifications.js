@@ -2,7 +2,6 @@ import { getToken } from 'firebase/messaging';
 import { messaging } from './config';
 
 const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
-const SW_PATH = '/Budgi/firebase-messaging-sw.js';
 
 export async function registerForPush() {
   if (!('Notification' in window)) throw new Error('notifications_unsupported');
@@ -14,9 +13,8 @@ export async function registerForPush() {
   const instance = await messaging;
   if (!instance) throw new Error('messaging_unsupported');
 
-  const sw = await navigator.serviceWorker.register(SW_PATH);
-  await navigator.serviceWorker.ready;
-
+  // Reuse the already-registered SW (registered by vite-plugin-pwa at startup).
+  const sw = await navigator.serviceWorker.ready;
   const token = await getToken(instance, { vapidKey: VAPID_KEY, serviceWorkerRegistration: sw });
   return token;
 }
