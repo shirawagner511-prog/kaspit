@@ -1,5 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
+import { initializeApp, cert } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
 import { startReminderCron } from './cron.js';
 import { getHouseholdByPhone, getUserByPendingPhone, confirmWhatsappLink, addEntryToFirestore, getHouseholdCategories, checkAndIncrementAiUsage } from './firestore.js';
 import { parseMessage, parseReceiptImage } from './claude.js';
@@ -7,6 +9,15 @@ import { sendReply } from './whatsapp.js';
 import { generateClientToken, createSubscription, cancelSubscription, parseWebhook } from './braintree.js';
 import twilio from 'twilio';
 import { upsertSubscription, getUidByCustomerId } from './subscriptions.js';
+import serviceAccount from './serviceAccount.js';
+
+const REQUIRED_ENV = ['TWILIO_AUTH_TOKEN', 'TWILIO_ACCOUNT_SID', 'TWILIO_WHATSAPP_NUMBER', 'ANTHROPIC_API_KEY', 'FIREBASE_PROJECT_ID'];
+for (const v of REQUIRED_ENV) {
+  if (!process.env[v]) { console.error(`Missing required env var: ${v}`); process.exit(1); }
+}
+
+initializeApp({ credential: cert(serviceAccount) });
+const adminAuth = getAuth();
 
 const app = express();
 const ALLOWED_ORIGINS = [
@@ -17,7 +28,7 @@ app.use((req, res, next) => {
   const origin = req.headers.origin;
   if (ALLOWED_ORIGINS.includes(origin)) res.setHeader('Access-Control-Allow-Origin', origin);
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
   res.setHeader('ngrok-skip-browser-warning', '1');
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
@@ -38,9 +49,11 @@ app.get('/braintree/client-token', async (_req, res) => {
   }
 });
 
-app.post('/braintree/subscribe', async (req, res) => {
-  const { uid, email, nonce } = req.body;
-  if (!uid || !email || !nonce) return res.status(400).json({ error: 'Missing uid, email or nonce' });
+app.post('/braintree/subscribe', verifyFirebaseToken, async (req, res) => {
+  const { nonce } = req.body;
+  const uid = req.uid;
+  const email = req.userEmail;
+  if (!nonce) return res.status(400).json({ error: 'Missing nonce' });
   try {
     const { customerId, subscriptionId } = await createSubscription(email, nonce);
     await upsertSubscription(uid, {
@@ -58,9 +71,10 @@ app.post('/braintree/subscribe', async (req, res) => {
   }
 });
 
-app.post('/braintree/cancel', async (req, res) => {
-  const { uid, subscriptionId } = req.body;
-  if (!uid || !subscriptionId) return res.status(400).json({ error: 'Missing uid or subscriptionId' });
+app.post('/braintree/cancel', verifyFirebaseToken, async (req, res) => {
+  const { subscriptionId } = req.body;
+  const uid = req.uid;
+  if (!subscriptionId) return res.status(400).json({ error: 'Missing subscriptionId' });
   try {
     await cancelSubscription(subscriptionId);
     await upsertSubscription(uid, {
@@ -101,6 +115,19 @@ app.post('/braintree/webhook', async (req, res) => {
     res.sendStatus(500);
   }
 });
+
+async function verifyFirebaseToken(req, res, next) {
+  const token = (req.headers.authorization || '').replace('Bearer ', '');
+  if (!token) return res.status(401).json({ error: 'Missing authorization token' });
+  try {
+    const decoded = await adminAuth.verifyIdToken(token);
+    req.uid = decoded.uid;
+    req.userEmail = decoded.email || '';
+    next();
+  } catch {
+    res.status(403).json({ error: 'Invalid or expired token' });
+  }
+}
 
 function validateTwilioSignature(req, res, next) {
   const signature = req.headers['x-twilio-signature'] || '';

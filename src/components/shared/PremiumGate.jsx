@@ -76,10 +76,11 @@ export default function PremiumGate({ feature, user, isPremium, children }) {
     setLoading(true);
     try {
       const { nonce } = await instanceRef.current.requestPaymentMethod();
+      const idToken = await user.getIdToken();
       const res = await fetch(`${BOT_URL}/braintree/subscribe`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid: user.uid, email: user.email, nonce }),
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+        body: JSON.stringify({ nonce }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);

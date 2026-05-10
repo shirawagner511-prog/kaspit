@@ -287,3 +287,27 @@ export async function deleteEntry(householdId, entryId) {
     updateMonthlySummary(householdId, date.slice(0, 7)).catch((e) => console.error('summary update error:', e));
   }
 }
+
+export async function deleteUserAccount(uid, householdId, username) {
+  const ops = [deleteDoc(doc(db, 'users', uid))];
+
+  if (householdId) {
+    const householdSnap = await getDoc(doc(db, 'households', householdId));
+    const data = householdSnap.data();
+    if (data) {
+      const memberUids = (data.memberUids || []).filter((id) => id !== uid);
+      const members = (data.members || []).filter((m) => (typeof m === 'string' ? m : m.uid) !== uid);
+      if (memberUids.length === 0) {
+        ops.push(deleteDoc(doc(db, 'households', householdId)));
+      } else {
+        ops.push(updateDoc(doc(db, 'households', householdId), { memberUids, members }));
+      }
+    }
+  }
+
+  if (username) {
+    ops.push(deleteDoc(doc(db, 'usernames', username.toLowerCase())));
+  }
+
+  await Promise.all(ops);
+}

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getHousehold, getHouseholdMembers, saveCustomCategories, saveBudgets, saveSavingsGoal, updateEntry, joinHousehold } from '../../firebase/db';
+import { getHousehold, getHouseholdMembers, saveCustomCategories, saveBudgets, saveSavingsGoal, updateEntry, joinHousehold, deleteUserAccount } from '../../firebase/db';
 import { CATEGORY_VALUES } from '../../utils/constants';
 import { formatAmount } from '../../utils/format';
 
@@ -75,10 +75,11 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
     setSubLoading(true);
     try {
       const { nonce } = await instanceRef.current.requestPaymentMethod();
+      const idToken = await user.getIdToken();
       const res = await fetch(`${BOT_URL}/braintree/subscribe`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid: user.uid, email: user.email, nonce }),
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+        body: JSON.stringify({ nonce }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -95,10 +96,11 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
     if (!window.confirm(lang === 'he' ? 'לבטל את המנוי?' : 'Cancel subscription?')) return;
     setSubLoading(true);
     try {
+      const idToken = await user.getIdToken();
       const res = await fetch(`${BOT_URL}/braintree/cancel`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uid: user.uid, subscriptionId: subscription.braintreeSubscriptionId }),
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+        body: JSON.stringify({ subscriptionId: subscription.braintreeSubscriptionId }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -243,6 +245,9 @@ export default function Settings({ entries, householdId, user, customCategories,
   const [joinLoading, setJoinLoading] = useState(false);
   const [joinSuccess, setJoinSuccess] = useState(false);
   const [subLoading, setSubLoading] = useState(false);
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     if (!householdId) return;
@@ -329,6 +334,27 @@ export default function Settings({ entries, householdId, user, customCategories,
         saved: parseFloat(goalSaved) || 0,
       });
     } finally { setSaving(false); }
+  }
+
+  async function handleDeleteAccount() {
+    if (deleteConfirmText !== 'DELETE') return;
+    setDeleteLoading(true);
+    try {
+      const username = household
+        ? null
+        : null;
+      await deleteUserAccount(user.uid, householdId, username);
+      await user.delete();
+    } catch (e) {
+      if (e.code === 'auth/requires-recent-login') {
+        alert(i18n.language === 'he'
+          ? 'יש להתחבר מחדש לפני מחיקת החשבון.'
+          : 'Please sign in again before deleting your account.');
+      } else {
+        alert(e.message);
+      }
+      setDeleteLoading(false);
+    }
   }
 
   function exportCSV() {
@@ -581,6 +607,54 @@ export default function Settings({ entries, householdId, user, customCategories,
           >
             🧪 הצג מסך ברוכים הבאים מחדש
           </button>
+        </div>
+      )}
+
+      <div style={{ marginTop: 32, paddingTop: 16, borderTop: '1px solid #fecaca', textAlign: 'center' }}>
+        <button
+          onClick={() => { setShowDeleteAccount(true); setDeleteConfirmText(''); }}
+          style={{ background: 'none', border: '1px solid #fecaca', color: '#c0392b', borderRadius: 8, padding: '8px 16px', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}
+        >
+          {i18n.language === 'he' ? 'מחיקת חשבון' : 'Delete account'}
+        </button>
+      </div>
+
+      {showDeleteAccount && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div className="be-card" style={{ width: '100%', maxWidth: 400, margin: 0, textAlign: 'start' }}>
+            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, color: '#c0392b' }}>
+              {i18n.language === 'he' ? 'מחיקת חשבון' : 'Delete account'}
+            </div>
+            <p style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 16, lineHeight: 1.6 }}>
+              {i18n.language === 'he'
+                ? 'פעולה זו תמחק את כל הנתונים שלך לצמיתות — פעולות, תקציבים, הגדרות. לא ניתן לשחזר.'
+                : 'This will permanently delete all your data — entries, budgets, settings. This cannot be undone.'}
+            </p>
+            <input
+              className="form-input"
+              placeholder={i18n.language === 'he' ? 'הקלד DELETE לאישור' : 'Type DELETE to confirm'}
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              dir="ltr"
+              style={{ marginBottom: 16 }}
+            />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                className="submit-btn"
+                onClick={handleDeleteAccount}
+                disabled={deleteConfirmText !== 'DELETE' || deleteLoading}
+                style={{ margin: 0, flex: 1, background: deleteConfirmText === 'DELETE' ? '#c0392b' : 'var(--border)', color: 'white', opacity: deleteConfirmText !== 'DELETE' ? 0.5 : 1 }}
+              >
+                {deleteLoading ? '...' : (i18n.language === 'he' ? 'מחק חשבון' : 'Delete')}
+              </button>
+              <button
+                onClick={() => setShowDeleteAccount(false)}
+                style={{ flex: 1, background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 12, padding: '12px 0', fontFamily: 'Heebo,sans-serif', fontSize: 14, cursor: 'pointer', color: 'var(--text2)' }}
+              >
+                {i18n.language === 'he' ? 'ביטול' : 'Cancel'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
