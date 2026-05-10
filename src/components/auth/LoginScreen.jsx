@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   signInWithPopup, signInWithRedirect,
   createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile,
-  sendEmailVerification,
+  sendEmailVerification, sendPasswordResetEmail,
 } from 'firebase/auth';
 import { auth, googleProvider } from '../../firebase/config';
 import { isUsernameTaken, registerUsername, getEmailByUsername } from '../../firebase/db';
@@ -76,6 +76,9 @@ export default function LoginScreen({ onNewUser }) {
   const [isCreate, setIsCreate] = useState(false);
   const [showPw, setShowPw] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showReset, setShowReset] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetMsg, setResetMsg] = useState('');
 
   const [username,    setUsername]    = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -141,19 +144,20 @@ export default function LoginScreen({ onNewUser }) {
         if (taken) { setError(t('login.errorUsernameTaken')); return; }
 
         const firebaseEmail = email.trim();
-        onNewUser?.();
         const cred = await createUserWithEmailAndPassword(auth, firebaseEmail, password);
         await updateProfile(cred.user, { displayName: displayName.trim() });
         await registerUsername(uname, cred.user.uid, firebaseEmail);
         await sendEmailVerification(cred.user);
+        onNewUser?.();
       } else {
         const storedEmail = await getEmailByUsername(uname);
-        if (!storedEmail) { setError(t('login.errorUsernameNotFound')); return; }
+        // Use generic error whether username missing or password wrong — prevents enumeration.
+        if (!storedEmail) { setError(t('login.errorInvalidCredentials')); return; }
         const firebaseEmail = storedEmail.includes('@') ? storedEmail : `${uname}@budgi.internal`;
         await signInWithEmailAndPassword(auth, firebaseEmail, password);
       }
     } catch (e) {
-      if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') setError(t('login.errorWrongPassword'));
+      if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') setError(t('login.errorInvalidCredentials'));
       else setError(t('login.errorGeneric') + e.message);
     } finally { setLoading(''); }
   }
@@ -300,6 +304,11 @@ export default function LoginScreen({ onNewUser }) {
             <button type="button" className="login-switch-link" onClick={() => openManual(!isCreate)}>
               {isCreate ? t('login.switchToSignIn') : t('login.switchToCreate')}
             </button>
+            {!isCreate && (
+              <button type="button" className="login-switch-link" onClick={() => { setShowReset(true); setResetMsg(''); setResetEmail(''); }}>
+                {t('login.forgotPassword')}
+              </button>
+            )}
             <button type="button" className="login-switch-link" onClick={() => { setShowManual(false); setError(''); }}>
               ← {t('login.backToOptions')}
             </button>
@@ -330,6 +339,50 @@ export default function LoginScreen({ onNewUser }) {
           {isHe ? 'מדיניות פרטיות ותנאי שימוש' : 'Privacy Policy & Terms'}
         </button>
       </div>
+
+      {showReset && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={() => setShowReset(false)}>
+          <div style={{ background: 'var(--surface)', borderRadius: 16, padding: 24, maxWidth: 400, width: '100%', textAlign: 'start' }} onClick={(e) => e.stopPropagation()}>
+            <h2 style={{ fontSize: 17, fontWeight: 600, marginBottom: 12 }}>{isHe ? 'שחזור סיסמה' : 'Reset password'}</h2>
+            <p style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 16, lineHeight: 1.6 }}>
+              {isHe ? 'הזיני את כתובת האימייל שאיתה נרשמת ונשלח לך קישור לאיפוס הסיסמה.' : 'Enter the email address you signed up with and we\'ll send you a reset link.'}
+            </p>
+            {resetMsg ? (
+              <div style={{ fontSize: 13, color: 'var(--accent)', marginBottom: 16 }}>{resetMsg}</div>
+            ) : (
+              <>
+                <input
+                  className="form-input"
+                  type="email"
+                  dir="ltr"
+                  placeholder={isHe ? 'כתובת אימייל' : 'Email address'}
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  style={{ marginBottom: 12 }}
+                />
+                <button
+                  className="btn-primary"
+                  style={{ width: '100%' }}
+                  onClick={async () => {
+                    if (!EMAIL_RE.test(resetEmail.trim())) return;
+                    try {
+                      await sendPasswordResetEmail(auth, resetEmail.trim());
+                      setResetMsg(isHe ? 'קישור נשלח — בדקי את תיבת הדואר.' : 'Link sent — check your inbox.');
+                    } catch {
+                      setResetMsg(isHe ? 'שגיאה בשליחה. בדקי את הכתובת.' : 'Error sending. Check the address.');
+                    }
+                  }}
+                >
+                  {isHe ? 'שלחי קישור' : 'Send link'}
+                </button>
+              </>
+            )}
+            <button type="button" className="login-switch-link" style={{ marginTop: 12 }} onClick={() => setShowReset(false)}>
+              {isHe ? 'חזרה' : 'Back'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {showPrivacy && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={() => setShowPrivacy(false)}>

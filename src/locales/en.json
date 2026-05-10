@@ -57,6 +57,8 @@
     "errorUsernameTaken": "This username is already taken",
     "errorUsernameNotFound": "Username not found",
     "errorWrongPassword": "Incorrect password",
+    "errorInvalidCredentials": "Invalid username or password",
+    "forgotPassword": "Forgot password?",
     "errorUsernameChars": "2–20 characters: letters, numbers, or underscore",
     "errorDisplayName": "Name must be at least 2 characters",
     "errorEmailFormat": "Please enter a valid email address",

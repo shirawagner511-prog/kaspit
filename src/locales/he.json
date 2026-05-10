@@ -57,6 +57,8 @@
     "errorUsernameTaken": "שם המשתמש הזה תפוס",
     "errorUsernameNotFound": "שם המשתמש לא נמצא",
     "errorWrongPassword": "סיסמה שגויה",
+    "errorInvalidCredentials": "שם משתמש או סיסמה שגויים",
+    "forgotPassword": "שכחתי סיסמה",
     "errorUsernameChars": "2–20 תווים: אותיות, מספרים או קו תחתון",
     "errorDisplayName": "השם חייב להכיל לפחות 2 תווים",
     "errorEmailFormat": "נא להזין כתובת אימייל תקינה",
