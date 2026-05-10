@@ -131,6 +131,10 @@ export async function getUsersForReminder(time) {
 
 const DAILY_AI_LIMIT = 30;
 
+export async function clearFcmToken(uid) {
+  await patchUser(uid, { fcmToken: '' });
+}
+
 export async function checkAndIncrementAiUsage(uid) {
   const token = await getAccessToken();
   const res = await fetch(`${BASE}/users/${uid}`, {
