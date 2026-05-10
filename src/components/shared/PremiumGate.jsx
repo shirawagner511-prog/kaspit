@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Crown, MessageCircle, Users } from 'lucide-react';
 
@@ -134,9 +135,12 @@ export default function PremiumGate({ feature, user, isPremium, children }) {
         </button>
       </div>
 
-      {showModal && (
-        <div className="modal-overlay open" style={{ alignItems: 'center', padding: '16px', overflowY: 'auto' }} onClick={(e) => e.target === e.currentTarget && setShowModal(false)}>
-          <div className="modal" style={{ borderRadius: 'var(--radius-lg)', maxHeight: 'none', position: 'relative', margin: 'auto' }}>
+      {showModal && createPortal(
+        <div
+          onClick={(e) => e.target === e.currentTarget && setShowModal(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(28,25,23,0.55)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+        >
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', width: 'min(96vw, 420px)', overflow: 'hidden' }}>
             <div className="modal-title">
               {lang === 'he' ? 'שדרג לפרמיום' : 'Upgrade to Premium'}
               <button className="modal-close" onClick={() => setShowModal(false)}>✕</button>
@@ -159,7 +163,8 @@ export default function PremiumGate({ feature, user, isPremium, children }) {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

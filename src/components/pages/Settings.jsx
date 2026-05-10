@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { getHousehold, getHouseholdMembers, saveCustomCategories, saveBudgets, saveSavingsGoal, updateEntry, joinHousehold, deleteUserAccount } from '../../firebase/db';
 import { CATEGORY_VALUES } from '../../utils/constants';
@@ -153,8 +154,8 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
       ) : null}
 
       {/* Step 1: Plan comparison */}
-      {upgradeStep === 'compare' && (
-        <div className="modal-overlay open" style={{ alignItems: 'center', padding: 16 }} onClick={(e) => e.target === e.currentTarget && setUpgradeStep(null)}>
+      {upgradeStep === 'compare' && createPortal(
+        <div onClick={(e) => e.target === e.currentTarget && setUpgradeStep(null)} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(28,25,23,0.55)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
           <div className="modal" style={{ borderRadius: 12, maxHeight: '85vh' }}>
             <div className="modal-title">
               {lang === 'he' ? '✦ בחר מסלול' : '✦ Choose a plan'}
@@ -189,13 +190,14 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Step 2: Card form */}
-      {upgradeStep === 'pay' && (
-        <div className="modal-overlay open" style={{ alignItems: 'center', padding: 16 }} onClick={(e) => e.target === e.currentTarget && setUpgradeStep(null)}>
-          <div className="modal" style={{ borderRadius: 12 }}>
+      {upgradeStep === 'pay' && createPortal(
+        <div onClick={(e) => e.target === e.currentTarget && setUpgradeStep(null)} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(28,25,23,0.55)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, width: 'min(96vw, 420px)', overflow: 'hidden' }}>
             <div className="modal-title">
               <button onClick={() => setUpgradeStep('compare')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: 'var(--text2)', padding: '0 4px' }}>←</button>
               {lang === 'he' ? 'פרטי תשלום' : 'Payment details'}
@@ -219,7 +221,8 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
