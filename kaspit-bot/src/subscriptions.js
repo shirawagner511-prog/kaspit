@@ -38,11 +38,15 @@ export async function upsertSubscription(uid, data) {
   // PATCH with updateMask to merge (upsert)
   const fields = toFirestoreFields(data);
   const mask = Object.keys(data).join(',');
-  await fetch(`${url}?updateMask.fieldPaths=${Object.keys(data).join('&updateMask.fieldPaths=')}`, {
+  const res = await fetch(`${url}?updateMask.fieldPaths=${Object.keys(data).join('&updateMask.fieldPaths=')}`, {
     method: 'PATCH',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ fields }),
   });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Firestore upsertSubscription failed (${res.status}): ${body}`);
+  }
 }
 
 export async function getUidByCustomerId(braintreeCustomerId) {
