@@ -245,9 +245,9 @@ export default function App() {
           {page === 'settings'  && <Settings  {...pageProps} />}
         </Suspense>
 
-        <BottomNav activePage={page} onNavigate={setPage} isPremium={isPremium} subStatus={subStatus} />
       </div>
 
+      <BottomNav activePage={page} onNavigate={setPage} isPremium={isPremium} subStatus={subStatus} />
       <ScrollToTop />
 
       {!(modalOpen || !!editEntry || !!deleteId) && ['dashboard','entries'].includes(page) && createPortal(
