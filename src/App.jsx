@@ -21,6 +21,7 @@ import CurrencyPicker from './components/auth/CurrencyPicker';
 import CyclePicker from './components/auth/CyclePicker';
 import VerifyEmailScreen from './components/auth/VerifyEmailScreen';
 import OnboardingTour from './components/shared/OnboardingTour';
+import LandingPage from './components/pages/LandingPage';
 import InstallPrompt from './components/shared/InstallPrompt';
 import OfflineBanner from './components/shared/OfflineBanner';
 import Loader from './components/shared/Loader';
@@ -54,6 +55,7 @@ export default function App() {
     ...customCategories.filter((c) => !defaultCategories.some((d) => d.value === c.value)),
   ];
 
+  const [showLanding, setShowLanding] = useState(() => localStorage.getItem('budgi-seen-landing') !== '1');
   const [page, setPage] = useState('dashboard');
   const [modalOpen, setModalOpen] = useState(false);
   const [editEntry, setEditEntry] = useState(null);
@@ -151,6 +153,12 @@ export default function App() {
   useAutoRecurring(entries, currentMonth, currentYear, householdId, user, isPremium, cycleStartDay);
 
   if (loading) return <Loader fullscreen />;
+  if (!user && showLanding) return (
+    <LandingPage onEnter={() => {
+      localStorage.setItem('budgi-seen-landing', '1');
+      setShowLanding(false);
+    }} />
+  );
   if (!user) return <LoginScreen onNewUser={() => { setShowWelcome(true); }} />;
   if (user && !user.emailVerified && !user.email?.endsWith('@budgi.internal')) return <VerifyEmailScreen user={user} />;
   if (showWelcome) return <WelcomeScreen onContinue={() => { setShowWelcome(false); if (!householdId) setShowCurrencyPicker(true); }} />;
