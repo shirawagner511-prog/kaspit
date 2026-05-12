@@ -10,6 +10,8 @@ const BOT_URL = import.meta.env.VITE_BOT_URL || 'https://attractive-laughter-pro
 function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, subscription, user, subLoading, setSubLoading }) {
   const lang = i18n.language === 'he' ? 'he' : 'en';
   const [upgradeStep, setUpgradeStep] = useState(null); // null | 'compare' | 'pay'
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelConfirmText, setCancelConfirmText] = useState('');
   const [dropinReady, setDropinReady] = useState(false);
   const dropinRef = useRef(null);
   const instanceRef = useRef(null);
@@ -94,8 +96,8 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
 
   async function handleCancel() {
     if (!subscription?.braintreeSubscriptionId) return;
-    if (!window.confirm(lang === 'he' ? 'לבטל את המנוי?' : 'Cancel subscription?')) return;
     setSubLoading(true);
+    setShowCancelModal(false);
     try {
       const idToken = await user.getIdToken();
       const res = await fetch(`${BOT_URL}/braintree/cancel`, {
@@ -149,7 +151,7 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
       </div>
 
       {subStatus === 'active' ? (
-        <button onClick={handleCancel} disabled={subLoading} style={{ width: '100%', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 0', fontSize: 14, cursor: 'pointer', fontFamily: 'Heebo,sans-serif', color: 'var(--text2)', opacity: subLoading ? 0.7 : 1 }}>
+        <button onClick={() => { setCancelConfirmText(''); setShowCancelModal(true); }} disabled={subLoading} style={{ width: '100%', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 0', fontSize: 14, cursor: 'pointer', fontFamily: 'Heebo,sans-serif', color: 'var(--text2)', opacity: subLoading ? 0.7 : 1 }}>
           {subLoading ? '...' : (lang === 'he' ? 'ביטול מנוי' : 'Cancel subscription')}
         </button>
       ) : subStatus !== 'active' ? (
@@ -225,6 +227,57 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
             <div className="modal-footer">
               <button onClick={handlePay} disabled={subLoading || !dropinReady} style={{ flex: 1, height: 44, background: (subLoading || !dropinReady) ? 'var(--surface3)' : 'var(--accent)', color: (subLoading || !dropinReady) ? 'var(--text3)' : '#fff', border: 'none', borderRadius: 'var(--radius)', fontSize: 15, fontWeight: 700, fontFamily: 'Heebo,sans-serif', cursor: (subLoading || !dropinReady) ? 'wait' : 'pointer' }}>
                 {subLoading ? (lang === 'he' ? 'מעבד...' : 'Processing...') : (lang === 'he' ? 'שלם $5.50 לחודש' : 'Pay $5.50/month')}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {showCancelModal && createPortal(
+        <div
+          onClick={(e) => e.target === e.currentTarget && setShowCancelModal(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(28,25,23,0.55)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+        >
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', width: 'min(96vw, 400px)', overflow: 'hidden' }}>
+            <div className="modal-title">
+              {lang === 'he' ? 'ביטול מנוי' : 'Cancel subscription'}
+              <button className="modal-close" onClick={() => setShowCancelModal(false)}>✕</button>
+            </div>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 8, padding: '12px 14px' }}>
+                <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--expense)', marginBottom: 6 }}>
+                  {lang === 'he' ? 'תאבדי גישה ל:' : 'You will lose access to:'}
+                </div>
+                {['Budgi Bot — הוספת הוצאות בוואטסאפ', 'בית משותף עם שותף/ה', 'ניתוח נקודת איזון', 'תובנות ומגמות'].map((f) => (
+                  <div key={f} style={{ fontSize: 12, color: 'var(--expense)', display: 'flex', gap: 6, alignItems: 'center', marginBottom: 3 }}>
+                    <span>✕</span><span>{f}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontSize: 13, color: 'var(--text2)' }}>
+                {lang === 'he'
+                  ? 'כדי לאשר, הקלידי "ביטול" בשדה למטה:'
+                  : 'To confirm, type "cancel" below:'}
+              </div>
+              <input
+                value={cancelConfirmText}
+                onChange={(e) => setCancelConfirmText(e.target.value)}
+                placeholder={lang === 'he' ? 'ביטול' : 'cancel'}
+                autoFocus
+                style={{ border: '1px solid var(--border)', borderRadius: 8, padding: '10px 12px', fontSize: 14, fontFamily: 'Heebo,sans-serif', width: '100%', boxSizing: 'border-box', background: 'var(--surface)' }}
+              />
+            </div>
+            <div className="modal-footer" style={{ gap: 8 }}>
+              <button onClick={() => setShowCancelModal(false)} style={{ flex: 1, height: 44, background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: 14, fontFamily: 'Heebo,sans-serif', cursor: 'pointer', color: 'var(--text2)' }}>
+                {lang === 'he' ? 'חזרה' : 'Go back'}
+              </button>
+              <button
+                onClick={handleCancel}
+                disabled={cancelConfirmText !== (lang === 'he' ? 'ביטול' : 'cancel')}
+                style={{ flex: 1, height: 44, background: cancelConfirmText === (lang === 'he' ? 'ביטול' : 'cancel') ? 'var(--expense)' : 'var(--surface3)', color: cancelConfirmText === (lang === 'he' ? 'ביטול' : 'cancel') ? '#fff' : 'var(--text3)', border: 'none', borderRadius: 'var(--radius)', fontSize: 14, fontWeight: 700, fontFamily: 'Heebo,sans-serif', cursor: cancelConfirmText === (lang === 'he' ? 'ביטול' : 'cancel') ? 'pointer' : 'default' }}
+              >
+                {lang === 'he' ? 'אישור ביטול' : 'Confirm cancel'}
               </button>
             </div>
           </div>
