@@ -114,9 +114,9 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
 
   const statusColor = isPremium ? 'var(--accent)' : 'var(--text3)';
   const statusLabel = subStatus === 'active'
-    ? (lang === 'he' ? 'פרמיום' : 'Premium')
+    ? (lang === 'he' ? '✦ פרמיום' : '✦ Premium')
     : subStatus === 'trial'
-    ? (lang === 'he' ? `ניסיון חינם — ${trialDaysLeft} ימים נותרו` : `Free trial — ${trialDaysLeft} days left`)
+    ? (lang === 'he' ? `✦ גרסה מלאה · ניסיון חינם` : `✦ Full access · Free trial`)
     : subStatus === 'past_due'
     ? (lang === 'he' ? 'תשלום נכשל' : 'Payment failed')
     : subStatus === 'cancelled'
@@ -137,6 +137,11 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
               {new Date(subscription.currentPeriodEnd).toLocaleDateString(lang === 'he' ? 'he-IL' : 'en-US')}
             </div>
           )}
+          {subStatus === 'trial' && trialDaysLeft !== null && (
+            <div style={{ fontSize: 11, color: trialDaysLeft <= 7 ? 'var(--expense)' : 'var(--text3)', marginTop: 2 }}>
+              {lang === 'he' ? `${trialDaysLeft} ימים נותרו לניסיון` : `${trialDaysLeft} days left in trial`}
+            </div>
+          )}
         </div>
         <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 13, color: 'var(--text2)' }}>
           {isPremium ? '₪19.90/mo' : (lang === 'he' ? 'חינם' : 'Free')}
@@ -149,7 +154,9 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
         </button>
       ) : subStatus !== 'active' ? (
         <button onClick={() => setUpgradeStep('compare')} style={{ width: '100%', background: 'var(--accent)', border: 'none', borderRadius: 8, padding: '10px 0', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'Heebo,sans-serif', color: 'white' }}>
-          {lang === 'he' ? 'שדרג לפרמיום — $5.50/חודש' : 'Upgrade to Premium — $5.50/mo'}
+          {subStatus === 'trial'
+            ? (lang === 'he' ? 'שמור גישה מלאה — $5.50/חודש' : 'Keep full access — $5.50/mo')
+            : (lang === 'he' ? 'שדרג לפרמיום — $5.50/חודש' : 'Upgrade to Premium — $5.50/mo')}
         </button>
       ) : null}
 

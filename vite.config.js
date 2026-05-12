@@ -2,6 +2,8 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+const isCapacitor = process.env.BUILD_TARGET === 'android';
+
 export default defineConfig({
   plugins: [
     react(),
@@ -20,7 +22,7 @@ export default defineConfig({
       },
     }),
   ],
-  base: '/Budgi/',
+  base: isCapacitor ? '/' : '/Budgi/',
   build: {
     rollupOptions: {
       output: {

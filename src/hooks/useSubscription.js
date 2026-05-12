@@ -33,20 +33,29 @@ export function useSubscription(user) {
     );
   }, [user?.uid]);
 
-  const forceFree = typeof window !== 'undefined' && localStorage.getItem('budgi-force-free') === '1';
+  // forceFree is ignored once the user has an active paid subscription
+  const rawStatus = subscription?.status ?? null;
+  const forceFree = typeof window !== 'undefined'
+    && localStorage.getItem('budgi-force-free') === '1'
+    && rawStatus !== 'active';
+
+  // Auto-clear the flag if they've since paid
+  if (typeof window !== 'undefined' && rawStatus === 'active') {
+    localStorage.removeItem('budgi-force-free');
+  }
 
   const isPremium = forceFree ? false
     : subscription === undefined
       ? true
-      : subscription?.status === 'active' ||
-        (subscription?.status === 'trial' && new Date(subscription.trialEndsAt) > new Date());
+      : rawStatus === 'active' ||
+        (rawStatus === 'trial' && new Date(subscription.trialEndsAt) > new Date());
 
   const trialDaysLeft = forceFree ? 3
-    : subscription?.status === 'trial'
+    : rawStatus === 'trial'
       ? Math.max(0, Math.ceil((new Date(subscription.trialEndsAt) - Date.now()) / 86400000))
       : null;
 
-  const status = forceFree ? 'trial' : (subscription?.status ?? null);
+  const status = forceFree ? 'trial' : rawStatus;
 
   return { isPremium, status, trialDaysLeft, subscription };
 }

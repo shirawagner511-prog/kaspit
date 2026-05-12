@@ -20,7 +20,7 @@ export default function BottomNav({ activePage, onNavigate, isPremium, subStatus
         >
           <span style={{ position: 'relative', display: 'inline-flex' }}>
             <Icon size={20} strokeWidth={1.8} />
-            {id === 'settings' && !isPremium && subStatus !== 'active' && (
+            {id === 'settings' && !isPremium && subStatus !== 'active' && subStatus !== 'trial' && (
               <Crown size={10} strokeWidth={2} color="#f59e0b" style={{ position: 'absolute', top: -4, right: -6 }} />
             )}
           </span>

@@ -234,27 +234,23 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
         <div className="app-logo" dir="ltr" style={{ gap: 0, cursor: 'pointer' }} onClick={() => onNavigate('dashboard')}>
           <span style={{ fontWeight: 700, color: 'var(--accent)' }}>B</span><span style={{ fontWeight: 400, color: 'var(--text)' }}>udgi</span>
         </div>
-        {subStatus === 'active' && (
-          <button onClick={() => onNavigate('settings')} className="header-sub-badge" style={{ alignItems: 'center', gap: 5, background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 20, padding: '5px 14px', fontSize: 14, fontWeight: 700, fontFamily: 'Heebo,sans-serif', cursor: 'pointer', letterSpacing: 0.3 }}>
-            ✦ Pro
-          </button>
-        )}
-        {subStatus === 'trial' && (
+        {(subStatus === 'active' || subStatus === 'trial') && (
           <button
             onClick={() => onNavigate('settings')}
             className="header-sub-badge"
             style={{
-              alignItems: 'center', gap: 5,
-              background: trialDaysLeft <= 7 ? '#fff1f2' : '#fffbeb',
-              color: trialDaysLeft <= 7 ? 'var(--expense)' : '#92400e',
-              border: `1.5px solid ${trialDaysLeft <= 7 ? '#fca5a5' : '#fcd34d'}`,
-              borderRadius: 20, padding: '5px 14px',
-              fontSize: 14, fontWeight: 700, fontFamily: 'Heebo,sans-serif',
-              cursor: 'pointer', whiteSpace: 'nowrap',
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              background: 'var(--accent)', color: '#fff', border: 'none',
+              borderRadius: 20, padding: subStatus === 'trial' ? '3px 12px' : '5px 14px',
+              cursor: 'pointer', lineHeight: 1.2,
             }}
           >
-            {trialDaysLeft <= 7 ? '⚠ ' : '⏳ '}
-            {i18n.language === 'he' ? `ניסיון · ${trialDaysLeft} ימים` : `Trial · ${trialDaysLeft}d`}
+            <span style={{ fontSize: 13, fontWeight: 700, fontFamily: 'Heebo,sans-serif', letterSpacing: 0.3 }}>✦ Pro</span>
+            {subStatus === 'trial' && (
+              <span style={{ fontSize: 10, fontWeight: 400, opacity: 0.85 }}>
+                {i18n.language === 'he' ? `ניסיון · ${trialDaysLeft} ימים` : `Trial · ${trialDaysLeft}d`}
+              </span>
+            )}
           </button>
         )}
       </div>
