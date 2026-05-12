@@ -1,4 +1,4 @@
-import{c as z,j as e,C as I,M}from"./index-_JYFpwWI.js";import{u as P,r as o}from"./i18n-DHnzMtDv.js";import{r as B}from"./react-vendor-ByMXOXG8.js";/**
+import{c as z,j as e,C as I,M}from"./index-Dw-1njl6.js";import{u as P,r as o}from"./i18n-DHnzMtDv.js";import{r as B}from"./react-vendor-ByMXOXG8.js";/**
  * @license lucide-react v1.8.0 - ISC
  *
  * This source code is licensed under the ISC license.
