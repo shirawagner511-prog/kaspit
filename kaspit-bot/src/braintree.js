@@ -25,7 +25,11 @@ export async function createSubscription(email, nonce) {
   });
   if (!subResult.success) throw new Error(subResult.message);
 
-  return { customerId: customer.id, subscriptionId: subResult.subscription.id };
+  return {
+    customerId: customer.id,
+    subscriptionId: subResult.subscription.id,
+    paidThroughDate: subResult.subscription.paidThroughDate || subResult.subscription.firstBillingDate || null,
+  };
 }
 
 export async function cancelSubscription(subscriptionId) {

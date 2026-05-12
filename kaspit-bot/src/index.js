@@ -55,13 +55,14 @@ app.post('/braintree/subscribe', verifyFirebaseToken, async (req, res) => {
   const email = req.userEmail;
   if (!nonce) return res.status(400).json({ error: 'Missing nonce' });
   try {
-    const { customerId, subscriptionId } = await createSubscription(email, nonce);
+    const { customerId, subscriptionId, paidThroughDate } = await createSubscription(email, nonce);
     await upsertSubscription(uid, {
       uid,
       plan: 'premium',
       status: 'active',
       braintreeCustomerId: customerId,
       braintreeSubscriptionId: subscriptionId,
+      currentPeriodEnd: paidThroughDate || null,
       updatedAt: new Date().toISOString(),
     });
     res.json({ ok: true });

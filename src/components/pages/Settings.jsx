@@ -255,6 +255,15 @@ function SubscriptionSection({ t, i18n, isPremium, subStatus, trialDaysLeft, sub
                   </div>
                 ))}
               </div>
+              {subscription?.currentPeriodEnd && (
+                <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--text2)' }}>
+                  {lang === 'he' ? 'הגישה לפרמיום תישאר פעילה עד ' : 'Your premium access remains active until '}
+                  <strong style={{ color: 'var(--text)' }}>
+                    {new Date(subscription.currentPeriodEnd).toLocaleDateString(lang === 'he' ? 'he-IL' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </strong>
+                  {lang === 'he' ? ' — לא יחויב תשלום נוסף.' : ' — you will not be charged again.'}
+                </div>
+              )}
               <div style={{ fontSize: 13, color: 'var(--text2)' }}>
                 {lang === 'he'
                   ? 'כדי לאשר, הקלידי "ביטול" בשדה למטה:'
