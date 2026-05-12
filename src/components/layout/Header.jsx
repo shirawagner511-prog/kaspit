@@ -255,6 +255,29 @@ export default function Header({ user, currentMonth, currentYear, onMonthChange,
         )}
       </div>
       <div className="header-right">
+        {(subStatus === 'active' || subStatus === 'trial') && (
+          <button
+            onClick={() => onNavigate('settings')}
+            className="header-avatar-pro"
+            style={{
+              position: 'relative', width: 34, height: 34, borderRadius: '50%',
+              background: 'var(--accent)', color: '#fff',
+              border: '2.5px solid var(--accent)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 14, fontWeight: 700, fontFamily: 'Heebo,sans-serif',
+              cursor: 'pointer', flexShrink: 0,
+              boxShadow: '0 0 0 2px var(--bg)',
+            }}
+          >
+            {(user?.displayName || user?.email || '?')[0].toUpperCase()}
+            <span style={{
+              position: 'absolute', bottom: -5, left: '50%', transform: 'translateX(-50%)',
+              fontSize: 8, fontWeight: 800, background: 'var(--accent)', color: '#fff',
+              borderRadius: 4, padding: '1px 4px', letterSpacing: 0.3, whiteSpace: 'nowrap',
+              border: '1.5px solid var(--bg)',
+            }}>Pro</span>
+          </button>
+        )}
         <button
           onClick={toggleLang}
           title={i18n.language === 'he' ? 'Switch to English' : 'עברית'}

@@ -786,9 +786,15 @@ svg {
   display: inline-flex;
   flex-shrink: 0;
 }
+.header-avatar-pro {
+  display: none;
+}
 @media (max-width: 480px) {
   .header-sub-badge {
     display: none !important;
+  }
+  .header-avatar-pro {
+    display: flex !important;
   }
 }
 
