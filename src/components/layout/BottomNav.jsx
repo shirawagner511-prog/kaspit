@@ -24,7 +24,12 @@ export default function BottomNav({ activePage, onNavigate, isPremium, subStatus
               <Crown size={10} strokeWidth={2} color="#f59e0b" style={{ position: 'absolute', top: -4, right: -6 }} />
             )}
           </span>
-          <span className="nav-label">{label}</span>
+          <span className="nav-label" style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+            {label}
+            {id === 'settings' && (subStatus === 'active' || subStatus === 'trial') && (
+              <span style={{ fontSize: 9, fontWeight: 700, background: 'var(--accent)', color: '#fff', borderRadius: 6, padding: '1px 5px', lineHeight: 1.4, letterSpacing: 0.2 }}>Pro</span>
+            )}
+          </span>
         </button>
       ))}
     </nav>
